@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>결의서 보기</title><link rel="icon" type="image/png" href="logo.png">
+<style>
+body{font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;margin:0;background:#F2F1EC;color:#1C2A27;}
+.wrap{max-width:560px;margin:0 auto;padding:16px;}
+.card{background:#fff;border:1px solid #E4E1D6;border-radius:13px;padding:16px 15px;}
+.dtitle{text-align:center;font-size:16px;font-weight:800;letter-spacing:.08em;margin:2px 0 12px;}
+.sign{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px;}
+.sign th{border:1px solid #D8D5C8;background:#F0EFE8;padding:5px;}
+.sign td{border:1px solid #D8D5C8;padding:8px 5px;text-align:center;height:34px;vertical-align:middle;}
+.nm{font-weight:700;}.okk{color:#16715A;}.wt{color:#B4453A;font-size:11.5px;}.dt{font-size:10.5px;color:#9A9A90;}
+.row{font-size:12.5px;margin:7px 0;line-height:1.55;}.row b{color:#555;margin-right:5px;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0;}
+.tbl th,.tbl td{border:1px solid #D8D5C8;padding:5px 6px;text-align:left;}
+.tbl th{background:#F0EFE8;text-align:center;}.tbl td.r{text-align:right;font-variant-numeric:tabular-nums;}
+.body2{font-size:13px;line-height:1.65;background:#FAFAF7;border:1px solid #EFEDE4;border-radius:9px;padding:11px 12px;margin:8px 0;white-space:pre-wrap;word-break:break-word;}
+.att{display:block;color:#2C6E9B;text-decoration:underline;font-size:12.5px;margin:4px 0;}
+.bad{background:#FBEDEA;border:1px solid #E8C4BC;color:#9A3327;border-radius:12px;padding:16px;font-size:14px;}
+.foot{font-size:10.5px;color:#9A9A90;text-align:center;margin-top:10px;}
+.empty{color:#9A9A90;text-align:center;padding:40px 0;}
+</style></head><body><div class="wrap" id="root"><div class="empty">불러오는 중…</div></div>
+<script>
+(function(){
+  var API="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/api", q=new URLSearchParams(location.search), root=document.getElementById("root");
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function won(n){return (Number(n)||0).toLocaleString("ko-KR");}
+  function ds(v){return String(v||"").slice(0,10);}
+  fetch(API+"?api=view&id="+encodeURIComponent(q.get("id")||"")+(q.get("kind")==="doc"?"&kind=doc":"")).then(function(r){return r.json();}).then(function(j){
+    if(!j.ok){root.innerHTML='<div class="bad">'+esc(j.error||"해당 결의서를 찾을 수 없습니다.")+'</div>';return;}
+    var o=j.item, atts=o.attachments||[];
+    var attHtml=atts.length?atts.map(function(a){return '<a class="att" href="'+esc(a.url)+'" target="_blank" rel="noopener">📎 '+esc(a.name)+'</a>';}).join(""):'<span style="font-size:12px;color:#9A9A90">첨부된 근거자료가 없습니다.</span>';
+    function box(by,at){return '<td>'+(by?('<span class="nm okk">'+esc(by)+' ✔</span><br><span class="dt">'+esc(ds(at))+'</span>'):'<span class="wt">대기</span>')+'</td>';}
+    var sign='<table class="sign"><tr><th style="width:33%">기안</th><th style="width:33%">'+esc(j.role1)+'</th><th>'+esc(j.role2)+'</th></tr>'
+      +'<tr><td><span class="nm">'+esc(o.createdBy||"-")+'</span><br><span class="dt">'+esc(ds(o.createdAt)||ds(o.date))+'</span></td>'+box(o.role1By,o.role1At)+box(o.role2By,o.role2At)+'</tr></table>';
+    var inner;
+    if(j.kind==="doc"){
+      inner='<div class="card"><div class="dtitle">'+esc(o.doctype||"문서")+'</div>'+sign
+        +'<div class="row"><b>제목</b>'+esc(o.title||"(제목 없음)")+'</div>'
+        +'<div class="row"><b>기안일</b>'+esc(ds(o.date))+(o.site?('&nbsp; <b>건물</b>'+esc(o.site)):"")+'</div>'
+        +(o.body?('<div class="body2">'+esc(o.body)+'</div>'):"")
+        +'<div class="row"><b>첨부</b></div>'+attHtml+'</div>';
+    }else{
+      var lines=(o.lines&&o.lines.length)?o.lines:[{name:String(o.items||""),supply:"",vat:"",amt:o.amount}],lr="";
+      lines.forEach(function(L){lr+='<tr><td>'+esc(L.name||"")+'</td><td class="r">'+((L.supply!=null&&L.supply!=="")?won(L.supply):"")+'</td><td class="r">'+((L.vat!=null&&L.vat!=="")?won(L.vat):"")+'</td><td class="r">'+won(L.amt!=null?L.amt:0)+'</td></tr>';});
+      var meta=[];
+      if(o.evidence)meta.push("증빙 "+esc(o.evidence));
+      if(o.payment)meta.push("결제 "+esc(o.payment));
+      if(o.vendor)meta.push("거래처 "+esc(o.vendor)+(o.bizno?(" ("+esc(o.bizno)+")"):""));
+      inner='<div class="card"><div class="dtitle">지 출 결 의 서</div>'+sign
+        +'<div class="row"><b>제목</b>'+esc(o.title||o.items||"지출결의")+'</div>'
+        +'<div class="row"><b>기안일</b>'+esc(ds(o.date))+'&nbsp; <b>계정과목</b>'+esc(o.category||"")+(o.site?('&nbsp; <b>건물</b>'+esc(o.site)):"")+'</div>'
+        +(meta.length?('<div class="row">'+meta.join('&nbsp; ·&nbsp; ')+'</div>'):"")
+        +'<table class="tbl"><tr><th>품목</th><th>공급가액</th><th>부가세</th><th>합계</th></tr>'+lr
+        +'<tr><td style="text-align:right;font-weight:700">합 계</td><td class="r" style="font-weight:700">'+won(o.supply)+'</td><td class="r" style="font-weight:700">'+won(o.vat)+'</td><td class="r" style="font-weight:700">'+won(o.amount)+'</td></tr></table>'
+        +(o.purpose?('<div class="row"><b>용도</b>'+esc(o.purpose)+'</div>'):"")
+        +(o.reference?('<div class="row"><b>기타참조</b>'+esc(o.reference)+'</div>'):"")
+        +'<div class="row"><b>근거자료</b></div>'+attHtml+'</div>';
+    }
+    root.innerHTML=inner+'<div class="foot">모두의관리 · 읽기 전용 결의서 보기</div>';
+  }).catch(function(e){root.innerHTML='<div class="bad">불러오지 못했습니다. 잠시 후 다시 열어 주세요.</div>';});
+})();
+</script></body></html>

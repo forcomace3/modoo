@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>입사 서류 제출</title><link rel="icon" type="image/png" href="logo.png">
+<style>
+body{font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;margin:0;background:#F2F1EC;color:#1C2A27;}
+.wrap{max-width:560px;margin:0 auto;padding:18px 16px 30px;}
+h1{font-size:19px;margin:6px 0 4px;}
+.sub{font-size:12.5px;color:#7A7A72;margin-bottom:14px;line-height:1.5;}
+.namebox{background:#fff;border:1px solid #E4E1D6;border-radius:12px;padding:12px;margin-bottom:14px;}
+.namebox label{font-size:11px;font-weight:700;color:#8A8A80;display:block;margin-bottom:5px;}
+.namebox input{width:100%;box-sizing:border-box;border:1px solid #D8D5C8;border-radius:9px;padding:10px;font-size:15px;}
+.sec{background:#fff;border:1px solid #E4E1D6;border-radius:14px;padding:14px 15px;margin-bottom:14px;}
+.sec h2{font-size:13.5px;margin:0 0 4px;color:#16715A;}
+.sec .note{font-size:11.5px;color:#8A8A80;margin-bottom:10px;line-height:1.5;}
+.it{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F0EEE7;}
+.it:last-child{border-bottom:none;}
+.it .tl{font-size:13px;font-weight:600;line-height:1.45;min-width:0;}
+.it .dd{display:block;font-size:10.5px;color:#9A9A90;font-weight:400;margin-top:2px;line-height:1.5;}
+.it .st{display:block;font-size:10.5px;color:#16715A;font-weight:700;margin-top:2px;}
+.bt{display:flex;gap:6px;flex-shrink:0;}
+.dl{background:#F4F3EE;color:#1C2A27;border:1px solid #D8D5C8;border-radius:9px;padding:8px 11px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;}
+.up{background:#16715A;color:#fff;border:none;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.up:disabled{opacity:.5;}
+.foot{font-size:12px;color:#7A5E1E;background:#FFF7E8;border:1px solid #EAD9AE;border-radius:12px;padding:12px 13px;line-height:1.6;}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1C2A27;color:#fff;font-size:13px;border-radius:10px;padding:10px 16px;opacity:0;transition:opacity .25s;pointer-events:none;max-width:86%;text-align:center;}
+.toast.on{opacity:1;}
+</style></head><body><div class="wrap">
+<h1>📋 입사 서류 제출</h1>
+<div class="sub">서류를 준비하신 뒤, 사진을 찍거나 스캔해서 아래 항목별로 올려주세요.</div>
+<div class="namebox"><label>성함 (필수)</label><input id="hnm" placeholder="이름을 입력하세요"></div>
+<div class="sec"><h2>1. 기본 서류</h2><div class="note">직접 발급·준비하신 뒤 올려주세요.</div><div id="basic"><div class="note">불러오는 중…</div></div></div>
+<div class="sec"><h2>2. 회사 양식</h2><div class="note">⬇ 양식 버튼으로 내려받아 작성(서명)한 뒤, 사진·스캔본을 올려주세요.</div><div id="forms"></div></div>
+<div class="foot">올려주신 서류는 관리사무소로 바로 전달됩니다. 원본 지참이 필요한 서류는 첫 출근 시 가져와 주세요.</div>
+</div>
+<input id="f" type="file" accept="image/*,application/pdf" multiple style="display:none">
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+  var API="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/api", K=null, T=null, cnt={}, tt=null;
+  var inp=document.getElementById("f"), tst=document.getElementById("toast");
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function toast(m){tst.textContent=m;tst.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){tst.classList.remove("on");},2200);}
+  function rowHtml(sl,fm){
+    var f=fm[sl.k], btns="";
+    if(sl.g==="양식"&&f)btns+='<a class="dl" href="'+esc(f.url)+'" target="_blank" rel="noopener">⬇ 양식</a>';
+    btns+='<button class="up" data-k="'+esc(sl.k)+'" data-t="'+esc(sl.t)+'">📷 올리기</button>';
+    return '<div class="it"><div class="tl">'+esc(sl.t)+(sl.d?'<span class="dd">'+esc(sl.d)+'</span>':'')+'<span class="st" id="st_'+esc(sl.k)+'"></span></div><div class="bt">'+btns+'</div></div>';
+  }
+  fetch(API+"?api=forms").then(function(r){return r.json();}).then(function(j){
+    var basic="", forms="", fm=j.files||{};
+    (j.slots||[]).forEach(function(sl){if(sl.g==="기본")basic+=rowHtml(sl,fm);else forms+=rowHtml(sl,fm);});
+    document.getElementById("basic").innerHTML=basic; document.getElementById("forms").innerHTML=forms;
+    document.querySelectorAll(".up").forEach(function(b){b.addEventListener("click",function(){
+      var nm=document.getElementById("hnm").value.trim();
+      if(!nm){toast("맨 위에 성함을 먼저 입력해 주세요.");document.getElementById("hnm").focus();return;}
+      K=b.getAttribute("data-k");T=b.getAttribute("data-t");inp.click();
+    });});
+  }).catch(function(){document.getElementById("basic").innerHTML='<div class="note">목록을 불러오지 못했습니다. 잠시 후 다시 열어 주세요.</div>';});
+  inp.addEventListener("change",function(e){
+    var fs=Array.prototype.slice.call(e.target.files);e.target.value="";
+    if(!K||!fs.length)return;
+    var nm=document.getElementById("hnm").value.trim(), key=K, title=T, done=0;K=null;T=null;
+    toast("올리는 중… 잠시만요");
+    fs.forEach(function(file){
+      if(file.size>10*1024*1024){toast("파일이 너무 큽니다. 10MB 이하로 올려 주세요.");return;}
+      var r=new FileReader();
+      r.onload=function(){
+        var b64=String(r.result).split(",")[1];
+        fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"hireUpload",name:nm,key:key,title:title,fname:file.name,ftype:file.type,b64:b64})})
+          .then(function(x){return x.json();}).then(function(res){
+            if(res&&res.ok){done++;cnt[key]=(cnt[key]||0)+1;document.getElementById("st_"+key).textContent="✓ "+cnt[key]+"건 제출됨";toast("제출 완료 ("+done+"/"+fs.length+")");}
+            else{toast((res&&res.error)||"실패했습니다. 다시 시도해 주세요.");}
+          }).catch(function(err){toast("오류: "+err.message);});
+      };
+      r.readAsDataURL(file);
+    });
+  });
+})();
+</script></body></html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>모두의관리 설치</title><link rel="icon" type="image/png" href="logo.png">
+<style>
+body{font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;margin:0;background:#F2F1EC;color:#1C2A27;}
+.wrap{max-width:520px;margin:0 auto;padding:26px 18px 40px;}
+h1{text-align:center;font-size:22px;margin:0 0 6px;}.sub{text-align:center;color:#7A7A72;font-size:14px;margin-bottom:22px;}
+.btn{display:block;text-align:center;background:#16715A;color:#fff;text-decoration:none;font-size:21px;font-weight:800;border-radius:16px;padding:20px 10px;margin-bottom:24px;box-shadow:0 3px 10px rgba(22,113,90,.25);}
+.steps{background:#fff;border:1px solid #E4E1D6;border-radius:16px;padding:6px 16px;}
+.st{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid #F0EEE7;font-size:16px;line-height:1.5;}.st:last-child{border-bottom:none;}
+.n{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:#EAF3EF;color:#16715A;font-weight:800;display:flex;align-items:center;justify-content:center;}
+b{color:#16715A;}.tip{font-size:13px;color:#7A5E1E;background:#FFF7E8;border:1px solid #EAD9AE;border-radius:12px;padding:12px 14px;margin-top:16px;line-height:1.6;}
+.bad{background:#FBEDEA;border:1px solid #E8C4BC;color:#9A3327;border-radius:12px;padding:16px;font-size:15px;text-align:center;}
+</style></head><body><div class="wrap">
+<img src="logo.png" alt="모두의관리" style="width:84px;height:84px;display:block;margin:0 auto 14px">
+<h1>모두의관리 앱 설치</h1><div class="sub">로그인 없이 버튼 한 번이면 됩니다</div>
+<div id="body"><div class="sub">불러오는 중…</div></div></div>
+<script>
+(function(){
+  var API="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/api", el=document.getElementById("body");
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  fetch(API+"?api=install").then(function(r){return r.json();}).then(function(j){
+    if(!j.ok||!j.apk){el.innerHTML='<div class="bad">아직 설치 파일이 준비되지 않았습니다.<br>관리사무소에 문의해 주세요.</div>';return;}
+    el.innerHTML='<a class="btn" href="'+esc(j.apk.url)+'">⬇ 모두의관리 설치 파일 받기</a>'
+      +'<div class="steps">'
+      +'<div class="st"><div class="n">1</div><div>위 초록 버튼을 누르면 파일이 받아집니다.</div></div>'
+      +'<div class="st"><div class="n">2</div><div>화면 위나 아래에 뜨는 <b>설치 파일(.apk)</b>을 누르세요.<br><span style="font-size:13.5px;color:#8A8A80">(안 보이면 [내 파일] 앱 → 다운로드)</span></div></div>'
+      +'<div class="st"><div class="n">3</div><div>"설치가 차단됨"이 뜨면 <b>[설정]</b> → <b>이 출처 허용</b> 켜기 → 뒤로</div></div>'
+      +'<div class="st"><div class="n">4</div><div><b>[설치]</b> 누르기. 경고가 뜨면 <b>[그래도 설치]</b></div></div>'
+      +'<div class="st"><div class="n">5</div><div><b>[열기]</b> → 끝! 바탕화면에 모두의관리 아이콘이 생깁니다.</div></div>'
+      +'</div>'
+      +'<div class="tip">카톡 안에서 버튼이 안 눌리면, 오른쪽 위 <b>⋮</b> → <b>다른 브라우저로 열기</b>를 누른 뒤 다시 버튼을 눌러 주세요.</div>';
+  }).catch(function(){el.innerHTML='<div class="bad">불러오지 못했습니다. 잠시 후 다시 열어 주세요.</div>';});
+})();
+</script></body></html>

@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#10893E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="모두의관리">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="우리 건물 관리비, 사진 찍으면 끝납니다. (주)포컴">
+<title>모두의관리 · 간편 관리</title>
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<!--
+  ============================================================
+   모두의관리  v1.1
+   Publisher : (주)포컴 · 230-81-02966 · 02-423-7723
+   ------------------------------------------------------------
+   v1.1 바뀐 점
+   · 첫 화면에서 모드를 고르지 않습니다.
+     건물 종류와 세대 수를 넣으면 앱이 간편/상세를 판정하고 이유를 보여줍니다.
+   · 검침 방식(정액 / 세대별 계량기)은 모드가 아니라 설정으로 처리합니다.
+   ------------------------------------------------------------
+   Anthony 님께
+   · 색·글자크기는 아래 :root 안에서만 고치면 전 화면에 반영됩니다.
+   · 화면 문구는 <section class="scr"> 안에 한글 그대로 있습니다.
+   · 판정 기준은 맨 아래 judge() 함수에 있습니다.
+   · 확인은 크롬에서. 드림위버 디자인뷰는 요즘 CSS를 잘 못 그립니다.
+  ============================================================
+-->
+<style>
+:root{
+  /* ===== 색 : 여기만 바꾸면 전체가 바뀝니다 ===== */
+  --brand:#10893E; --brand-dark:#0B6B30; --brand-light:#E6F4EA;
+  --danger:#DC2626; --danger-light:#FEE9E9;
+  --warn:#D97706;   --warn-light:#FEF3E2;
+  --info:#2563EB;   --info-light:#E8F0FE;
+  --help:#0D9488;   --help-light:#E0F2F1;
+  --family:#7C3AED; --family-light:#F3EDFF;
+  --ink:#0F172A; --ink2:#475569; --ink3:#94A3B8; --line:#D8DEE6; --bg:#F5F7FA;
+
+  /* ===== 글자 크기 (어르신용이라 크게) ===== */
+  --fs-title:25px; --fs-title2:21px; --fs-body:16px; --fs-small:14px;
+  --fs-btn:19px; --fs-giant:44px;
+  --radius:15px; --btn-h:60px;
+}
+html.big  { --fs-title:29px; --fs-title2:24px; --fs-body:19px; --fs-small:16px; --fs-btn:22px; --fs-giant:50px; --btn-h:66px; }
+html.huge { --fs-title:34px; --fs-title2:28px; --fs-body:22px; --fs-small:18px; --fs-btn:25px; --fs-giant:56px; --btn-h:74px; }
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Malgun Gothic','맑은 고딕',sans-serif;
+  background:#E8EAEE;color:var(--ink);-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center}
+button,input,select{font-family:inherit;color:inherit}
+button{border:none;background:none;cursor:pointer}
+
+#app{width:100%;max-width:430px;height:100vh;max-height:920px;background:#fff;
+  display:flex;flex-direction:column;position:relative;overflow:hidden;
+  box-shadow:0 20px 60px -20px rgba(15,23,42,.4)}
+@media(min-width:520px){#app{border-radius:26px;height:88vh}}
+
+.scr{display:none;flex:1;flex-direction:column;overflow-y:auto;
+  padding:20px 20px calc(20px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+.scr.on{display:flex;animation:fade .2s ease}
+.scr.center{justify-content:center;align-items:center;text-align:center}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+h1{font-size:var(--fs-title);font-weight:800;line-height:1.35;letter-spacing:-.6px}
+h2{font-size:var(--fs-title2);font-weight:800;line-height:1.4;letter-spacing:-.4px}
+p{font-size:var(--fs-body);color:var(--ink2);line-height:1.6}
+.sub{font-size:var(--fs-small);color:var(--ink3);line-height:1.55}
+.giant{font-size:var(--fs-giant);font-weight:800;letter-spacing:-2px;line-height:1.1}
+.kor{font-size:var(--fs-small);color:var(--ink3);font-weight:600;margin-top:4px}
+.mt{margin-top:14px}.mt2{margin-top:22px}.mb{margin-bottom:14px}.mb2{margin-bottom:22px}
+.grow{flex:1}.cc{text-align:center}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:var(--btn-h);border-radius:var(--radius);font-size:var(--fs-btn);
+  font-weight:800;background:var(--brand);color:#fff}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.4}
+.btn.gray{background:#EEF1F5;color:var(--ink2)}
+.btn.outline{background:#fff;color:var(--brand-dark);border:2.5px solid var(--brand)}
+.btn.help{background:var(--help)}.btn.warn{background:var(--warn)}.btn.danger{background:var(--danger)}
+.btn.small{min-height:52px;font-size:calc(var(--fs-btn) - 2px)}
+.btn + .btn{margin-top:10px}
+.linkbtn{display:block;width:100%;text-align:center;font-size:var(--fs-small);
+  color:var(--ink3);font-weight:600;text-decoration:underline;margin-top:16px;padding:6px}
+
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  border:2.5px solid var(--line);border-radius:var(--radius);padding:16px 17px;
+  margin-bottom:11px;font-size:calc(var(--fs-body) + 2px);font-weight:700;background:#fff}
+.opt small{display:block;font-size:var(--fs-small);font-weight:600;color:var(--ink3);margin-top:2px}
+.opt.on{border-color:var(--brand);background:var(--brand-light);color:var(--brand-dark)}
+.opt.on small{color:var(--brand-dark);opacity:.8}
+.opt .em{font-size:26px;flex:0 0 auto}
+
+.box{background:var(--bg);border-radius:14px;padding:15px 16px}
+.box.g{background:var(--brand-light)}.box.g,.box.g p{color:var(--brand-dark)}
+.box.y{background:var(--warn-light)}.box.y,.box.y p{color:#92400E}
+.box.r{background:var(--danger-light)}.box.r,.box.r p{color:var(--danger)}
+.box.b{background:var(--info-light)}.box.b,.box.b p{color:#1D4ED8}
+.box.t{background:var(--help-light)}.box.t,.box.t p{color:var(--help)}
+.box.v{background:var(--family-light)}.box.v,.box.v p{color:var(--family)}
+.box + .box{margin-top:10px}
+.box b{font-weight:800}
+
+.label{font-size:var(--fs-small);font-weight:700;color:var(--ink2);margin-bottom:7px}
+.inp{width:100%;border:2.5px solid var(--line);border-radius:14px;padding:15px;
+  font-size:calc(var(--fs-body) + 4px);font-weight:700;background:#fff}
+.inp:focus{outline:none;border-color:var(--brand)}
+.inp.ctr{text-align:center;letter-spacing:2px}
+.inp.num{text-align:right}
+.row{display:flex;align-items:center;gap:10px}
+.row .inp{width:130px;padding:12px}
+.row .nm{flex:1;font-size:calc(var(--fs-body) + 1px);font-weight:700}
+
+.steps{display:flex;gap:5px;margin-bottom:8px}
+.steps i{flex:1;height:6px;border-radius:6px;background:var(--line)}
+.steps i.on{background:var(--brand)}
+.saved{display:flex;align-items:center;justify-content:flex-end;gap:5px;
+  font-size:calc(var(--fs-small) - 1px);font-weight:700;color:var(--brand);margin-bottom:12px;min-height:18px}
+
+.card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:15px;
+  border-radius:14px;border:2px solid var(--line);margin-bottom:9px;background:#fff}
+.card.ok{border-color:var(--brand);background:var(--brand-light)}
+.card.no{border-color:var(--danger);background:var(--danger-light)}
+.card .ho{font-size:calc(var(--fs-body) + 2px);font-weight:800}
+.card .nn{font-size:var(--fs-small);color:var(--ink3);font-weight:600}
+.card .rt{margin-left:auto;font-size:calc(var(--fs-body) + 1px);font-weight:800;text-align:right}
+
+.nav{display:none;border-top:2px solid #EEF1F5;background:#fff;padding-bottom:env(safe-area-inset-bottom)}
+.nav.on{display:flex}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:9px 4px;font-size:calc(var(--fs-small) - 2px);font-weight:700;color:var(--ink3)}
+.nav button.on{color:var(--brand)}
+.nav .ic{font-size:22px;line-height:1}
+
+.dim{position:absolute;inset:0;background:rgba(15,23,42,.55);display:none;align-items:flex-end;z-index:50}
+.dim.on{display:flex;animation:fade .18s ease}
+.sheet{background:#fff;border-radius:22px 22px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom));width:100%;max-height:88%;overflow-y:auto}
+
+.toast{position:absolute;left:20px;right:20px;bottom:90px;background:#0F172A;color:#fff;
+  padding:15px 18px;border-radius:14px;font-size:var(--fs-body);font-weight:700;text-align:center;
+  z-index:80;opacity:0;transform:translateY(16px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+.pub{border-top:1px solid #EEF1F5;padding-top:14px;margin-top:18px;text-align:center;width:100%}
+.pub .pn{font-size:var(--fs-small);font-weight:800;color:var(--ink2)}
+.pub .pd{font-size:calc(var(--fs-small) - 2px);color:var(--ink3);line-height:1.7;margin-top:4px}
+
+.cam{flex:1;min-height:200px;background:#111827;border-radius:16px;position:relative;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:14px}
+.cam .frame{width:78%;height:56%;border:3px dashed rgba(255,255,255,.85);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.9);
+  font-size:var(--fs-small);font-weight:700;text-align:center;line-height:1.6;padding:10px}
+.cam .tip{position:absolute;bottom:12px;left:12px;right:12px;background:rgba(0,0,0,.65);color:#fff;
+  font-size:calc(var(--fs-small) - 1px);font-weight:600;padding:10px;border-radius:11px;text-align:center}
+.cam img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.spin{width:44px;height:44px;border:5px solid rgba(255,255,255,.25);border-top-color:#fff;
+  border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.hidden{display:none !important}
+/* ===== 뒤로 가기 줄 ===== */
+.topbar{display:none;align-items:center;flex:0 0 auto;padding:12px 14px 0}
+.topbar.on{display:flex}
+.backbtn{display:flex;align-items:center;gap:7px;padding:11px 16px 11px 12px;border-radius:13px;
+  font-size:var(--fs-body);font-weight:800;color:var(--ink2);background:#F1F3F6}
+.backbtn:active{background:#E4E8ED}
+.badge{display:inline-block;font-size:calc(var(--fs-small) - 1px);font-weight:800;
+  padding:4px 11px;border-radius:20px;background:var(--brand);color:#fff}
+.badge.pro{background:var(--info)}
+/* 모두의관리 상단바 */
+body{flex-direction:column;justify-content:flex-start}
+#facBar{width:100%;max-width:430px;flex:none}
+#facBar button,#facBar span{white-space:nowrap}
+#app{flex:1 1 auto;min-height:0;height:auto;max-height:none}
+@media(min-width:520px){body{justify-content:center}#facBar{border-radius:20px 20px 0 0}#app{flex:none;height:calc(88vh - 46px);max-height:870px;border-radius:0 0 26px 26px}}
+</style>
+</head>
+<body>
+<div id="facBar" style="position:relative;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:8px;background:#212D64;color:#fff;padding:7px 12px;font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif">
+  <button onclick="facHome()" style="border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-weight:800;font-size:13px;border-radius:999px;padding:6px 12px;cursor:pointer;font-family:inherit">⌂ 처음으로</button>
+  <span style="font-size:12.5px;font-weight:800;opacity:.9">모두의관리 · 간편 관리</span>
+  <span id="facSync" style="font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px;background:#E4F2EA;color:#1F6B45">☁ 저장됨</span>
+</div>
+
+<div id="app">
+
+<header class="topbar" id="topbar">
+  <button class="backbtn" onclick="back()">← 뒤로</button>
+</header>
+
+<!-- ================= 첫 화면 ================= -->
+<section class="scr on center" id="s-splash">
+  <img src="data:image/png;base64,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" alt="모두의관리" style="width:96px;height:96px;display:block;margin-bottom:20px">
+  <h1>모두의관리</h1>
+  <p class="mt">우리 건물 관리비,<br>사진 찍으면 끝납니다</p>
+  <div style="width:100%;margin-top:34px">
+    <button class="btn" onclick="go('phone')">시작하기</button>
+    <button class="btn gray" onclick="resumeOrStart()">이미 가입했어요</button>
+  </div>
+  <div class="pub">
+    <div class="pn">(주)포컴</div>
+    <div class="pd">사업자등록번호 230-81-02966<br>02-423-7723 · 평일 9시~6시</div>
+  </div>
+</section>
+
+<!-- ================= 휴대폰 ================= -->
+<section class="scr" id="s-phone">
+  <div class="steps"><i class="on"></i><i></i><i></i><i></i></div>
+  <div class="saved"></div>
+  <h2>휴대폰 번호를<br>알려주세요</h2>
+  <p class="sub mb2" style="margin-top:6px">비밀번호는 만들지 않습니다</p>
+  <input class="inp ctr" id="i-phone" type="tel" inputmode="numeric" placeholder="010-0000-0000">
+  <div class="box b mt"><p class="sub" style="font-weight:700;color:#1D4ED8">문자로 숫자 6자리가 옵니다.<br>그 숫자만 넣으시면 돼요.</p></div>
+  <div class="grow"></div>
+  <button class="btn" onclick="sendOtp()">문자 받기</button>
+</section>
+
+<!-- ================= 인증번호 ================= -->
+<section class="scr" id="s-otp">
+  <div class="steps"><i class="on"></i><i></i><i></i><i></i></div>
+  <div class="saved">✓ 저장됨</div>
+  <h2>문자로 온 숫자<br>6자리를 넣어주세요</h2>
+  <p class="sub mb2" id="otp-to" style="margin-top:6px"></p>
+  <input class="inp ctr" id="i-otp" type="tel" inputmode="numeric" maxlength="6" placeholder="000000">
+  <div class="box y mt"><p class="sub" style="font-weight:700">지금은 시험판이라 <b>아무 숫자나</b> 넣으셔도 넘어갑니다.</p></div>
+  <div class="grow"></div>
+  <button class="btn" onclick="go('me')">확인</button>
+  <button class="linkbtn" onclick="callHelp()">문자가 안 와요 · 전화로 도와드려요</button>
+</section>
+
+<!-- ================= 내 정보 ================= -->
+<section class="scr" id="s-me">
+  <div class="steps"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+  <div class="saved">✓ 저장됨</div>
+  <h2 class="mb2">성함과 계좌를<br>알려주세요</h2>
+  <div class="label">성함</div>
+  <input class="inp mb" id="i-name" placeholder="김순자">
+  <div class="label">관리비 받으실 통장</div>
+  <input class="inp" id="i-bank" placeholder="국민 123456-01-234567">
+  <div class="box y mt"><p class="sub" style="font-weight:700">이 통장으로 세입자가 <b>직접</b> 넣습니다.<br>포컴은 돈을 만지지 않아요.</p></div>
+  <div class="grow"></div>
+  <button class="btn" onclick="saveMe()">다음</button>
+</section>
+
+<!-- ================= 건물 주소 ================= -->
+<section class="scr" id="s-addr">
+  <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+  <div class="saved">✓ 저장됨</div>
+  <h2>건물을 알려주세요</h2>
+  <p class="sub mb2" style="margin-top:6px">건물 이름은 편하신 대로 부르시면 됩니다</p>
+  <div class="label">건물 이름</div>
+  <input class="inp mb" id="i-bname" placeholder="예) 삼성빌라">
+  <div class="label">주소</div>
+  <input class="inp" id="i-baddr" placeholder="예) 서울 송파구 석촌동 1-23">
+  <div class="box b mt"><p class="sub" style="font-weight:700;color:#1D4ED8">나중에는 주소만 넣으면 세대 수까지<br>저절로 채워지게 만들 예정입니다.</p></div>
+  <div class="grow"></div>
+  <button class="btn" onclick="saveAddr()">다음</button>
+</section>
+
+<!-- ================= 건물 종류 ================= -->
+<section class="scr" id="s-btype">
+  <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+  <div class="saved">✓ 저장됨</div>
+  <h2>어떤 건물인가요?</h2>
+  <p class="sub mb2" style="margin-top:6px">건물마다 지켜야 할 법이 달라서 여쭙습니다</p>
+  <button class="opt" data-v="villa" onclick="pickType(this)"><span class="em">🏘</span><div>빌라 · 다세대 · 연립<small>집집마다 등기가 따로 있어요</small></div></button>
+  <button class="opt" data-v="dagagu" onclick="pickType(this)"><span class="em">🏠</span><div>다가구 · 원룸 건물<small>건물 전체가 한 분 소유예요</small></div></button>
+  <button class="opt" data-v="officetel" onclick="pickType(this)"><span class="em">🏢</span><div>오피스텔<small></small></div></button>
+  <button class="opt" data-v="store" onclick="pickType(this)"><span class="em">🏬</span><div>상가 · 사무실<small></small></div></button>
+  <div class="grow"></div>
+  <button class="btn" onclick="afterBtype()">다음</button>
+</section>
+
+<!-- ================= 세대 수 ================= -->
+<section class="scr" id="s-size">
+  <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+  <div class="saved">✓ 저장됨</div>
+  <h2 id="sz-q">몇 집인가요?</h2>
+  <p class="sub mb2" style="margin-top:6px" id="sz-sub">관리비를 걷는 집 수를 넣어주세요</p>
+  <input class="inp num" id="i-count" type="tel" inputmode="numeric" value="12" style="font-size:calc(var(--fs-giant) - 8px);text-align:center">
+  <div class="box mt"><p class="sub" style="font-weight:600">비어 있는 집도 넣어주세요.<br>나중에 공실로 표시할 수 있습니다.</p></div>
+  <div class="grow"></div>
+  <button class="btn" onclick="doJudge()">다음</button>
+</section>
+
+<!-- ================= 판정 결과 ================= -->
+<section class="scr" id="s-judge">
+  <div class="saved">✓ 저장됨</div>
+  <div class="box" style="background:var(--bg);margin-bottom:16px">
+    <div style="font-size:calc(var(--fs-body)+4px);font-weight:800" id="j-name"></div>
+    <div class="sub" style="margin-top:3px" id="j-meta"></div>
+  </div>
+  <h2 id="j-head"></h2>
+  <div class="box mt" id="j-why" style="line-height:1.9"></div>
+  <div class="grow"></div>
+  <button class="btn" id="j-ok">네, 이렇게 할게요</button>
+  <button class="linkbtn" onclick="flipMode()" id="j-flip">다른 방식으로 볼래요</button>
+</section>
+
+<!-- ================= 건물 종합 관리 준비 중 ================= -->
+<section class="scr" id="s-notyet">
+  <div style="font-size:52px;text-align:center;margin-bottom:14px">🛠</div>
+  <h2 class="cc">건물 종합 관리는<br>아직 준비 중입니다</h2>
+  <div class="box y mt2">
+    <p style="font-weight:700;line-height:1.8">
+      큰 건물·오피스텔·상가에 필요한 기능은<br>지금 만들고 있습니다.<br><br>
+      준비되면 <b>제일 먼저 알려드릴게요.</b>
+    </p>
+  </div>
+  <div class="mt2">
+    <div class="label">연락처 (알림 받으실 번호)</div>
+    <input class="inp" id="i-waitlist" type="tel" inputmode="numeric" placeholder="010-0000-0000">
+  </div>
+  <div class="grow"></div>
+  <button class="btn" onclick="facGo('facpro')">건물 종합 관리 열기</button>
+  <button class="btn gray" onclick="forceEasy()">그래도 간편 관리로 써볼래요</button>
+  <div class="box t mt"><p class="sub" style="font-weight:700">☎ 문의 02-423-7723 · (주)포컴</p></div>
+</section>
+
+<!-- ================= 세대 목록 ================= -->
+<section class="scr" id="s-units">
+  <div class="saved">✓ 저장됨</div>
+  <h2 id="u-title"></h2>
+  <p class="sub mb2" style="margin-top:6px">호실 이름은 다음 화면에서 고칠 수 있어요</p>
+  <div id="u-list" style="flex:1"></div>
+  <button class="btn" onclick="startTenant()">맞아요, 다음</button>
+</section>
+
+<!-- ================= 세입자 ================= -->
+<section class="scr" id="s-tenant">
+  <div class="saved" id="t-saved"></div>
+  <h2 id="t-title"></h2>
+  <p class="sub mb2" id="t-count" style="margin-top:6px"></p>
+  <div class="label">호실</div>
+  <input class="inp mb" id="i-ho">
+  <div class="label">이름</div>
+  <input class="inp mb" id="i-tname" placeholder="비워두셔도 됩니다">
+  <div class="label">전화번호</div>
+  <input class="inp" id="i-ttel" type="tel" inputmode="numeric" placeholder="010-0000-0000">
+  <div class="grow"></div>
+  <button class="btn" onclick="nextTenant()" id="t-next">다음 집</button>
+  <button class="linkbtn" onclick="askExit()">그만하고 나중에 할래요</button>
+</section>
+
+<!-- ================= 검침 방식 ================= -->
+<section class="scr" id="s-meter">
+  <div class="saved">✓ 저장됨</div>
+  <h2>전기·수도 계량기가<br>어떻게 되어 있나요?</h2>
+  <p class="sub mb2" style="margin-top:6px">이게 매달 하실 일을 정합니다</p>
+  <button class="opt" data-v="even" onclick="pick(this,'meter')"><span class="em">📄</span>
+    <div>건물에 하나만 있어요<small>고지서가 한 장으로 나옵니다 · 사진 두 장이면 끝</small></div></button>
+  <button class="opt" data-v="each" onclick="pick(this,'meter')"><span class="em">🔢</span>
+    <div>집집마다 있어요<small>매달 집집마다 숫자를 적어야 합니다</small></div></button>
+  <div class="box b mt"><p class="sub" style="font-weight:700;color:#1D4ED8">모르시겠으면 <b>위쪽</b>을 고르세요.<br>빌라는 대부분 위쪽입니다. 나중에 바꿀 수 있어요.</p></div>
+  <div class="grow"></div>
+  <button class="btn" onclick="go('fixed')">다음</button>
+</section>
+
+<!-- ================= 고정비 ================= -->
+<section class="scr" id="s-fixed">
+  <div class="saved">✓ 저장됨</div>
+  <h2>매달 똑같이 걷는<br>돈이 있으세요?</h2>
+  <p class="sub mb2" style="margin-top:6px">한 집당 얼마씩 걷으시는지</p>
+  <div id="f-list"></div>
+  <button class="linkbtn" style="text-align:left;text-decoration:none;color:var(--brand);font-weight:800" onclick="addFixed()">＋ 다른 항목 넣기</button>
+  <div class="grow"></div>
+  <div class="box g"><div style="display:flex;align-items:center"><p style="flex:1;font-weight:800">한 집당</p>
+    <div style="font-size:calc(var(--fs-body) + 6px);font-weight:800" id="f-total">0원</div></div></div>
+  <button class="btn small mt" onclick="afterFixed()">다음</button>
+</section>
+
+<!-- ================= 도와줄 사람 ================= -->
+<section class="scr" id="s-helper">
+  <div class="saved">✓ 저장됨</div>
+  <h2>막히실 때<br>누가 도와드릴까요?</h2>
+  <p class="sub mb2" style="margin-top:6px">둘 다 골라도 돼요</p>
+  <button class="opt on" id="o-center" style="border-color:var(--help);background:var(--help-light);color:var(--help)" onclick="toggleHelper('center')">
+    <span class="em">☎</span><div>포컴 도움센터<small style="color:var(--help)">전화 한 통이면 됩니다 · 무료</small></div></button>
+  <button class="opt" id="o-family" onclick="toggleHelper('family')">
+    <span class="em">👨‍👩‍👧</span><div>가족<small>자녀·조카분을 부르실 수 있어요</small></div></button>
+  <div id="family-box" class="hidden">
+    <div class="label">누구신가요?</div>
+    <input class="inp mb" id="i-fname" placeholder="예) 아들 민수">
+    <div class="label">전화번호</div>
+    <input class="inp" id="i-ftel" type="tel" inputmode="numeric" placeholder="010-0000-0000">
+  </div>
+  <div class="box t mt"><p class="sub" style="font-weight:700">도움센터는 <b>항상 켜져 있습니다.</b><br>가족이 없어도 괜찮아요.</p></div>
+  <div class="grow"></div>
+  <button class="btn" onclick="finishSetup()">다음</button>
+</section>
+
+<!-- ================= 준비 끝 ================= -->
+<section class="scr center" id="s-done">
+  <div style="width:96px;height:96px;border-radius:50%;background:var(--brand-light);display:grid;place-items:center;font-size:46px;margin-bottom:18px">✓</div>
+  <h1>다 됐습니다</h1>
+  <p class="mt" id="d-msg"></p>
+  <div class="box g mt2" style="width:100%"><p style="font-weight:800" id="d-how"></p></div>
+  <div class="box t" style="width:100%"><p class="sub" style="font-weight:700">막히시면 <b>02-423-7723</b><br>평일 9시~6시</p></div>
+  <div style="width:100%;margin-top:22px"><button class="btn" onclick="go('home')">시작하기</button></div>
+</section>
+
+<!-- ================= 이어가기 ================= -->
+<section class="scr" id="s-resume">
+  <p class="sub" id="r-bldg"></p>
+  <h1 style="margin:6px 0 18px">다시 오셨네요<br><span id="r-name"></span>님</h1>
+  <div class="box y" style="padding:20px">
+    <p style="font-weight:800">하시던 것 이어서</p>
+    <h2 style="color:#92400E;margin-top:6px" id="r-what"></h2>
+    <p style="font-weight:800;margin-top:12px" id="r-left"></p>
+    <button class="btn warn" style="margin-top:14px" onclick="resumeGo()">이어서 하기</button>
+  </div>
+  <div class="box t mt"><p class="sub" style="font-weight:700">☎ 어려우시면 <b>대신 넣어드릴게요</b><br>02-423-7723</p></div>
+  <div class="grow"></div>
+  <button class="btn gray" onclick="go('home')">그냥 처음 화면으로</button>
+</section>
+
+<!-- ================= 홈 ================= -->
+<section class="scr" id="s-home">
+  <p class="sub" id="h-bldg"></p>
+  <h1 style="margin:6px 0 18px">안녕하세요<br><span id="h-name"></span>님</h1>
+  <div id="h-todo" class="box y hidden" style="margin-bottom:12px">
+    <p style="font-weight:800">아직 안 끝난 일</p>
+    <div style="font-size:calc(var(--fs-body) + 2px);font-weight:800;color:#92400E;margin-top:6px" id="h-todo-t"></div>
+    <button class="btn warn small" onclick="resumeGo()">이어서 하기</button>
+  </div>
+  <div class="box g" style="padding:20px">
+    <p style="font-weight:800;margin-bottom:6px">이번 달 할 일</p>
+    <h2 style="color:var(--brand-dark)" id="h-task"></h2>
+    <p class="sub mt" style="color:var(--brand-dark);font-weight:700" id="h-task-sub"></p>
+    <button class="btn" style="margin-top:16px" id="h-go">지금 하기</button>
+  </div>
+  <div class="card mt" style="border-color:#EEF1F5">
+    <div><div class="ho">지난달 걷은 돈</div></div>
+    <div class="rt" id="h-last">-</div>
+  </div>
+  <div class="grow"></div>
+</section>
+
+<!-- ================= 사진 안내 ================= -->
+<section class="scr" id="s-guide">
+  <div class="steps"><i class="on"></i><i></i><i></i></div>
+  <h2 style="margin:10px 0 16px">고지서 두 장을<br>찍어주세요</h2>
+  <div class="box" style="display:flex;gap:12px;align-items:center">
+    <div style="font-size:32px">⚡</div>
+    <div><div style="font-size:calc(var(--fs-body)+1px);font-weight:800">전기요금</div><div class="sub">건물로 나온 고지서</div></div></div>
+  <div class="box" style="display:flex;gap:12px;align-items:center">
+    <div style="font-size:32px">💧</div>
+    <div><div style="font-size:calc(var(--fs-body)+1px);font-weight:800">수도요금</div><div class="sub">건물로 나온 고지서</div></div></div>
+  <div class="box y mt"><p class="sub" style="font-weight:700">종이가 없으면 <b>카톡으로 온 것</b>을<br>화면 캡처해서 올려도 돼요</p></div>
+  <div class="grow"></div>
+  <button class="btn" onclick="openCam('elec')">사진 찍기</button>
+  <button class="linkbtn" onclick="skipCam('elec')">사진 없이 숫자만 넣을래요</button>
+</section>
+
+<!-- ================= 카메라 ================= -->
+<section class="scr" id="s-cam">
+  <h2 id="cam-title" style="font-size:calc(var(--fs-title2) - 2px);margin-bottom:10px"></h2>
+  <div class="cam" id="cam-view"></div>
+  <input type="file" accept="image/*" capture="environment" id="i-file" class="hidden" onchange="gotPhoto(event)">
+  <button class="btn" onclick="document.getElementById('i-file').click()" id="cam-btn">📷 사진 찍기</button>
+  <button class="linkbtn" onclick="skipCam(camKind)">사진 없이 숫자만 넣을래요</button>
+</section>
+
+<!-- ================= 읽은 숫자 확인 ================= -->
+<section class="scr" id="s-read">
+  <div class="steps"><i class="on"></i><i class="on"></i><i></i></div>
+  <h2 style="margin:10px 0 14px" id="rd-title"></h2>
+  <div class="box g cc" style="padding:22px">
+    <p style="font-weight:700" id="rd-label"></p>
+    <input class="inp ctr" id="i-amt" type="tel" inputmode="numeric"
+      style="border:none;background:transparent;font-size:var(--fs-giant);font-weight:800;color:var(--brand-dark);padding:6px 0;margin-top:4px" oninput="korHint()">
+    <div class="kor" id="rd-kor" style="color:var(--brand-dark)"></div>
+  </div>
+  <div class="box" id="rd-last" style="margin-top:10px"></div>
+  <div class="box y hidden" id="rd-warn" style="margin-top:10px"><p class="sub" style="font-weight:800;line-height:1.7" id="rd-warn-t"></p></div>
+  <div class="grow"></div>
+  <button class="btn" onclick="confirmRead()">네, 맞아요</button>
+  <button class="btn gray" onclick="openCam(camKind)">사진 다시 찍기</button>
+  <button class="linkbtn" style="color:var(--help)" onclick="callHelp()">☎ 도움센터에 물어보기</button>
+</section>
+
+<!-- ================= 세대별 검침 ================= -->
+<section class="scr" id="s-meterin">
+  <div class="saved" id="mi-saved"></div>
+  <h2 id="mi-title"></h2>
+  <p class="sub mb2" id="mi-count" style="margin-top:6px"></p>
+  <div id="mi-first" class="box y mb hidden">
+    <p class="sub" style="font-weight:800;line-height:1.7">처음이라 <b>지난달 숫자</b>도 함께 받습니다.<br>모르시면 비워두셔도 됩니다.</p>
+  </div>
+  <div class="label">전기 계량기 숫자 <span id="mi-e-now" style="color:var(--brand)"></span></div>
+  <input class="inp num mb" id="i-me" type="tel" inputmode="numeric" placeholder="0">
+  <div id="mi-e0" class="hidden" style="margin-top:-8px;margin-bottom:14px">
+    <div class="label">└ 지난달 전기 숫자</div>
+    <input class="inp num" id="i-me0" type="tel" inputmode="numeric" placeholder="모르면 비워두세요">
+  </div>
+  <div class="label">수도 계량기 숫자</div>
+  <input class="inp num" id="i-mw" type="tel" inputmode="numeric" placeholder="0">
+  <div id="mi-w0" class="hidden" style="margin-top:10px">
+    <div class="label">└ 지난달 수도 숫자</div>
+    <input class="inp num" id="i-mw0" type="tel" inputmode="numeric" placeholder="모르면 비워두세요">
+  </div>
+  <div class="box b mt"><p class="sub" style="font-weight:700;color:#1D4ED8">계량기에 보이는 숫자를 <b>그대로</b> 적어주세요.<br>쓴 양은 저희가 계산합니다.</p></div>
+  <div class="grow"></div>
+  <button class="btn" onclick="nextMeter()" id="mi-next">다음 집</button>
+</section>
+
+<!-- ================= 계산 결과 ================= -->
+<section class="scr" id="s-result">
+  <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+  <h2 style="margin:10px 0 2px" id="rs-head"></h2>
+  <p class="sub mb" style="margin-top:4px">계산은 다 끝냈어요</p>
+  <div class="box g cc" style="padding:20px">
+    <div class="giant" style="color:var(--brand-dark)" id="rs-each">0</div>
+    <div class="kor" style="color:var(--brand-dark)" id="rs-kor"></div>
+  </div>
+  <div class="box mt" id="rs-break" style="line-height:2.1"></div>
+  <div id="rs-list" class="mt"></div>
+  <div class="grow"></div>
+  <button class="btn" onclick="askSend()">이대로 보낼게요</button>
+</section>
+
+<!-- ================= 보냈습니다 ================= -->
+<section class="scr center" id="s-sent">
+  <div style="width:96px;height:96px;border-radius:50%;background:var(--brand-light);display:grid;place-items:center;font-size:44px;margin-bottom:16px">✓</div>
+  <h1>보냈습니다</h1>
+  <p class="mt" id="sent-msg"></p>
+  <div class="box mt2" style="width:100%"><p class="sub" style="font-weight:700">이번 달은 끝났어요.<br>돈이 들어오면 표시해 주세요.</p></div>
+  <div style="width:100%;margin-top:20px">
+    <button class="btn" onclick="go('money')">누가 냈나 보기</button>
+    <button class="btn gray" onclick="go('home')">처음 화면으로</button>
+  </div>
+</section>
+
+<!-- ================= 돈 확인 ================= -->
+<section class="scr" id="s-money">
+  <h2 id="m-title">관리비</h2>
+  <p class="sub mb" id="m-sub" style="margin-top:4px"></p>
+  <div class="box b mb"><p class="sub" style="font-weight:700;color:#1D4ED8">통장을 보시고 <b>낸 집을 눌러</b> 표시해 주세요</p></div>
+  <div id="m-list" style="flex:1"></div>
+</section>
+
+<!-- ================= 안 낸 집 ================= -->
+<section class="scr" id="s-unpaid">
+  <h2 id="up-title"></h2>
+  <div class="box r mt cc" style="padding:18px">
+    <p style="font-weight:700">아직 안 냈어요</p>
+    <div style="font-size:calc(var(--fs-giant) - 12px);font-weight:800;margin-top:6px" id="up-amt"></div>
+  </div>
+  <div class="mt2">
+    <button class="btn" id="up-call">📞 전화 걸기</button>
+    <button class="btn outline" id="up-sms">💬 문자로 알리기</button>
+  </div>
+  <div class="box mt"><p class="sub" style="font-weight:600;line-height:1.65">문자 내용은 <b>미리 써 뒀어요.</b><br>누르기만 하시면 됩니다.</p></div>
+  <div class="grow"></div>
+  <button class="btn gray" onclick="markPaid(upIdx,true)">이 집은 냈어요</button>
+  <button class="linkbtn" onclick="go('money')">뒤로</button>
+</section>
+
+<!-- ================= 우리 건물 ================= -->
+<section class="scr" id="s-bldginfo">
+  <h2 class="mb" id="bi-name"></h2>
+  <p class="sub" id="bi-addr"></p>
+  <div class="mt mb"><span class="badge" id="bi-mode"></span></div>
+  <div class="box mb" id="bi-facts" style="line-height:2"></div>
+  <div class="label">세대 목록 (눌러서 고치기)</div>
+  <div id="bi-list" style="flex:1"></div>
+  <button class="btn gray" onclick="go('fixed')">매달 걷는 돈 고치기</button>
+  <button class="btn gray" onclick="go('meter')">계량기 방식 고치기</button>
+</section>
+
+<!-- ================= 도움 ================= -->
+<section class="scr" id="s-help">
+  <h1 class="mb">도움</h1>
+  <button class="box t" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:none" onclick="callHelp()">
+    <div style="font-size:30px">☎</div>
+    <div style="flex:1"><div style="font-size:calc(var(--fs-body)+2px);font-weight:800">전화로 도와주세요</div>
+    <div class="sub" style="color:var(--help)">02-423-7723 · 평일 9시~6시</div></div></button>
+  <button class="box v" id="hp-family" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:none" onclick="callFamily()">
+    <div style="font-size:30px">👨</div>
+    <div style="flex:1"><div style="font-size:calc(var(--fs-body)+2px);font-weight:800" id="hp-fname">가족에게 물어보기</div>
+    <div class="sub" style="color:var(--family)">전화를 겁니다</div></div></button>
+  <div class="box" style="display:flex;gap:12px;align-items:center">
+    <div style="font-size:30px">🔤</div>
+    <div style="flex:1"><div style="font-size:calc(var(--fs-body)+2px);font-weight:800">글씨 크게 하기</div>
+    <div class="sub" id="hp-size">지금: 보통</div></div></div>
+  <div style="display:flex;gap:8px;margin-top:-4px">
+    <button class="btn gray small" style="flex:1;margin:0" onclick="setSize('')">보통</button>
+    <button class="btn gray small" style="flex:1;margin:0" onclick="setSize('big')">크게</button>
+    <button class="btn gray small" style="flex:1;margin:0" onclick="setSize('huge')">아주 크게</button>
+  </div>
+
+  <div class="label" style="margin-top:22px">홈 화면에 놓기</div>
+  <div class="box b"><p class="sub" style="font-weight:700;color:#1D4ED8;line-height:1.8">
+    <b>아이폰</b> · 아래 <b>공유 단추(↑)</b> → “홈 화면에 추가”<br>
+    <b>안드로이드</b> · 오른쪽 위 <b>점 세 개(⋮)</b> → “홈 화면에 추가”</p></div>
+
+  <div class="label" style="margin-top:22px">자료 지키기</div>
+  <button class="btn outline" style="margin-top:0" onclick="exportData()">💾 백업 파일 내려받기</button>
+  <button class="btn gray" onclick="document.getElementById('i-import').click()">📂 백업 파일 불러오기</button>
+  <input type="file" accept=".json" id="i-import" class="hidden" onchange="importData(event)">
+  <div class="box y mt"><p class="sub" style="font-weight:700">자료는 이 휴대폰 안에만 있습니다.<br>가끔 <b>백업 파일</b>을 받아 두세요.</p></div>
+
+  <button class="linkbtn" style="color:var(--danger);margin-top:20px" onclick="resetAll()">전부 지우고 처음부터</button>
+  <div class="pub">
+    <div class="pn">모두의관리 · (주)포컴</div>
+    <div class="pd">서울 송파구 문정동 가든파이브 라이프 T-9088호 (05838)<br>
+      02-423-7723 · 사업자등록번호 230-81-02966</div>
+  </div>
+</section>
+
+<nav class="nav" id="nav">
+  <button data-nav="home" onclick="go('home')"><span class="ic">🏠</span>할 일</button>
+  <button data-nav="money" onclick="go('money')"><span class="ic">💰</span>돈 확인</button>
+  <button data-nav="bldginfo" onclick="go('bldginfo')"><span class="ic">🏢</span>우리 건물</button>
+  <button data-nav="help" onclick="go('help')"><span class="ic">☎</span>도움</button>
+</nav>
+
+<div class="dim" id="dim" onclick="if(event.target.id==='dim')closeSheet()"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* =========================================================
+   모두의관리 시설관리 연결 (모두의관리 → 구글 드라이브 공유 저장)
+   - 화면이 열릴 때 서버에 저장된 자료를 받아 쓰고
+   - 고칠 때마다 1초 뒤 서버에 자동 저장합니다 (관리자·관리소장 공용)
+   ========================================================= */
+var FAC=(function(){var API="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/api",SITE=location.href.replace(/[?#].*$/,"").replace(/[^\/]*$/,"");var tk="";try{tk=new URLSearchParams(location.search).get("tk")||"";}catch(e){}try{if(!tk){var s=JSON.parse(localStorage.getItem("fc_sess")||"null");if(s&&s.tk)tk=s.tk;}}catch(e){}var out=null;try{var x=new XMLHttpRequest();x.open("GET",API+"?api=fac&tk="+encodeURIComponent(tk),false);x.send();var j=JSON.parse(x.responseText);if(j&&j.ok)out={url:API,site:SITE,tk:tk,rev:j.rev,state:j.state,role:j.role,page:"fac"};}catch(e){}try{history.replaceState(null,"",location.pathname);}catch(e){}if(!out){try{location.replace(SITE+"index.html?home=1");}catch(e){}}return out;})();
+var __facRev = FAC ? FAC.rev : 0, __facTimer = null, __facPending = null, __facBusy = false;
+function facUrl(page){ return (FAC ? FAC.site : '') + (page==='facpro'?'pro.html':'easy.html'); }
+function facGo(page){ var u = facUrl(page); try{ window.open(u, '_top'); }catch(e){ location.href = u; } }
+function facHome(){ var u = (FAC ? FAC.site : '') + 'index.html?home=1'; try{ window.open(u, '_top'); }catch(e){ location.href = u; } }
+function facOpen(u){ try{ window.open(u, '_top'); }catch(e){ location.href = u; } }
+function facBadge(t, ok){ var b = document.getElementById('facSync'); if(!b) return; b.textContent = t; b.style.background = ok ? '#E4F2EA' : '#FFF3D6'; b.style.color = ok ? '#1F6B45' : '#8A5A00'; }
+function facPush(raw){
+  if(!FAC) return; __facPending = raw; facBadge('저장 중…', false);
+  clearTimeout(__facTimer); __facTimer = setTimeout(function(){ facFlush(); }, 1000);
+}
+function facFlush(done, force){
+  if(!FAC || __facPending == null){ if(done) done(); return; }
+  if(__facBusy){ setTimeout(function(){ facFlush(done, force); }, 400); return; }
+  var raw = __facPending; __facPending = null; __facBusy = true;
+  fetch(FAC.url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, keepalive: raw.length < 60000,
+    body: JSON.stringify({ action:'facSave', tk: FAC.tk, rev: __facRev, state: raw, force: !!force }) })
+  .then(function(r){ return r.json(); })
+  .then(function(j){
+    __facBusy = false;
+    if(j.ok){ __facRev = j.rev; facBadge('☁ 저장됨', true); }
+    else if(j.conflict){
+      __facRev = j.rev; facBadge('다시 불러옴', false);
+      try{ toast('다른 곳에서 먼저 고친 내용이 있어 최신 자료로 다시 불러옵니다'); }catch(e){}
+      setTimeout(function(){ facGo(FAC.page); }, 1200);
+    } else { facBadge('저장 실패', false); try{ toast('저장 실패: ' + (j.error || '')); }catch(e){} __facPending = __facPending || raw; }
+    if(done) done();
+  })
+  .catch(function(){ __facBusy = false; __facPending = __facPending || raw; facBadge('저장 대기 (인터넷 확인)', false); setTimeout(function(){ facFlush(); }, 5000); if(done) done(); });
+}
+document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'hidden') facFlush(); });
+
+/* =========================================================
+   모두의관리 v1.1 · (주)포컴
+   저장은 브라우저 안에서 이루어집니다 (서버 없음).
+   ========================================================= */
+
+var MEM = null, KEY = 'modu-gwanribi-v1';
+
+var DEFAULT = {
+  step:'splash', setupDone:false, mode:'easy',
+  phone:'', owner:{name:'',bank:''},
+  bldg:{name:'', addr:'', type:'villa', count:12},
+  units:[], tenantIdx:0,
+  meter:'even', meterIdx:0,
+  fixed:[{n:'청소비',v:15000},{n:'계단 전기',v:8000},{n:'수선비',v:10000}],
+  helper:{center:true, family:false, fname:'', ftel:''},
+  month:{ym:'', elec:null, water:null, sent:false, readings:[], amounts:[]},
+  prevReadings:[], firstPrev:[], paid:[], lastTotal:0, size:''
+};
+var S = JSON.parse(JSON.stringify(DEFAULT));
+
+function load(){
+  var raw=null;
+  if(FAC && FAC.state && FAC.state !== '{}') raw = FAC.state;
+  if(!raw){ try{ raw = localStorage.getItem(KEY); }catch(e){ raw = MEM; } }
+  if(!raw) raw = MEM;
+  if(raw){ try{ S = Object.assign(JSON.parse(JSON.stringify(DEFAULT)), JSON.parse(raw)); }catch(e){} }
+}
+function save(){
+  var raw = JSON.stringify(S); MEM = raw;
+  try{ localStorage.setItem(KEY, raw); }catch(e){}
+  facPush(raw);
+}
+
+/* ---------- 숫자 ---------- */
+function won(n){ return (Math.round(n)||0).toLocaleString('ko-KR'); }
+function korNum(n){
+  n = Math.round(n)||0; if(n===0) return '영 원';
+  var d=['','일','이','삼','사','오','육','칠','팔','구'], u=['','십','백','천'];
+  function four(x){ var s=''; for(var i=3;i>=0;i--){ var p=Math.pow(10,i), q=Math.floor(x/p)%10;
+    if(q) s += ((q===1&&i>0)?'':d[q]) + u[i]; } return s; }
+  var r='', eok=Math.floor(n/100000000), man=Math.floor(n/10000)%10000, one=n%10000;
+  if(eok) r += four(eok)+'억 ';
+  if(man) r += four(man)+'만 ';
+  if(one) r += four(one);
+  return r.trim()+' 원';
+}
+function numOf(el){ return parseInt((document.getElementById(el).value+'').replace(/[^0-9]/g,''))||0; }
+
+/* ---------- 화면 이동 ---------- */
+var NAV_SCREENS = ['home','money','bldginfo','help'];
+var SETUP_STEPS = ['phone','otp','me','addr','btype','size','judge','units','tenant','meter','fixed','helper'];
+/* 뒤로 가기를 숨길 화면들 (여기서는 돌아갈 곳이 없습니다) */
+var NO_BACK = ['splash','home','done','sent','money','bldginfo','help'];
+var CUR = 'splash', STACK = [];
+
+function go(id, noPush){
+  if(!noPush && CUR && CUR !== id){
+    if(NAV_SCREENS.indexOf(id) >= 0) STACK = [];   // 아래 메뉴로 가면 기록을 비웁니다
+    else STACK.push(CUR);
+  }
+  CUR = id;
+  document.querySelectorAll('.scr').forEach(function(e){ e.classList.remove('on'); });
+  var el = document.getElementById('s-'+id); if(!el) return;
+  el.classList.add('on'); el.scrollTop = 0;
+  document.getElementById('topbar').classList.toggle('on', NO_BACK.indexOf(id) < 0);
+  var nav = document.getElementById('nav');
+  if(NAV_SCREENS.indexOf(id)>=0){
+    nav.classList.add('on');
+    document.querySelectorAll('#nav button').forEach(function(b){ b.classList.toggle('on', b.dataset.nav===id); });
+  } else nav.classList.remove('on');
+  if(!S.setupDone && SETUP_STEPS.indexOf(id)>=0){ S.step = id; save(); }
+  if(id==='home') renderHome();
+  if(id==='money') renderMoney();
+  if(id==='bldginfo') renderBldgInfo();
+  if(id==='help') renderHelp();
+  if(id==='fixed') renderFixed();
+  if(id==='meter') markPicked('meter','#s-meter');
+  if(id==='btype') markPicked('btype','#s-btype');
+}
+/* 뒤로 가기 : 세입자·검침처럼 한 집씩 넘어가는 화면은 앞 집으로 돌아갑니다 */
+function back(){
+  closeSheet();
+  if(CUR==='tenant' && S.tenantIdx>0){ grabTenant(); S.tenantIdx--; save(); showTenant(true); return; }
+  if(CUR==='meterin' && S.meterIdx>0){ S.meterIdx--; save(); showMeter(true); return; }
+  var p = STACK.pop();
+  go(p || (S.setupDone ? 'home' : 'splash'), true);
+}
+/* 휴대폰 뒤로 단추(안드로이드)와 브라우저 뒤로도 같이 동작하게 합니다 */
+function armBack(){ try{ history.pushState({g:1},''); }catch(e){} }
+window.addEventListener('popstate', function(){
+  if(NO_BACK.indexOf(CUR) >= 0) return;   // 첫 화면·홈에서는 그냥 나가게 둡니다
+  back(); armBack();
+});
+
+function toast(m){
+  var t=document.getElementById('toast'); t.textContent=m; t.classList.add('on');
+  clearTimeout(t._t); t._t=setTimeout(function(){ t.classList.remove('on'); },2400);
+}
+function sheet(h){ document.getElementById('sheet').innerHTML=h; document.getElementById('dim').classList.add('on'); }
+function closeSheet(){ document.getElementById('dim').classList.remove('on'); }
+
+function pick(el,key){
+  el.parentElement.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('on'); });
+  el.classList.add('on'); S[key]=el.dataset.v; save();
+}
+function markPicked(key,sel){
+  var v = (key==='btype') ? S.bldg.type : S[key];
+  document.querySelectorAll(sel+' .opt').forEach(function(o){ o.classList.toggle('on', o.dataset.v===v); });
+}
+/* 건물 종류는 S.bldg.type 안에 들어갑니다 (판정에 쓰입니다) */
+function pickType(el){
+  el.parentElement.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('on'); });
+  el.classList.add('on'); S.bldg.type = el.dataset.v; save();
+}
+
+/* ---------- 가입 ---------- */
+function sendOtp(){
+  var v=document.getElementById('i-phone').value.trim();
+  if(v.replace(/[^0-9]/g,'').length < 9){ toast('휴대폰 번호를 넣어주세요'); return; }
+  S.phone=v; save();
+  document.getElementById('otp-to').textContent = v+' 로 보냈어요';
+  go('otp');
+}
+function saveMe(){
+  S.owner.name=document.getElementById('i-name').value.trim()||'사장';
+  S.owner.bank=document.getElementById('i-bank').value.trim();
+  save(); go('addr');
+}
+function saveAddr(){
+  var n=document.getElementById('i-bname').value.trim();
+  if(!n){ toast('건물 이름을 넣어주세요'); return; }
+  S.bldg.name=n;
+  S.bldg.addr=document.getElementById('i-baddr').value.trim();
+  save(); go('btype');
+}
+function afterBtype(){
+  var t=S.bldg.type;
+  document.getElementById('sz-q').textContent = (t==='store') ? '몇 개 호실인가요?' : '몇 집인가요?';
+  document.getElementById('sz-sub').textContent = '관리비를 걷는 곳의 수를 넣어주세요';
+  document.getElementById('i-count').value = S.bldg.count || 12;
+  go('size');
+}
+
+/* =========================================================
+   판정 : 여기가 간편 / 상세를 가르는 곳입니다
+   기준은 "건물 개수"가 아니라 "세대 수 + 건물 용도(법·세무)"입니다.
+   ========================================================= */
+var TYPE_NAME = { villa:'빌라·다세대·연립', dagagu:'다가구·원룸 건물', officetel:'오피스텔', store:'상가·사무실' };
+
+function judge(type, count){
+  // 1) 오피스텔·상가 : 집합건물 + 관리비에 부가세 과세 + 세금계산서 발행 → 상세
+  if(type==='officetel' || type==='store'){
+    var why = [
+      '관리비에 <b>부가세</b>가 붙습니다',
+      '세입자에게 <b>세금계산서</b>를 발행하셔야 합니다'
+    ];
+    if(count >= 50) why.push('전유부분 50개가 넘어 <b>장부를 5년 보관</b>하고 세입자가 요구하면 보여주셔야 합니다 (집합건물법 제26조)');
+    return { mode:'pro', why:why };
+  }
+  // 2) 빌라·다세대·연립 : 50세대 이상이면 관리비 공개 의무 → 상세
+  if(type==='villa' && count >= 50){
+    return { mode:'pro', why:[
+      '50세대가 넘어 <b>관리비를 공개</b>하셔야 합니다 (공동주택관리법 제23조)',
+      '장부를 따로 정리해 두셔야 합니다',
+      '집이 많아 표로 보시는 게 편합니다'
+    ]};
+  }
+  // 3) 그 외 소규모 주거 → 간편
+  var w = [];
+  if(type==='dagagu') w.push('건물이 한 분 소유라 <b>법으로 정해진 의무가 거의 없습니다</b>');
+  else w.push('50세대 미만이라 <b>관리비 공개 의무가 없습니다</b>');
+  w.push('<b>세금계산서</b>를 발행하지 않으셔도 됩니다');
+  w.push('매달 <b>사진 두 장</b>이면 끝납니다');
+  return { mode:'easy', why:w };
+}
+
+function doJudge(){
+  var c = numOf('i-count');
+  if(c<1 || c>300){ toast('집 수를 다시 확인해 주세요'); return; }
+  S.bldg.count = c;
+  var r = judge(S.bldg.type, c);
+  S.mode = r.mode; save();
+  showJudge(r);
+}
+function showJudge(r){
+  document.getElementById('j-name').textContent = S.bldg.name;
+  document.getElementById('j-meta').textContent = TYPE_NAME[S.bldg.type] + ' · ' + S.bldg.count + (S.bldg.type==='store'?'개 호실':'세대');
+  var easy = (S.mode==='easy');
+  document.getElementById('j-head').innerHTML = easy
+    ? '이 건물은<br><span style="color:var(--brand)">간편 관리</span>가 맞습니다'
+    : '이 건물은<br><span style="color:var(--info)">건물 종합 관리</span>가 필요합니다';
+  document.getElementById('j-why').innerHTML =
+    r.why.map(function(w){ return '<p>· '+w+'</p>'; }).join('');
+  var ok = document.getElementById('j-ok');
+  ok.className = 'btn' + (easy?'':' ');
+  ok.style.background = easy ? '' : 'var(--info)';
+  ok.onclick = function(){ easy ? makeUnits() : facGo('facpro'); };
+  document.getElementById('j-flip').textContent = easy ? '건물 종합 관리로 볼래요' : '그래도 간편 관리로 할래요';
+  go('judge');
+}
+function flipMode(){
+  S.mode = (S.mode==='easy') ? 'pro' : 'easy'; save();
+  var r = judge(S.bldg.type, S.bldg.count);
+  r.why = r.why.concat(['<span style="color:var(--ink3)">직접 바꾸셨습니다. 언제든 되돌릴 수 있어요.</span>']);
+  showJudge(r);
+}
+function forceEasy(){ S.mode='easy'; save(); makeUnits(); }
+function joinWaitlist(){
+  var v=document.getElementById('i-waitlist').value.trim() || S.phone;
+  if(!v){ toast('연락처를 넣어주세요'); return; }
+  toast('신청되었습니다. 준비되면 알려드릴게요');
+  setTimeout(function(){ go('notyet'); },100);
+}
+
+/* ---------- 세대 생성 ---------- */
+function makeUnits(){
+  var c = S.bldg.count;
+  if(S.units.length !== c){
+    S.units = [];
+    var per=4, floors=Math.ceil(c/per), made=0;
+    for(var f=1; f<=floors && made<c; f++){
+      for(var k=1; k<=per && made<c; k++){ S.units.push({ho:(f*100+k)+'호', name:'', tel:''}); made++; }
+    }
+  }
+  save();
+  document.getElementById('u-title').textContent = c + (S.bldg.type==='store'?'개 호실을':'세대를') + ' 만들었습니다';
+  document.getElementById('u-list').innerHTML =
+    S.units.map(function(u){ return '<div class="card"><div class="ho">'+u.ho+'</div></div>'; }).join('');
+  go('units');
+}
+
+/* ---------- 세입자 ---------- */
+function startTenant(){ S.tenantIdx=0; save(); showTenant(); }
+function showTenant(noPush){
+  var i=S.tenantIdx, u=S.units[i];
+  if(!u){ go('meter'); return; }
+  document.getElementById('t-title').innerHTML = u.ho+'에<br>누가 사세요?';
+  document.getElementById('t-count').innerHTML =
+    S.units.length+'집 중 <b>'+(i+1)+'번째</b> · '+(S.units.length-i-1)+'집 남았어요';
+  document.getElementById('t-saved').textContent = i>0 ? ('✓ '+i+'집까지 저장됨') : '';
+  document.getElementById('i-ho').value=u.ho;
+  document.getElementById('i-tname').value=u.name;
+  document.getElementById('i-ttel').value=u.tel;
+  document.getElementById('t-next').textContent = (i===S.units.length-1)?'다 넣었어요':'다음 집';
+  go('tenant', noPush);
+}
+function grabTenant(){
+  var u=S.units[S.tenantIdx];
+  u.ho=document.getElementById('i-ho').value.trim()||u.ho;
+  u.name=document.getElementById('i-tname').value.trim();
+  u.tel=document.getElementById('i-ttel').value.trim();
+}
+function nextTenant(){
+  grabTenant(); S.tenantIdx++; save();
+  if(S.tenantIdx>=S.units.length){ markPicked('meter','#s-meter'); go('meter'); }
+  else showTenant(true);
+}
+function askExit(){
+  grabTenant(); save();
+  sheet('<div style="font-size:40px;text-align:center;margin-bottom:10px">💾</div>'+
+    '<h2 class="cc">그만하셔도 돼요</h2>'+
+    '<div class="box g mt cc"><p style="font-weight:800">여기까지 <b>다 저장</b>됐어요<br>다음에 이어서 하시면 됩니다</p></div>'+
+    '<button class="btn" style="margin-top:16px" onclick="closeSheet();go(\'home\')">네, 그만할게요</button>'+
+    '<button class="btn gray" onclick="closeSheet()">조금 더 할게요</button>');
+}
+
+/* ---------- 고정비 ---------- */
+function renderFixed(){
+  document.getElementById('f-list').innerHTML = S.fixed.map(function(f,i){
+    return '<div class="row" style="margin-bottom:10px">'+
+      '<input class="inp nm" style="width:auto;flex:1;padding:12px" value="'+f.n+'" oninput="S.fixed['+i+'].n=this.value;save()">'+
+      '<input class="inp num" type="tel" inputmode="numeric" value="'+f.v+'" oninput="S.fixed['+i+'].v=parseInt(this.value)||0;save();sumFixed()"></div>';
+  }).join('');
+  sumFixed();
+}
+function addFixed(){ S.fixed.push({n:'',v:0}); save(); renderFixed(); }
+function sumFixed(){
+  document.getElementById('f-total').textContent =
+    won(S.fixed.reduce(function(a,f){ return a+(f.v||0); },0))+'원';
+}
+function afterFixed(){ S.setupDone ? go('bldginfo') : go('helper'); }
+
+/* ---------- 도와줄 사람 ---------- */
+function toggleHelper(k){
+  if(k==='center'){ S.helper.center=!S.helper.center;
+    document.getElementById('o-center').classList.toggle('on',S.helper.center); }
+  else { S.helper.family=!S.helper.family;
+    document.getElementById('o-family').classList.toggle('on',S.helper.family);
+    document.getElementById('family-box').classList.toggle('hidden',!S.helper.family); }
+  save();
+}
+function finishSetup(){
+  if(S.helper.family){
+    S.helper.fname=document.getElementById('i-fname').value.trim();
+    S.helper.ftel=document.getElementById('i-ftel').value.trim();
+  }
+  S.setupDone=true; S.step='home'; save();
+  document.getElementById('d-msg').innerHTML = S.bldg.name+' '+S.units.length+'세대<br>준비가 끝났어요';
+  document.getElementById('d-how').innerHTML = (S.meter==='even')
+    ? '이제부터는<br>매달 <b>사진 두 장</b>이면 됩니다'
+    : '이제부터는<br>매달 <b>고지서 두 장 + 집집마다 계량기</b>를 넣으시면 됩니다';
+  go('done');
+}
+
+/* ---------- 이어가기 ---------- */
+var STEP_NAME = { phone:'휴대폰 번호', otp:'인증번호', me:'성함과 계좌', addr:'건물 알려주기',
+  btype:'건물 종류', size:'집 수', judge:'관리 방식 확인', units:'세대 확인',
+  tenant:'세입자 넣기', meter:'계량기 방식', fixed:'매달 걷는 돈', helper:'도와줄 사람' };
+function resumeOrStart(){
+  if(S.setupDone){ go('home'); return; }
+  if(S.step && S.step!=='splash'){ showResume(); return; }
+  go('phone');
+}
+function showResume(){
+  document.getElementById('r-bldg').textContent = (S.bldg.name||'건물')+' · 설정 중';
+  document.getElementById('r-name').textContent = S.owner.name||'사장';
+  document.getElementById('r-what').textContent = STEP_NAME[S.step]||'설정';
+  document.getElementById('r-left').innerHTML = (S.step==='tenant')
+    ? (S.units.length-S.tenantIdx)+'집만 더 하시면<br>다 끝나요'
+    : '조금만 더 하시면<br>다 끝나요';
+  go('resume');
+}
+function resumeGo(){
+  if(S.step==='tenant') showTenant();
+  else if(S.step==='judge') showJudge(judge(S.bldg.type,S.bldg.count));
+  else go(S.step||'phone');
+}
+
+/* ---------- 매달 ---------- */
+function thisYm(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function ymLabel(y){ if(!y) return ''; var p=y.split('-'); return p[0]+'년 '+parseInt(p[1])+'월분'; }
+
+function startMonth(){
+  if(!S.month.ym || S.month.ym!==thisYm()){
+    S.prevReadings = (S.month.readings && S.month.readings.length) ? S.month.readings : S.prevReadings;
+    S.month = {ym:thisYm(), elec:null, water:null, sent:false,
+      readings:S.units.map(function(){ return {e:0,w:0}; }), amounts:[]};
+    S.paid = S.units.map(function(){ return false; });
+    save();
+  }
+  if(S.month.sent){ go('money'); return; }
+  go('guide');
+}
+
+var camKind='elec';
+function openCam(kind){
+  camKind=kind;
+  document.getElementById('cam-title').textContent = kind==='elec'?'⚡ 전기요금 고지서':'💧 수도요금 고지서';
+  document.getElementById('cam-view').innerHTML =
+    '<div class="frame">네모 안에<br>고지서를 맞춰주세요</div><div class="tip">밝은 곳에서 찍으면 잘 읽어요</div>';
+  document.getElementById('cam-btn').classList.remove('hidden');
+  go('cam');
+}
+function gotPhoto(ev){
+  var f=ev.target.files&&ev.target.files[0]; if(!f) return;
+  var url=URL.createObjectURL(f);
+  document.getElementById('cam-view').innerHTML =
+    '<img src="'+url+'" alt=""><div style="position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">'+
+    '<div class="spin"></div><div style="color:#fff;font-weight:800;font-size:var(--fs-body)">숫자를 읽고 있어요…</div></div>';
+  document.getElementById('cam-btn').classList.add('hidden');
+  ev.target.value='';
+  setTimeout(function(){ showRead(true); },1600);
+}
+function skipCam(k){ camKind=k; showRead(false); }
+function lastOf(kind){ return kind==='elec'?79200:158000; }
+
+function showRead(fromPhoto){
+  var isE = camKind==='elec';
+  document.getElementById('rd-label').textContent = isE?'전기요금':'수도요금';
+  document.getElementById('rd-title').innerHTML = fromPhoto?'이렇게 읽었어요<br>맞나요?':'숫자를 넣어주세요';
+  document.getElementById('i-amt').value = fromPhoto ? (isE?86400:169200) : '';
+  document.getElementById('rd-last').innerHTML =
+    '<div style="display:flex"><p style="flex:1">지난달</p><b>'+won(lastOf(camKind))+'원</b></div>';
+  korHint(); go('read');
+}
+function korHint(){
+  var v=numOf('i-amt');
+  document.getElementById('rd-kor').textContent = v?korNum(v):'';
+  var last=lastOf(camKind), w=document.getElementById('rd-warn');
+  if(v>last*3 || (v>0 && v<last/3)){
+    document.getElementById('rd-warn-t').innerHTML =
+      '지난달보다 <b>'+(v>last?(v/last).toFixed(1)+'배 많아요':'많이 적어요')+'</b>.<br>사진을 다시 찍어보시겠어요?';
+    w.classList.remove('hidden');
+  } else w.classList.add('hidden');
+}
+function confirmRead(){
+  var v=numOf('i-amt');
+  if(v<=0){ toast('숫자를 넣어주세요'); return; }
+  if(camKind==='elec'){ S.month.elec=v; save(); openCam('water'); return; }
+  S.month.water=v; save();
+  if(S.meter==='each'){ S.meterIdx=0; save(); showMeter(); }
+  else calcResult();
+}
+
+/* ---------- 세대별 검침 ---------- */
+function isFirstMeterMonth(){ return !(S.prevReadings && S.prevReadings.length); }
+function showMeter(noPush){
+  var i=S.meterIdx, u=S.units[i];
+  if(!u){ calcResult(); return; }
+  var first = isFirstMeterMonth();
+  document.getElementById('mi-title').innerHTML = u.ho+' 계량기';
+  document.getElementById('mi-count').innerHTML =
+    S.units.length+'집 중 <b>'+(i+1)+'번째</b> · '+(S.units.length-i-1)+'집 남았어요';
+  document.getElementById('mi-saved').textContent = i>0?('✓ '+i+'집까지 저장됨'):'';
+  document.getElementById('mi-first').classList.toggle('hidden', !first);
+  document.getElementById('mi-e0').classList.toggle('hidden', !first);
+  document.getElementById('mi-w0').classList.toggle('hidden', !first);
+  var r=S.month.readings[i]||{e:0,w:0}, pv=(S.firstPrev&&S.firstPrev[i])||{e:0,w:0};
+  document.getElementById('i-me').value = r.e||'';
+  document.getElementById('i-mw').value = r.w||'';
+  if(first){
+    document.getElementById('i-me0').value = pv.e||'';
+    document.getElementById('i-mw0').value = pv.w||'';
+    document.getElementById('mi-e-now').textContent = '(이번 달)';
+  } else {
+    var last=(S.prevReadings[i]||{});
+    document.getElementById('mi-e-now').textContent = last.e ? '· 지난달 '+won(last.e) : '';
+  }
+  document.getElementById('mi-next').textContent = (i===S.units.length-1)?'다 넣었어요':'다음 집';
+  go('meterin', noPush);
+}
+function nextMeter(){
+  var i=S.meterIdx;
+  S.month.readings[i] = { e:numOf('i-me'), w:numOf('i-mw') };
+  if(isFirstMeterMonth()){
+    if(!S.firstPrev) S.firstPrev = [];
+    S.firstPrev[i] = { e:numOf('i-me0'), w:numOf('i-mw0') };
+  }
+  S.meterIdx++; save();
+  if(S.meterIdx>=S.units.length){
+    // 처음 달에 받은 "지난달 숫자"를 기준값으로 씁니다
+    if(isFirstMeterMonth() && S.firstPrev && S.firstPrev.some(function(p){ return p && (p.e||p.w); })){
+      S.prevReadings = JSON.parse(JSON.stringify(S.firstPrev)); save();
+    }
+    calcResult();
+  }
+  else showMeter(true);
+}
+
+/* ---------- 계산 ---------- */
+function fixedEach(){ return S.fixed.reduce(function(a,f){ return a+(f.v||0); },0); }
+function calcAmounts(){
+  var n=S.units.length||1, fx=fixedEach(), E=S.month.elec||0, W=S.month.water||0;
+  if(S.meter==='even'){
+    var e=Math.round(E/n/100)*100, w=Math.round(W/n/100)*100;
+    return S.units.map(function(){ return fx+e+w; });
+  }
+  // 세대별 계량기 : 고지서 총액을 사용량 비율로 나눕니다 (단가를 몰라도 정확)
+  var prev = S.prevReadings || [];
+  var useE = S.units.map(function(u,i){
+    var cur=(S.month.readings[i]||{}).e||0, pv=(prev[i]||{}).e||0;
+    return Math.max(0, cur-pv);
+  });
+  var useW = S.units.map(function(u,i){
+    var cur=(S.month.readings[i]||{}).w||0, pv=(prev[i]||{}).w||0;
+    return Math.max(0, cur-pv);
+  });
+  var tE=useE.reduce(function(a,b){return a+b;},0), tW=useW.reduce(function(a,b){return a+b;},0);
+  return S.units.map(function(u,i){
+    var e = tE ? E*useE[i]/tE : E/n;
+    var w = tW ? W*useW[i]/tW : W/n;
+    return fx + Math.round(e/100)*100 + Math.round(w/100)*100;
+  });
+}
+function calcResult(){
+  var amts=calcAmounts(); S.month.amounts=amts; save();
+  var same = amts.every(function(a){ return a===amts[0]; });
+  document.getElementById('rs-head').innerHTML = same?'한 집당<br>이만큼입니다':'집집마다<br>이만큼입니다';
+  if(same){
+    document.getElementById('rs-each').textContent = won(amts[0]);
+    document.getElementById('rs-kor').textContent = korNum(amts[0]);
+    var n=S.units.length||1;
+    var rows=S.fixed.filter(function(f){return f.v;}).map(function(f){
+      return '<div style="display:flex"><span style="flex:1;color:var(--ink2)">'+(f.n||'항목')+'</span><b>'+won(f.v)+'</b></div>'; });
+    rows.push('<div style="display:flex"><span style="flex:1;color:var(--ink2)">전기 (나눈 값)</span><b>'+won(Math.round(S.month.elec/n/100)*100)+'</b></div>');
+    rows.push('<div style="display:flex"><span style="flex:1;color:var(--ink2)">수도 (나눈 값)</span><b>'+won(Math.round(S.month.water/n/100)*100)+'</b></div>');
+    document.getElementById('rs-break').innerHTML = rows.join('');
+    document.getElementById('rs-break').classList.remove('hidden');
+    document.getElementById('rs-list').innerHTML='';
+  } else {
+    var lo=Math.min.apply(null,amts), hi=Math.max.apply(null,amts);
+    var tot=amts.reduce(function(a,b){return a+b;},0);
+    document.getElementById('rs-each').textContent = won(tot);
+    document.getElementById('rs-kor').textContent = '모두 합쳐 · '+korNum(tot);
+    document.getElementById('rs-break').innerHTML =
+      '<div style="display:flex"><span style="flex:1;color:var(--ink2)">가장 적은 집</span><b>'+won(lo)+'원</b></div>'+
+      '<div style="display:flex"><span style="flex:1;color:var(--ink2)">가장 많은 집</span><b>'+won(hi)+'원</b></div>';
+    document.getElementById('rs-list').innerHTML = S.units.map(function(u,i){
+      return '<div class="card"><div class="ho">'+u.ho+'</div><div class="rt">'+won(amts[i])+'원</div></div>'; }).join('');
+  }
+  go('result');
+}
+
+/* ---------- 발송 ---------- */
+function askSend(){
+  var n=S.units.length, tot=S.month.amounts.reduce(function(a,b){return a+b;},0);
+  sheet('<h2 class="cc">'+n+'집에<br>보낼까요?</h2>'+
+    '<div class="box cc" style="margin:14px 0"><p>모두 합쳐 <b style="font-size:calc(var(--fs-body)+5px)">'+won(tot)+'원</b></p></div>'+
+    '<div class="box b"><p class="sub cc" style="font-weight:700;color:#1D4ED8">보낼 내용을 먼저 <b>보여드립니다</b></p></div>'+
+    '<button class="btn" style="margin-top:16px" onclick="doSend()">네, 보낼게요</button>'+
+    '<button class="btn gray" onclick="closeSheet()">아니요, 다시 볼게요</button>');
+}
+function billText(u,i){
+  var L=[], n=S.units.length||1;
+  L.push('['+S.bldg.name+' '+u.ho+'] '+ymLabel(S.month.ym)+' 관리비'); L.push('');
+  S.fixed.forEach(function(f){ if(f.v) L.push('· '+(f.n||'항목')+' : '+won(f.v)+'원'); });
+  var rest = S.month.amounts[i] - fixedEach();
+  L.push('· 전기·수도 : '+won(rest)+'원');
+  L.push('');
+  L.push('▶ 내실 금액 : '+won(S.month.amounts[i])+'원');
+  if(S.owner.bank) L.push('▶ 입금 : '+S.owner.bank);
+  L.push(''); L.push(S.bldg.name+' 관리자 '+(S.owner.name||'')+' 드림');
+  return L.join('\n');
+}
+function doSend(){
+  closeSheet();
+  S.month.sent=true;
+  S.paid=S.units.map(function(){ return false; });
+  S.lastTotal=S.month.amounts.reduce(function(a,b){return a+b;},0);
+  if(S.meter==='each') S.prevReadings = JSON.parse(JSON.stringify(S.month.readings));
+  save();
+  var txt=S.units.map(function(u,i){ return billText(u,i); }).join('\n\n──────────\n\n');
+  if(navigator.share) navigator.share({title:'관리비 안내', text:txt}).catch(function(){});
+  else if(navigator.clipboard) navigator.clipboard.writeText(txt).then(function(){ toast('내용을 복사했어요. 카톡에 붙여넣으세요'); });
+  document.getElementById('sent-msg').innerHTML = S.units.length+'집 안내 내용을<br>만들었어요';
+  go('sent');
+}
+
+/* ---------- 돈 확인 ---------- */
+function renderMoney(){
+  document.getElementById('m-title').textContent = ymLabel(S.month.ym)||'관리비';
+  if(!S.month.sent){
+    document.getElementById('m-sub').textContent='아직 보내지 않았어요';
+    document.getElementById('m-list').innerHTML =
+      '<div class="box cc" style="padding:30px"><p>먼저 관리비를 보내주세요</p>'+
+      '<button class="btn small" style="margin-top:14px" onclick="startMonth()">지금 보내기</button></div>';
+    return;
+  }
+  if(!S.paid||S.paid.length!==S.units.length) S.paid=S.units.map(function(){return false;});
+  var cnt=S.paid.filter(Boolean).length;
+  document.getElementById('m-sub').innerHTML = S.units.length+'집 중 <b style="color:var(--brand)">'+cnt+'집</b>이 냈어요';
+  document.getElementById('m-list').innerHTML = S.units.map(function(u,i){
+    var p=S.paid[i];
+    return '<button class="card '+(p?'ok':'no')+'" onclick="openUnit('+i+')">'+
+      '<span style="width:12px;height:12px;border-radius:50%;background:'+(p?'var(--brand)':'var(--danger)')+'"></span>'+
+      '<div><div class="ho">'+u.ho+'</div><div class="nn">'+(u.name||'이름 없음')+'</div></div>'+
+      '<span class="rt" style="color:'+(p?'var(--brand)':'var(--danger)')+'">'+(p?'냈어요':'아직')+'</span></button>';
+  }).join('');
+}
+var upIdx=0;
+function openUnit(i){
+  upIdx=i;
+  if(S.paid[i]){ markPaid(i,false); return; }
+  var u=S.units[i], amt=S.month.amounts[i]||0;
+  document.getElementById('up-title').innerHTML = u.ho+'<br>'+(u.name||'');
+  document.getElementById('up-amt').textContent = won(amt)+'원';
+  document.getElementById('up-call').onclick=function(){
+    if(u.tel) facOpen('tel:'+u.tel.replace(/[^0-9+]/g,'')); else toast('전화번호가 없어요'); };
+  document.getElementById('up-sms').onclick=function(){
+    var t='['+S.bldg.name+' '+u.ho+'] '+ymLabel(S.month.ym)+' 관리비 '+won(amt)+'원이 아직 확인되지 않았습니다. 확인 부탁드립니다. 감사합니다.';
+    if(u.tel) facOpen('sms:'+u.tel.replace(/[^0-9+]/g,'')+'?body='+encodeURIComponent(t));
+    else if(navigator.clipboard){ navigator.clipboard.writeText(t); toast('문구를 복사했어요'); } };
+  go('unpaid');
+}
+function markPaid(i,v){ S.paid[i]=v; save(); toast(v?'냈다고 표시했어요':'아직으로 되돌렸어요'); go('money'); }
+
+/* ---------- 우리 건물 ---------- */
+function renderBldgInfo(){
+  document.getElementById('bi-name').textContent = S.bldg.name||'우리 건물';
+  document.getElementById('bi-addr').textContent = S.bldg.addr||'';
+  var b=document.getElementById('bi-mode');
+  b.textContent = (S.mode==='easy')?'간편 관리':'건물 종합 관리';
+  b.className = 'badge'+(S.mode==='easy'?'':' pro');
+  document.getElementById('bi-facts').innerHTML =
+    '<div style="display:flex"><span style="flex:1;color:var(--ink2)">건물 종류</span><b>'+TYPE_NAME[S.bldg.type]+'</b></div>'+
+    '<div style="display:flex"><span style="flex:1;color:var(--ink2)">세대 수</span><b>'+S.units.length+'</b></div>'+
+    '<div style="display:flex"><span style="flex:1;color:var(--ink2)">계량기</span><b>'+(S.meter==='even'?'건물에 하나':'집집마다')+'</b></div>';
+  document.getElementById('bi-list').innerHTML = S.units.map(function(u,i){
+    return '<button class="card" onclick="editUnit('+i+')"><div><div class="ho">'+u.ho+'</div>'+
+      '<div class="nn">'+(u.name||'이름 없음')+(u.tel?' · '+u.tel:'')+'</div></div>'+
+      '<span class="rt" style="color:var(--ink3);font-size:var(--fs-small)">고치기 ›</span></button>'; }).join('');
+}
+function editUnit(i){ S.tenantIdx=i; save(); showTenant(); }
+
+/* ---------- 홈 ---------- */
+function renderHome(){
+  document.getElementById('h-bldg').textContent = (S.bldg.name||'우리 건물')+' · '+S.units.length+'세대';
+  document.getElementById('h-name').textContent = S.owner.name||'사장';
+  document.getElementById('h-last').textContent = S.lastTotal?won(S.lastTotal)+'원':'-';
+
+  var empty = S.units.filter(function(u){ return !u.name; }).length;
+  var box=document.getElementById('h-todo');
+  if(S.units.length && empty){
+    box.classList.remove('hidden');
+    document.getElementById('h-todo-t').textContent = '세입자 '+empty+'집 넣기';
+    S.step='tenant';
+    var fi=S.units.findIndex(function(u){ return !u.name; });
+    if(fi>=0) S.tenantIdx=fi;
+    save();
+  } else box.classList.add('hidden');
+
+  var mm=new Date().getMonth()+1;
+  var done = S.month.sent && S.month.ym===thisYm();
+  document.getElementById('h-task').innerHTML = mm+'월 관리비<br>'+(done?'보냈습니다':'보내기');
+  document.getElementById('h-task-sub').textContent = done
+    ? '이제 들어온 돈만 확인하시면 돼요'
+    : (S.meter==='even'?'사진 두 장이면 돼요':'고지서 두 장 + 집집마다 계량기');
+  var g=document.getElementById('h-go');
+  g.textContent = done?'누가 냈나 보기':'지금 하기';
+  g.onclick = done?function(){ go('money'); }:startMonth;
+}
+
+/* ---------- 도움 ---------- */
+function renderHelp(){
+  var f=document.getElementById('hp-family');
+  if(S.helper.family && S.helper.ftel){
+    f.classList.remove('hidden');
+    document.getElementById('hp-fname').textContent=(S.helper.fname||'가족')+'에게 전화하기';
+  } else f.classList.add('hidden');
+  document.getElementById('hp-size').textContent =
+    '지금: '+(S.size==='huge'?'아주 크게':S.size==='big'?'크게':'보통');
+}
+function callHelp(){ facOpen('tel:0224237723'); }
+function callFamily(){
+  if(S.helper.ftel) facOpen('tel:'+S.helper.ftel.replace(/[^0-9+]/g,''));
+  else toast('가족 전화번호가 없어요');
+}
+function setSize(v){ S.size=v; save(); document.documentElement.className=v; renderHelp(); toast('글씨 크기를 바꿨어요'); }
+
+/* ---------- 백업 ---------- */
+function exportData(){
+  var blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  var d=new Date();
+  a.download='모두의관리_백업_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json';
+  a.click(); toast('백업 파일을 내려받았어요');
+}
+function importData(ev){
+  var f=ev.target.files&&ev.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      S=Object.assign(JSON.parse(JSON.stringify(DEFAULT)),JSON.parse(r.result));
+      save(); document.documentElement.className=S.size||'';
+      toast('불러왔습니다'); go(S.setupDone?'home':'splash');
+    }catch(e){ toast('파일을 읽지 못했어요'); }
+  };
+  r.readAsText(f); ev.target.value='';
+}
+function resetAll(){
+  sheet('<h2 class="cc" style="color:var(--danger)">정말 다 지울까요?</h2>'+
+    '<div class="box r mt cc"><p style="font-weight:700">넣으신 자료가 모두 사라집니다.<br>되돌릴 수 없어요.</p></div>'+
+    '<button class="btn danger" style="margin-top:16px" onclick="doReset()">네, 다 지울게요</button>'+
+    '<button class="btn gray" onclick="closeSheet()">아니요</button>');
+}
+function doReset(){
+  S=JSON.parse(JSON.stringify(DEFAULT)); MEM=null;
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  if(FAC){ __facPending = '{}'; facFlush(null, true); }
+  closeSheet(); document.documentElement.className=''; go('splash');
+}
+
+/* ---------- 시작 ---------- */
+load();
+document.documentElement.className = S.size||'';
+CUR=''; STACK=[]; armBack();
+if(S.setupDone) go('home', true);
+else if(S.step && S.step!=='splash') showResume();
+else go('splash', true);
+
+if(S.phone) document.getElementById('i-phone').value=S.phone;
+if(S.owner.name) document.getElementById('i-name').value=S.owner.name;
+if(S.owner.bank) document.getElementById('i-bank').value=S.owner.bank;
+if(S.bldg.name) document.getElementById('i-bname').value=S.bldg.name;
+if(S.bldg.addr) document.getElementById('i-baddr').value=S.bldg.addr;
+if(S.bldg.count) document.getElementById('i-count').value=S.bldg.count;
+markPicked('btype','#s-btype');
+markPicked('meter','#s-meter');
+</script>
+</body>
+</html>

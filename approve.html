@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>모두의관리 · 결재</title><link rel="icon" type="image/png" href="logo.png">
+<style>
+body{font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;margin:0;background:#F2F1EC;color:#1C2A27;}
+.wrap{max-width:560px;margin:0 auto;padding:16px;}
+h1{font-size:18px;margin:6px 0 2px;}.sub{font-size:12px;color:#7A7A72;margin-bottom:14px;}
+.namebox{background:#fff;border:1px solid #E4E1D6;border-radius:12px;padding:12px;margin-bottom:14px;}
+.namebox label{font-size:11px;font-weight:700;color:#8A8A80;display:block;margin-bottom:5px;}
+.namebox input{width:100%;box-sizing:border-box;border:1px solid #D8D5C8;border-radius:9px;padding:10px;font-size:15px;}
+.seg{display:flex;background:#E9E7DE;border-radius:11px;padding:3px;margin-bottom:14px;}
+.seg button{flex:1;border:none;background:none;border-radius:9px;padding:9px 0;font-size:13px;font-weight:700;color:#8A8A80;cursor:pointer;font-family:inherit;}
+.seg button.on{background:#fff;color:#16715A;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.card{background:#fff;border:1px solid #E4E1D6;border-radius:13px;padding:15px 15px 14px;margin-bottom:12px;}
+.dtitle{text-align:center;font-size:15px;font-weight:800;letter-spacing:.04em;margin:0 0 10px;}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;}
+.ttl{font-size:14px;font-weight:700;}.amt{font-size:15px;font-weight:700;}
+.dhead{font-size:12px;color:#666;margin:4px 0 8px;line-height:1.6;}
+.dtbl{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0;}
+.dtbl th,.dtbl td{border:1px solid #D8D5C8;padding:5px 6px;text-align:left;}
+.dtbl th{background:#F0EFE8;text-align:center;}
+.dtbl td.r{text-align:right;font-variant-numeric:tabular-nums;}
+.drow{font-size:12.5px;margin:7px 0;line-height:1.5;}.drow b{color:#555;margin-right:4px;}
+.dbody{font-size:13px;line-height:1.65;background:#FAFAF7;border:1px solid #EFEDE4;border-radius:9px;padding:11px 12px;margin:8px 0;white-space:pre-wrap;word-break:break-word;}
+.att{color:#2C6E9B;text-decoration:underline;}
+.st{font-size:12px;margin:10px 0 0;}.ok{color:#16715A;font-weight:700;}.wait{color:#B4453A;}
+.btn{margin-top:9px;width:100%;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;background:#16715A;color:#fff;cursor:pointer;}
+.btn.done{background:#EAF3EF;color:#16715A;}
+.empty{color:#9A9A90;text-align:center;padding:40px 0;}
+.bad{background:#FBEDEA;border:1px solid #E8C4BC;color:#9A3327;border-radius:12px;padding:16px;font-size:14px;}
+</style></head><body><div class="wrap" id="root"><div class="empty">불러오는 중…</div></div>
+<script>
+(function(){
+  var API="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/api";
+  var q=new URLSearchParams(location.search);
+  var ROLE=q.get("role")==="2"?2:1, SITE_NAME=q.get("site")||"", TOKEN=q.get("t")||"";
+  var OTHER="", ITEMS=[], DOCS=[], MODE="exp";
+  function won(n){return (Number(n)||0).toLocaleString("ko-KR");}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function lineRows(x){
+    var lines=(x.lines&&x.lines.length)?x.lines:[{name:(x.items||""),supply:"",vat:"",amt:x.amount}],r="";
+    for(var i=0;i<lines.length;i++){var L=lines[i];
+      r+='<tr><td>'+esc(L.name||"")+'</td><td class="r">'+((L.supply!=null&&L.supply!=="")?won(L.supply):"")+'</td><td class="r">'+((L.vat!=null&&L.vat!=="")?won(L.vat):"")+'</td><td class="r">'+won(L.amt!=null?L.amt:0)+'</td></tr>';}
+    return r;
+  }
+  function attHtml(x){return (x.atts||[]).map(function(a){return '<a class="att" href="'+esc(a.url)+'" target="_blank" rel="noopener">📎 '+esc(a.name)+'</a>';}).join("&nbsp; ");}
+  function tail(x,mine,kind){
+    var other=x.otherBy?('<span class="ok">'+esc(OTHER)+' 승인완료</span>'):('<span class="wait">'+esc(OTHER)+' 미승인</span>');
+    var btn=mine?('<button class="btn done" disabled>✔ 승인함 ('+esc(x.mineBy)+')</button>'):('<button class="btn" data-id="'+esc(x.id)+'" data-kind="'+kind+'">승인</button>');
+    return '<div class="st">'+other+'</div>'+btn+'</div>';
+  }
+  function expCard(x,mine){
+    var att=attHtml(x), vend=x.vendor?(esc(x.vendor)+(x.bizno?(" ("+esc(x.bizno)+")"):"")):"", meta2=[];
+    if(x.evidence)meta2.push("증빙 "+esc(x.evidence));
+    if(x.payment)meta2.push("결제 "+esc(x.payment));
+    if(vend)meta2.push("거래처 "+vend);
+    return '<div class="card"><div class="dtitle">지 출 결 의 서</div>'
+      +'<div class="top"><span class="ttl">'+esc(x.title||x.items||"지출결의")+'</span><span class="amt">'+won(x.amount)+'원</span></div>'
+      +'<div class="dhead">기안일 '+esc(x.date)+'&nbsp; ·&nbsp; 계정과목 '+esc(x.category)+(x.createdBy?('&nbsp; ·&nbsp; 기안자 '+esc(x.createdBy)):"")+'</div>'
+      +(meta2.length?('<div class="dhead">'+meta2.join('&nbsp; ·&nbsp; ')+'</div>'):"")
+      +'<table class="dtbl"><tr><th>품목</th><th>공급가액</th><th>부가세</th><th>합계</th></tr>'+lineRows(x)
+      +'<tr><td style="text-align:right;font-weight:700">합 계</td><td class="r" style="font-weight:700">'+won(x.supply||0)+'</td><td class="r" style="font-weight:700">'+won(x.vat||0)+'</td><td class="r" style="font-weight:700">'+won(x.amount)+'</td></tr></table>'
+      +(x.purpose?('<div class="drow"><b>용도</b>'+esc(x.purpose)+'</div>'):"")
+      +(x.reference?('<div class="drow"><b>기타참조</b>'+esc(x.reference)+'</div>'):"")
+      +(att?('<div class="drow"><b>근거자료</b>'+att+'</div>'):"")
+      +tail(x,mine,"exp");
+  }
+  function docCard(x,mine){
+    var att=attHtml(x);
+    return '<div class="card"><div class="dtitle">'+esc(x.doctype||"문서")+'</div>'
+      +'<div class="top"><span class="ttl">'+esc(x.title||"(제목 없음)")+'</span></div>'
+      +'<div class="dhead">기안일 '+esc(x.date)+(x.createdBy?('&nbsp; ·&nbsp; 기안자 '+esc(x.createdBy)):"")+'</div>'
+      +(x.body?('<div class="dbody">'+esc(x.body)+'</div>'):"")
+      +(att?('<div class="drow"><b>첨부</b>'+att+'</div>'):"")
+      +tail(x,mine,"doc");
+  }
+  function render(){
+    var arr=MODE==="doc"?DOCS:ITEMS, mk=MODE==="doc"?docCard:expCard;
+    var pend=arr.filter(function(x){return !x.mineBy;}), done=arr.filter(function(x){return x.mineBy;}), h="";
+    if(!pend.length)h+='<div class="empty">승인 대기 중인 항목이 없습니다.</div>';
+    pend.forEach(function(x){h+=mk(x,false);});
+    if(done.length){h+='<div class="sub" style="margin-top:18px">내가 승인한 항목 '+done.length+'건</div>';done.forEach(function(x){h+=mk(x,true);});}
+    document.getElementById("list").innerHTML=h; bind();
+    document.getElementById("segE").className=MODE==="exp"?"on":"";
+    document.getElementById("segD").className=MODE==="doc"?"on":"";
+    var pendD=DOCS.filter(function(x){return !x.mineBy;}).length, pendE=ITEMS.filter(function(x){return !x.mineBy;}).length;
+    document.getElementById("segE").textContent="🧾 지출결의"+(pendE?(" ("+pendE+")"):"");
+    document.getElementById("segD").textContent="📄 문서"+(pendD?(" ("+pendD+")"):"");
+  }
+  function bind(){
+    document.querySelectorAll("button[data-id]").forEach(function(b){b.onclick=function(){
+      var id=b.getAttribute("data-id"), kind=b.getAttribute("data-kind"), nm=document.getElementById("nm").value.trim();
+      if(!nm){alert("이름을 입력하세요.");return;}
+      b.disabled=true;b.textContent="처리 중...";
+      fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"apApprove",id:id,role:ROLE,name:nm,token:TOKEN,kind:kind})})
+        .then(function(r){return r.json();}).then(function(res){
+          if(res&&res.ok){var arr=kind==="doc"?DOCS:ITEMS;arr.forEach(function(x){if(x.id===id)x.mineBy=nm;});render();}
+          else{alert((res&&res.error)||"실패");b.disabled=false;b.textContent="승인";}
+        }).catch(function(e){alert("오류: "+e.message);b.disabled=false;b.textContent="승인";});
+    };});
+  }
+  var root=document.getElementById("root");
+  fetch(API+"?api=approve&role="+ROLE+"&site="+encodeURIComponent(SITE_NAME)+"&t="+encodeURIComponent(TOKEN)).then(function(r){return r.json();}).then(function(j){
+    if(!j.ok){root.innerHTML='<div class="bad">'+esc(j.error||"유효하지 않은 결재 링크입니다. 링크를 다시 확인해 주세요.")+'</div>';return;}
+    OTHER=j.otherName;ITEMS=j.items||[];DOCS=j.docs||[];
+    root.innerHTML='<h1>'+esc(SITE_NAME)+' 결재</h1><div class="sub">'+esc(j.roleName)+' 결재 페이지 · 항목을 확인하고 승인 버튼을 누르세요.</div>'
+      +'<div class="namebox"><label>결재자 이름</label><input id="nm" value="'+esc(j.roleName)+'"></div>'
+      +'<div class="seg"><button id="segE" class="on">🧾 지출결의</button><button id="segD">📄 문서</button></div><div id="list"></div>';
+    document.getElementById("segE").onclick=function(){MODE="exp";render();};
+    document.getElementById("segD").onclick=function(){MODE="doc";render();};
+    render();
+  }).catch(function(e){root.innerHTML='<div class="bad">불러오지 못했습니다. 잠시 후 다시 열어 주세요.<br>'+esc(e.message)+'</div>';});
+})();
+</script></body></html>
