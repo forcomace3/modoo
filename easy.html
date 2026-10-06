@@ -262,6 +262,23 @@ body{flex-direction:column;justify-content:flex-start}
   <div class="label">연락처 <span style="font-weight:600;color:var(--ink3)">(세입자가 물어볼 번호 · 비워도 됩니다)</span></div>
   <input class="inp" id="i-phone" type="tel" inputmode="numeric" placeholder="010-0000-0000">
   <div class="box y mt"><p class="sub" style="font-weight:700">이 통장으로 세입자가 <b>직접</b> 넣습니다.<br>포컴은 돈을 만지지 않아요.</p></div>
+  <div class="label" style="margin-top:22px">사업자등록증 <span style="font-weight:600;color:var(--ink3)">(있으면 넣어주세요 · 신고 자료를 만들어 드려요)</span></div>
+  <div><button class="btn outline" id="me-scan" style="margin-bottom:6px" onclick="document.getElementById('me-file').click()">📷 사업자등록증 사진으로 채우기</button></div>
+  <p class="sub mb" id="me-scan-sub" style="text-align:center">찍거나 사진첩에서 고르면 아래 칸이 채워집니다.</p>
+  <input type="file" accept="image/*" id="me-file" class="hidden" onchange="bizPick(event)">
+  <div class="label">사업자등록번호</div>
+  <input class="inp mb" id="i-bizno" type="tel" inputmode="numeric" maxlength="12" placeholder="123-45-67890" onblur="bizNoBlur()">
+  <div class="label">상호</div>
+  <input class="inp mb" id="i-bizname" placeholder="예) 포컴부동산임대">
+  <div class="label">과세 유형 <span style="font-weight:600;color:var(--ink3)">(등록증 제목에 있어요)</span></div>
+  <select class="inp" id="i-biztax" onchange="bizTaxChanged()" style="appearance:auto;-webkit-appearance:menulist">
+    <option value="">아직 몰라요</option>
+    <option value="exempt">면세사업자 (주택 임대)</option>
+    <option value="general">일반과세자</option>
+    <option value="simple">간이과세자</option>
+    <option value="corp">법인사업자</option>
+  </select>
+  <div class="box b mt hidden" id="me-tax-tip"><p class="sub" style="font-weight:700;color:#1D4ED8" id="me-tax-tip-t"></p></div>
   <div class="grow"></div>
   <button class="btn" onclick="saveMe()">다음</button>
 </section>
@@ -295,6 +312,11 @@ body{flex-direction:column;justify-content:flex-start}
   <input class="inp mb" id="rf-ho" placeholder="예) 1229호">
   <div class="label">주소 <span style="font-weight:600;color:var(--ink3)">(비워도 됩니다)</span></div>
   <input class="inp mb" id="rf-addr" placeholder="예) 서울 송파구 법원로 128">
+  <div class="label">어떤 용도로 세를 주세요?</div>
+  <select class="inp mb" id="rf-use" style="appearance:auto;-webkit-appearance:menulist">
+    <option value="home">주거용 (살림집 · 부가세 면세)</option>
+    <option value="biz">사무실·상가 (부가세 과세)</option>
+  </select>
   <button class="opt" id="rf-vac" style="margin-bottom:14px" onclick="toggleRVac()"><span class="em">🚪</span><div>지금 비어 있는 방이에요<small>월세를 받지 않습니다</small></div></button>
   <div class="label">세입자 이름</div>
   <input class="inp mb" id="rf-tname" placeholder="비워두셔도 됩니다">
@@ -335,7 +357,7 @@ body{flex-direction:column;justify-content:flex-start}
   <button class="linkbtn" id="rl-reset" style="color:var(--danger)" onclick="resetAll()">↺ 지우고 처음부터 다시 하기</button>
   <div id="rl-more">
     <button class="btn gray" onclick="askRemind()">⏰ 문자 보내는 날 정하기</button>
-    <button class="btn gray" onclick="go('me')">내 이름·통장 고치기</button>
+    <button class="btn gray" onclick="go('me')">내 정보 고치기 (이름·통장·사업자)</button>
   </div>
 </section>
 
@@ -355,6 +377,7 @@ body{flex-direction:column;justify-content:flex-start}
     <div class="rt" id="rh-unpaid-t" style="color:var(--danger)"></div>
   </button>
   <div id="rh-soon"></div>
+  <div id="rh-biz"></div>
   <div class="grow"></div>
 </section>
 
@@ -729,7 +752,7 @@ body{flex-direction:column;justify-content:flex-start}
   <button class="btn gray" onclick="go('fixed')">매달 걷는 돈 고치기</button>
   <button class="btn gray" onclick="go('meter')">계량기 방식 고치기</button>
   <button class="btn gray" onclick="askVacantRule()">빈 집 몫 정하기</button>
-  <button class="btn gray" onclick="go('me')">내 이름·통장 고치기</button>
+  <button class="btn gray" onclick="go('me')">내 정보 고치기 (이름·통장·사업자)</button>
   <button class="btn gray" onclick="go('addr')">건물 이름·주소 고치기</button>
 </section>
 
@@ -845,7 +868,7 @@ var MEM = null, KEY = 'modu-gwanribi-v1';
 
 var DEFAULT = {
   step:'splash', setupDone:false, mode:'easy',
-  phone:'', owner:{name:'',bank:''},
+  phone:'', owner:{name:'',bank:''}, biz:{no:'',name:'',tax:'',rep:'',addr:'',open:'',type:'',item:''},
   bldg:{name:'', addr:'', type:'villa', count:12},
   units:[], tenantIdx:0,
   meter:'even', meterIdx:0,
@@ -872,6 +895,7 @@ function load(){
   if(S.step==='phone' || S.step==='otp') S.step='me';
   if(!S.history) S.history=[];
   if(!S.rooms) S.rooms=[];
+  if(!S.biz) S.biz={no:'',name:'',tax:'',rep:'',addr:'',open:'',type:'',item:''};
   if(!S.rmonths) S.rmonths={};
   if(!S.remind) S.remind={before:3, after:3};
   if(!S.kind && S.setupDone) S.kind='bldg';   /* 예전에 등록한 분은 건물 방식 */
@@ -981,6 +1005,9 @@ function saveMe(){
   S.owner.name=document.getElementById('i-name').value.trim()||'사장';
   S.owner.bank=document.getElementById('i-bank').value.trim();
   S.phone=document.getElementById('i-phone').value.trim();
+  var no=document.getElementById('i-bizno').value.replace(/[^0-9]/g,'');
+  if(no && !bizCheck(no)){ toast('사업자등록번호가 맞지 않아요. 다시 확인해 주세요'); document.getElementById('i-bizno').focus(); return; }
+  S.biz.no=no; S.biz.name=document.getElementById('i-bizname').value.trim(); S.biz.tax=document.getElementById('i-biztax').value;
   save();
   if(S.setupDone){ toast('고쳤습니다'); go('bldginfo'); } else go('kind');
 }
@@ -1240,8 +1267,59 @@ function profileInputs(){
   document.getElementById('i-name').value=S.owner.name||'';
   document.getElementById('i-bank').value=S.owner.bank||'';
   document.getElementById('i-phone').value=S.phone||'';
+  document.getElementById('i-bizno').value=bizFmt(S.biz.no||'');
+  document.getElementById('i-bizname').value=S.biz.name||'';
+  document.getElementById('i-biztax').value=S.biz.tax||'';
+  document.querySelectorAll('#s-me .inp.ai').forEach(function(el){ el.classList.remove('ai'); });
+  var ss=document.getElementById('me-scan-sub'); if(ss) ss.textContent='찍거나 사진첩에서 고르면 아래 칸이 채워집니다.';
+  bizTaxChanged();
   var t=document.getElementById('me-title');
-  if(t) t.innerHTML = S.setupDone ? '내 이름·통장<br>고치기' : (S.owner.name && !S.owner.bank ? '돈 받으실 통장만<br>알려주세요' : '성함과 계좌를<br>알려주세요');
+  if(t) t.innerHTML = S.setupDone ? '내 정보<br>고치기' : (S.owner.name && !S.owner.bank ? '돈 받으실 통장만<br>알려주세요' : '성함과 계좌를<br>알려주세요');
+}
+/* ---------- 사업자등록증 ---------- */
+var TAX_NAME = { exempt:'면세사업자', general:'일반과세자', simple:'간이과세자', corp:'법인사업자' };
+var TAX_TIP = { exempt:'면세사업자는 부가세 신고가 없고, 해마다 <b>2월에 사업장현황신고</b>만 합니다. 그때 쓸 자료를 만들어 드려요.',
+  general:'일반과세자는 <b>1월·7월에 부가세 신고</b>를 합니다. 분기마다 월세 합계를 정리해 드려요.',
+  simple:'간이과세자는 <b>1월에 한 번 부가세 신고</b>를 합니다. 한 해 월세 합계를 정리해 드려요.',
+  corp:'법인은 <b>1월·4월·7월·10월에 부가세 신고</b>를 합니다. 분기마다 월세 합계를 정리해 드려요.' };
+function bizCheck(n){
+  if(!/^[0-9]{10}$/.test(n)) return false;
+  var w=[1,3,7,1,3,7,1,3,5], t=0;
+  for(var i=0;i<9;i++) t+=Number(n[i])*w[i];
+  t+=Math.floor(Number(n[8])*5/10);
+  return (10-(t%10))%10===Number(n[9]);
+}
+function bizFmt(n){ n=String(n||'').replace(/[^0-9]/g,''); return n.length===10 ? n.slice(0,3)+'-'+n.slice(3,5)+'-'+n.slice(5) : n; }
+function bizNoBlur(){ var el=document.getElementById('i-bizno'); el.value=bizFmt(el.value); }
+function bizTaxChanged(){
+  var v=document.getElementById('i-biztax').value, box=document.getElementById('me-tax-tip');
+  box.classList.toggle('hidden', !TAX_TIP[v]);
+  if(TAX_TIP[v]) document.getElementById('me-tax-tip-t').innerHTML=TAX_TIP[v];
+}
+function bizPick(ev){
+  var f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f) return;
+  if(!FAC){ toast('먼저 들어와 주세요'); return; }
+  var b=document.getElementById('me-scan'), sub=document.getElementById('me-scan-sub');
+  b.disabled=true; b.textContent='읽는 중… 잠시만요'; sub.textContent='보통 5~10초 걸립니다';
+  var done=function(msg, ok){ b.disabled=false; b.textContent='📷 사업자등록증 사진으로 채우기'; sub.innerHTML = ok ? msg : '<span style="color:var(--danger)">'+esc(msg)+'</span>'; };
+  shrinkPhoto(f).then(function(c){
+    var k=Math.min(1, 1800/Math.max(c.width,c.height));
+    if(k<1){ var c2=document.createElement('canvas'); c2.width=Math.round(c.width*k); c2.height=Math.round(c.height*k); c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height); c=c2; }
+    var data=c.toDataURL('image/jpeg',0.85);
+    return fetch(FAC_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'bizRead',tk:FAC.tk,image:data})}).then(function(r){ return r.json(); });
+  }).then(function(j){
+    if(!j.ok){ done(j.error||'읽지 못했습니다', false); return; }
+    var F=j.fields||{}, n=0;
+    var put=function(id,v){ if(!v) return; var el=document.getElementById(id); el.value=v; el.classList.add('ai'); n++; };
+    put('i-bizno',bizFmt(F.no)); put('i-bizname',F.name);
+    if(F.tax){ var t=document.getElementById('i-biztax'); t.value=F.tax; t.classList.add('ai'); bizTaxChanged(); n++; }
+    var cl=function(v){ return String(v||'').replace(/^(업태|종목)\s*[:：]?\s*/,'').trim(); };
+    S.biz.rep=F.rep||S.biz.rep; S.biz.addr=F.addr||S.biz.addr; S.biz.open=F.open||S.biz.open; S.biz.type=cl(F.type)||S.biz.type; S.biz.item=cl(F.item)||S.biz.item;
+    if(!n){ done('사업자등록증에서 읽은 내용이 없습니다. 더 밝고 반듯하게 다시 찍어 주세요.', false); return; }
+    var warn = (F.no && !F.valid) ? ' <b style="color:var(--danger)">등록번호가 잘못 읽힌 것 같아요. 꼭 확인해 주세요.</b>' : (j.confidence==='low' ? ' <b style="color:var(--danger)">잘 안 보이는 사진이라 틀린 곳이 있을 수 있어요.</b>' : '');
+    done(n+'칸을 채웠어요. <b>노란 칸을 확인</b>하고 아래 단추를 눌러주세요.'+warn, true);
+    toast(n+'칸을 채웠어요. 확인해 주세요');
+  }).catch(function(){ done('인터넷 연결을 확인해 주세요.', false); });
 }
 function showResume(){
   document.getElementById('r-bldg').textContent = (S.bldg.name||'건물')+' · 설정 중';
@@ -1959,6 +2037,8 @@ function renderRHome(){
        '<span class="rt" style="color:#92400E">'+(d<0?(-d)+'일 지남':(d===0?'오늘':d+'일 남음'))+'</span></button>';
   });
   document.getElementById('rh-soon').innerHTML = h ? '<div class="label" style="margin-top:16px">챙기실 일</div>'+h : '';
+  document.getElementById('rh-biz').innerHTML = S.biz.no ? '' :
+    '<button class="card mt" onclick="go(\'me\')"><div><div class="ho">사업자등록증 넣어두기</div><div class="nn">사진 한 장이면 돼요 · 신고 때 쓸 자료를 만들어 드려요</div></div><span class="rt" style="color:var(--ink3);font-size:var(--fs-small)">넣기 ›</span></button>';
   renderToday();
 }
 
@@ -2062,12 +2142,13 @@ var roomId=null;
 function openRoom(id){
   roomId=id||null;
   var r=null; S.rooms.forEach(function(x){ if(x.id===id) r=x; });
-  r = r || {bname:'',addr:'',ho:'',tname:'',ttel:'',deposit:0,rent:0,fee:0,util:'tenant',day:0,start:'',end:'',vacant:false};
+  r = r || {bname:'',addr:'',ho:'',tname:'',ttel:'',deposit:0,rent:0,fee:0,util:'tenant',use:'home',day:0,start:'',end:'',vacant:false};
   document.getElementById('rf-title').innerHTML = id ? esc(roomLabel(r))+'<br>고치기' : (S.rooms.length?'호실을 하나 더<br>넣어주세요':'가지고 계신 호실을<br>알려주세요');
   var set=function(k,v){ document.getElementById(k).value = v || ''; };
   set('rf-bname',r.bname); set('rf-ho',r.ho); set('rf-addr',r.addr); set('rf-tname',r.tname); set('rf-ttel',r.ttel);
   set('rf-dep',r.deposit||''); set('rf-rent',r.rent||''); set('rf-fee',r.fee||''); set('rf-day',r.day||''); set('rf-start',r.start); set('rf-end',r.end);
   document.getElementById('rf-util').value = r.util || (r.fee ? 'owner' : 'tenant'); utilChanged();
+  document.getElementById('rf-use').value = r.use || 'home';
   document.querySelectorAll('#s-room .inp.ai').forEach(function(el){ el.classList.remove('ai'); });
   var ss=document.getElementById('rf-scan-sub'); if(ss) ss.innerHTML='계약서를 찍거나 사진첩에서 고르면 아래 칸이 채워집니다.<br>채워진 칸은 꼭 확인해 주세요.';
   document.getElementById('rf-vac').classList.toggle('on', !!r.vacant);
@@ -2096,6 +2177,7 @@ function leasePick(ev){
     put('rf-dep',F.deposit); put('rf-rent',F.rent); put('rf-day',F.day); put('rf-start',F.start); put('rf-end',F.end);
     if(F.util){ var u=document.getElementById('rf-util'); u.value=F.util; u.classList.add('ai'); utilChanged(); n++; }
     if(F.util==='owner' && F.fee) put('rf-fee',F.fee);
+    if(F.use){ var us=document.getElementById('rf-use'); us.value=F.use; us.classList.add('ai'); n++; }
     if(F.tname || F.rent) document.getElementById('rf-vac').classList.remove('on');
     if(!n){ done('계약서에서 읽은 내용이 없습니다. 더 밝고 반듯하게 다시 찍어 주세요.', false); return; }
     var warn = j.confidence==='low' ? ' <b style="color:var(--danger)">잘 안 보이는 사진이라 틀린 곳이 있을 수 있어요.</b>' : '';
@@ -2110,7 +2192,7 @@ function saveRoom(){
   var g=function(k){ return document.getElementById(k).value.trim(); };
   var vac=document.getElementById('rf-vac').classList.contains('on');
   var o={ bname:g('rf-bname'), ho:g('rf-ho'), addr:g('rf-addr'), tname:g('rf-tname'), ttel:g('rf-ttel'),
-    deposit:numOf('rf-dep'), rent:numOf('rf-rent'), util:g('rf-util')||'tenant', fee:0, day:numOf('rf-day'), start:g('rf-start'), end:g('rf-end'), vacant:vac };
+    deposit:numOf('rf-dep'), rent:numOf('rf-rent'), util:g('rf-util')||'tenant', use:g('rf-use')||'home', fee:0, day:numOf('rf-day'), start:g('rf-start'), end:g('rf-end'), vacant:vac };
   if(o.util==='owner'){ o.fee=numOf('rf-fee'); if(o.fee<=0 && !vac){ toast('매달 받는 관리비를 넣어주세요'); return; } }
   if(!o.bname){ toast('건물 이름을 넣어주세요'); return; }
   if(!o.ho){ toast('호수를 넣어주세요 (예: 1229호)'); return; }
@@ -2235,9 +2317,9 @@ function resetAll(){
     '<button class="btn gray" onclick="closeSheet()">아니요, 그대로 둘게요</button>');
 }
 function doReset(){
-  var size = S.size || '', keepOwner = copyOf(S.owner||{name:'',bank:''}), keepPhone = S.phone||'';
+  var size = S.size || '', keepOwner = copyOf(S.owner||{name:'',bank:''}), keepPhone = S.phone||'', keepBiz = copyOf(S.biz||DEFAULT.biz);
   S=JSON.parse(JSON.stringify(DEFAULT)); MEM=null;
-  S.size = size; S.owner = keepOwner; S.phone = keepPhone;   /* 내 이름·통장·연락처는 다시 묻지 않습니다 */                                   /* 글씨 크기는 그대로 둡니다 */
+  S.size = size; S.owner = keepOwner; S.phone = keepPhone; S.biz = keepBiz;   /* 내 이름·통장·연락처는 다시 묻지 않습니다 */                                   /* 글씨 크기는 그대로 둡니다 */
   try{ localStorage.removeItem(KEY); }catch(e){}
   /* 화면에 남아 있는 예전 입력값을 비웁니다 (들어가기·가입 칸은 제외) */
   document.querySelectorAll('#app .scr:not(#s-login):not(#s-join) input').forEach(function(el){
