@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#212D64">
+<meta name="robots" content="noindex">
+<title>모두의관리 · 간편 관리 운영</title>
+<link rel="icon" type="image/png" href="logo.png">
+<style>
+:root{--brand:#10893E;--brand-dark:#0B6B30;--brand-light:#E6F4EA;--navy:#212D64;--danger:#DC2626;--danger-light:#FEE9E9;
+  --warn:#B45309;--warn-light:#FEF3E2;--ink:#0F172A;--ink2:#475569;--ink3:#94A3B8;--line:#D8DEE6;--bg:#F5F7FA}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Malgun Gothic','맑은 고딕',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button,input,textarea{font-family:inherit;color:inherit;font-size:inherit}
+button{border:none;background:none;cursor:pointer}
+.top{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+.top b{font-size:15px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top button{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-weight:800;font-size:13px;border-radius:999px;padding:6px 12px;white-space:nowrap}
+.wrap{max-width:860px;margin:0 auto;padding:16px 16px 60px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:620px){.tiles{grid-template-columns:repeat(2,1fr)}}
+.tile{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+.tile small{display:block;font-size:12.5px;font-weight:700;color:var(--ink2)}
+.tile b{display:block;font-size:22px;font-weight:800;margin-top:3px;letter-spacing:-.5px}
+.tile.r b{color:var(--danger)}
+.bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.inp{flex:1;min-width:150px;border:2px solid var(--line);border-radius:12px;padding:11px 13px;font-size:15px;font-weight:600;background:#fff}
+.inp:focus{outline:none;border-color:var(--brand)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:12px;font-size:15px;font-weight:800;background:var(--brand);color:#fff;white-space:nowrap}
+.btn.gray{background:#E9EDF2;color:var(--ink2)}.btn.line{background:#fff;color:var(--brand-dark);border:2px solid var(--brand)}
+.btn.sm{min-height:38px;padding:0 12px;font-size:13.5px}
+.btn[disabled]{opacity:.45}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin-bottom:10px}
+.card.off{opacity:.6}
+.row1{display:flex;align-items:flex-start;gap:10px}
+.nm{font-size:17px;font-weight:800;line-height:1.3}
+.sub{font-size:13.5px;color:var(--ink2);font-weight:600;margin-top:2px;line-height:1.5}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.tag{font-size:12.5px;font-weight:800;padding:4px 10px;border-radius:999px;background:#EEF1F5;color:var(--ink2)}
+.tag.g{background:var(--brand-light);color:var(--brand-dark)}.tag.y{background:var(--warn-light);color:var(--warn)}.tag.r{background:var(--danger-light);color:var(--danger)}
+.acts{display:flex;gap:7px;flex-wrap:wrap}
+.memo{font-size:13.5px;color:var(--ink2);background:var(--bg);border-radius:10px;padding:8px 10px;margin-top:8px;white-space:pre-wrap}
+.empty{text-align:center;color:var(--ink2);padding:40px 10px;font-weight:700;line-height:1.7}
+.msg{background:var(--danger-light);color:var(--danger);border-radius:12px;padding:11px 13px;font-size:14px;font-weight:800;margin-bottom:12px}
+.hide{display:none !important}
+.dim{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.dim.on{display:flex}
+.sheet{background:#fff;border-radius:18px;padding:20px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto}
+.sheet h2{font-size:19px;font-weight:800;margin-bottom:4px}
+.lab{font-size:13.5px;font-weight:700;color:var(--ink2);margin:12px 0 6px}
+.sheet .inp{width:100%;min-width:0}
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:26px;background:#0F172A;color:#fff;padding:12px 18px;border-radius:12px;font-size:14.5px;font-weight:700;opacity:0;transition:.25s;pointer-events:none;z-index:80;max-width:90%}
+.toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div class="top">
+  <button onclick="location.href='index.html?home=1'">⌂ 처음으로</button>
+  <b>간편 관리 운영</b>
+  <button onclick="load()">새로 고침</button>
+</div>
+
+<div class="wrap">
+  <!-- 관리자 로그인 -->
+  <div id="vLogin" class="hide">
+    <div class="card" style="max-width:420px;margin:30px auto">
+      <div class="nm">관리자만 볼 수 있는 화면입니다</div>
+      <div class="sub">포컴 관리자 비밀번호를 넣어 주세요.</div>
+      <div id="loErr" class="msg hide" style="margin-top:12px"></div>
+      <div class="lab">관리자 비밀번호</div>
+      <input class="inp" style="width:100%" id="loPin" type="password" inputmode="numeric" maxlength="8" autocomplete="current-password">
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button class="btn" style="flex:1" id="loGo" onclick="adminLogin()">들어가기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div id="vList" class="hide">
+    <div id="err" class="msg hide"></div>
+    <div class="tiles">
+      <div class="tile"><small>가입한 건물주</small><b id="tOwners">-</b></div>
+      <div class="tile"><small>등록된 세대</small><b id="tUnits">-</b></div>
+      <div class="tile"><small id="tSentL">이번 달 발송</small><b id="tSent">-</b></div>
+      <div class="tile r"><small>아직 안 들어온 돈</small><b id="tUnpaid">-</b></div>
+    </div>
+    <div class="bar">
+      <input class="inp" id="q" placeholder="건물 · 이름 · 전화번호로 찾기" oninput="render()">
+      <button class="btn" onclick="openNew()">＋ 건물주 등록</button>
+    </div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<div class="dim" id="dim" onclick="if(event.target.id==='dim')closeSheet()"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+var MAIN="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/api", EASY="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/easy";
+var TK="", LIST=[];
+function $(i){ return document.getElementById(i); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function won(n){ return (Math.round(n)||0).toLocaleString('ko-KR'); }
+function tel(p){ p=String(p||''); return p.length===11 ? p.slice(0,3)+'-'+p.slice(3,7)+'-'+p.slice(7) : p.length===10 ? p.slice(0,3)+'-'+p.slice(3,6)+'-'+p.slice(6) : p; }
+function day(s){ if(!s) return '-'; var d=new Date(s); if(isNaN(d)) return '-'; return (d.getMonth()+1)+'/'+d.getDate(); }
+function thisYm(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function toast(m){ var t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(function(){ t.classList.remove('on'); },2400); }
+function sheet(h){ $('sheet').innerHTML=h; $('dim').classList.add('on'); }
+window.closeSheet=function(){ $('dim').classList.remove('on'); };
+function post(url, body){
+  return fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){ return r.json(); });
+}
+function show(v){ $('vLogin').classList.toggle('hide', v!=='login'); $('vList').classList.toggle('hide', v!=='list'); }
+
+/* ---------- 관리자 확인 ---------- */
+function savedTk(){
+  try{ var o=JSON.parse(sessionStorage.getItem('fc_op')||'null'); if(o&&o.tk) return o.tk; }catch(e){}
+  try{ var s=JSON.parse(localStorage.getItem('fc_sess')||'null'); if(s&&s.tk&&s.role==='admin') return s.tk; }catch(e){}
+  return '';
+}
+function keepTk(tk){ TK=tk; try{ sessionStorage.setItem('fc_op', JSON.stringify({tk:tk})); }catch(e){} }
+window.adminLogin=function(){
+  var pin=$('loPin').value.trim(), b=$('loGo'); b.disabled=true; $('loErr').classList.add('hide');
+  post(MAIN,{action:'login',mode:'admin',pin:pin}).then(function(j){
+    b.disabled=false;
+    if(j.ok && j.role==='admin'){ keepTk(j.tk); $('loPin').value=''; load(); }
+    else { $('loErr').textContent=j.error||'들어가지 못했습니다'; $('loErr').classList.remove('hide'); }
+  }).catch(function(){ b.disabled=false; $('loErr').textContent='인터넷 연결을 확인해 주세요.'; $('loErr').classList.remove('hide'); });
+};
+
+/* ---------- 목록 ---------- */
+window.load=function(){
+  if(!TK) TK=savedTk();
+  var first=function(){
+    if(TK) return Promise.resolve();
+    /* 테스트 모드에서는 비밀번호 없이 관리자 토큰을 받습니다 */
+    return post(MAIN,{action:'login',mode:'admin',pin:''}).then(function(j){ if(j.ok&&j.role==='admin') keepTk(j.tk); }).catch(function(){});
+  };
+  first().then(function(){
+    if(!TK){ show('login'); return; }
+    return fetch(EASY+'?api=owners&tk='+encodeURIComponent(TK)).then(function(r){ return r.json(); }).then(function(j){
+      if(j.ok){ LIST=j.owners||[]; show('list'); $('err').classList.add('hide'); render(); }
+      else if(j.auth){ TK=''; try{ sessionStorage.removeItem('fc_op'); }catch(e){} show('login'); }
+      else { show('list'); $('err').textContent=j.error||'불러오지 못했습니다'; $('err').classList.remove('hide'); }
+    });
+  }).catch(function(){ show('list'); $('err').textContent='인터넷 연결을 확인해 주세요.'; $('err').classList.remove('hide'); });
+};
+window.render=function(){
+  var ym=thisYm(), q=$('q').value.trim().toLowerCase().replace(/-/g,'');
+  var act=LIST.filter(function(o){ return !o.disabled; });
+  $('tOwners').textContent=LIST.length+'명';
+  $('tUnits').textContent=won(act.reduce(function(a,o){ return a+o.units; },0))+'세대';
+  var ready=act.filter(function(o){ return o.setupDone; }), sent=ready.filter(function(o){ return o.sent && o.ym===ym; });
+  $('tSentL').textContent=(new Date().getMonth()+1)+'월 발송';
+  $('tSent').textContent=sent.length+' / '+ready.length;
+  $('tUnpaid').textContent=won(act.reduce(function(a,o){ return a+o.unpaidAmt; },0))+'원';
+  var rows=LIST.filter(function(o){
+    if(!q) return true;
+    return (o.bldg+' '+o.name+' '+o.phone+' '+o.addr+' '+o.memo).toLowerCase().indexOf(q)>=0;
+  });
+  if(!LIST.length){ $('list').innerHTML='<div class="empty">아직 가입한 건물주가 없습니다.<br>“＋ 건물주 등록”으로 대신 가입시켜 드릴 수 있습니다.</div>'; return; }
+  if(!rows.length){ $('list').innerHTML='<div class="empty">찾는 건물주가 없습니다.</div>'; return; }
+  $('list').innerHTML=rows.map(function(o){
+    var tags=[];
+    if(o.disabled) tags.push('<span class="tag r">사용 정지</span>');
+    if(!o.setupDone) tags.push('<span class="tag y">건물 등록 중</span>');
+    else{
+      tags.push('<span class="tag">'+o.units+'세대'+(o.vacant?' · 빈 집 '+o.vacant:'')+'</span>');
+      tags.push(o.sent && o.ym===ym ? '<span class="tag g">'+(parseInt(ym.slice(5),10))+'월 발송 완료 · '+won(o.billed)+'원</span>'
+                                    : '<span class="tag y">'+(parseInt(ym.slice(5),10))+'월 아직 안 보냄</span>');
+    }
+    if(o.unpaidN) tags.push('<span class="tag r">미납 '+o.unpaidN+'건 · '+won(o.unpaidAmt)+'원</span>');
+    return '<div class="card'+(o.disabled?' off':'')+'">'+
+      '<div class="row1"><div style="flex:1;min-width:0"><div class="nm">'+esc(o.bldg||'(건물 이름 없음)')+'</div>'+
+      '<div class="sub">'+esc(o.name||'이름 없음')+' · '+esc(tel(o.phone))+(o.addr?'<br>'+esc(o.addr):'')+'</div></div>'+
+      '<div class="sub" style="text-align:right;white-space:nowrap">가입 '+day(o.createdAt)+'<br>최근 '+day(o.updatedAt)+'</div></div>'+
+      '<div class="tags">'+tags.join('')+'</div>'+
+      (o.memo?'<div class="memo">'+esc(o.memo)+'</div>':'')+
+      '<div class="acts" style="margin-top:10px">'+
+        '<button class="btn sm" onclick="enter(\''+o.id+'\')">들어가 보기</button>'+
+        '<a class="btn sm line" href="tel:'+esc(o.phone)+'">📞 전화</a>'+
+        '<button class="btn sm gray" onclick="openMemo(\''+o.id+'\')">메모</button>'+
+        '<button class="btn sm gray" onclick="openPin(\''+o.id+'\')">비밀번호 다시 정하기</button>'+
+        '<button class="btn sm gray" onclick="toggleOff(\''+o.id+'\')">'+(o.disabled?'정지 풀기':'사용 정지')+'</button>'+
+      '</div></div>';
+  }).join('');
+};
+function find(id){ for(var i=0;i<LIST.length;i++) if(LIST[i].id===id) return LIST[i]; return null; }
+
+/* 건물주 화면으로 들어가기 (이 탭에서만 기억) */
+window.enter=function(id){
+  try{ sessionStorage.setItem('fc_view', JSON.stringify({tk:TK, owner:id})); }
+  catch(e){ toast('이 브라우저에서는 들어갈 수 없습니다'); return; }
+  location.href='easy.html';
+};
+window.openMemo=function(id){
+  var o=find(id); if(!o) return;
+  sheet('<h2>메모</h2><div class="sub">'+esc(o.bldg||o.name||tel(o.phone))+' · 운영자만 봅니다</div>'+
+    '<textarea class="inp" id="mmT" rows="5" style="margin-top:12px;resize:vertical">'+esc(o.memo)+'</textarea>'+
+    '<div style="display:flex;gap:8px;margin-top:14px"><button class="btn" style="flex:1" onclick="saveMemo(\''+id+'\')">저장</button><button class="btn gray" onclick="closeSheet()">닫기</button></div>');
+};
+window.saveMemo=function(id){
+  post(EASY,{action:'ownerMemo',tk:TK,id:id,memo:$('mmT').value}).then(function(j){
+    if(j.ok){ closeSheet(); toast('저장했습니다'); load(); } else toast(j.error||'저장하지 못했습니다');
+  }).catch(function(){ toast('인터넷 연결을 확인해 주세요'); });
+};
+window.openPin=function(id){
+  var o=find(id); if(!o) return;
+  sheet('<h2>비밀번호 다시 정하기</h2><div class="sub">'+esc(o.name||'')+' · '+esc(tel(o.phone))+'<br>건물주가 비밀번호를 잊었을 때 씁니다. 새 비밀번호를 정해 전화로 알려 주세요.</div>'+
+    '<div id="pnErr" class="msg hide" style="margin-top:12px"></div>'+
+    '<div class="lab">새 비밀번호 (숫자 4~6자리)</div><input class="inp" id="pnV" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">'+
+    '<div style="display:flex;gap:8px;margin-top:14px"><button class="btn" style="flex:1" onclick="savePin(\''+id+'\')">바꾸기</button><button class="btn gray" onclick="closeSheet()">닫기</button></div>');
+};
+window.savePin=function(id){
+  var v=$('pnV').value.trim();
+  if(!/^[0-9]{4,6}$/.test(v)){ $('pnErr').textContent='숫자 4~6자리로 넣어 주세요'; $('pnErr').classList.remove('hide'); return; }
+  post(EASY,{action:'ownerSetPin',tk:TK,id:id,pin:v}).then(function(j){
+    if(j.ok){ closeSheet(); toast('비밀번호를 바꿨습니다'); } else { $('pnErr').textContent=j.error||'바꾸지 못했습니다'; $('pnErr').classList.remove('hide'); }
+  }).catch(function(){ toast('인터넷 연결을 확인해 주세요'); });
+};
+window.toggleOff=function(id){
+  var o=find(id); if(!o) return;
+  var on=!o.disabled;
+  sheet('<h2>'+(on?'사용을 멈출까요?':'정지를 풀까요?')+'</h2><div class="sub">'+esc(o.bldg||o.name||tel(o.phone))+
+    (on?'<br>건물주가 들어올 수 없게 됩니다. 자료는 지워지지 않습니다.':'<br>건물주가 다시 들어올 수 있습니다.')+'</div>'+
+    '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn" style="flex:1" onclick="doOff(\''+id+'\','+(on?'true':'false')+')">'+(on?'멈추기':'풀기')+'</button><button class="btn gray" onclick="closeSheet()">아니요</button></div>');
+};
+window.doOff=function(id,on){
+  post(EASY,{action:'ownerDisable',tk:TK,id:id,on:on}).then(function(j){
+    if(j.ok){ closeSheet(); toast(on?'사용을 멈췄습니다':'정지를 풀었습니다'); load(); } else toast(j.error||'바꾸지 못했습니다');
+  }).catch(function(){ toast('인터넷 연결을 확인해 주세요'); });
+};
+/* 전화로 가입을 도와줄 때 : 운영자가 대신 계정을 만듭니다 */
+window.openNew=function(){
+  sheet('<h2>건물주 등록</h2><div class="sub">전화로 도와드릴 때 대신 가입시켜 드립니다.<br>정한 비밀번호는 건물주께 알려 주세요.</div>'+
+    '<div id="nwErr" class="msg hide" style="margin-top:12px"></div>'+
+    '<div class="lab">성함</div><input class="inp" id="nwN" autocomplete="off">'+
+    '<div class="lab">휴대폰 번호</div><input class="inp" id="nwP" type="tel" inputmode="numeric" autocomplete="off" placeholder="010-0000-0000">'+
+    '<div class="lab">비밀번호 (숫자 4~6자리)</div><input class="inp" id="nwV" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">'+
+    '<div style="display:flex;gap:8px;margin-top:14px"><button class="btn" style="flex:1" id="nwGo" onclick="saveNew()">등록</button><button class="btn gray" onclick="closeSheet()">닫기</button></div>');
+};
+window.saveNew=function(){
+  var e=function(m){ $('nwErr').textContent=m; $('nwErr').classList.remove('hide'); };
+  var n=$('nwN').value.trim(), p=$('nwP').value.replace(/[^0-9]/g,''), v=$('nwV').value.trim();
+  if(!n) return e('성함을 넣어 주세요');
+  if(p.length<10) return e('휴대폰 번호를 넣어 주세요');
+  if(!/^[0-9]{4,6}$/.test(v)) return e('비밀번호는 숫자 4~6자리로 넣어 주세요');
+  $('nwGo').disabled=true;
+  post(EASY,{action:'ownerJoin',phone:p,pin:v,name:n}).then(function(j){
+    $('nwGo').disabled=false;
+    if(j.ok){ closeSheet(); toast('등록했습니다'); load(); } else e(j.error||'등록하지 못했습니다');
+  }).catch(function(){ $('nwGo').disabled=false; e('인터넷 연결을 확인해 주세요.'); });
+};
+
+load();
+})();
+</script>
+</body>
+</html>
