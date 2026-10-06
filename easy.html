@@ -31,6 +31,10 @@
 -->
 <style>
 .inp.ai{background-color:#FFF8D6;border-color:#E3B341}
+.grp{border:2px solid #D7DEE8;border-radius:16px;padding:4px 10px 10px;margin:0 0 14px;background:#FAFBFD}
+.grp .ghead{padding:10px 4px 8px;border-bottom:1.5px dashed #D7DEE8;margin-bottom:10px}
+.grp .ghead b{font-size:var(--fs-body)}
+.grp .card{background:#fff}
 select.inp{background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 14px center;padding-right:44px}
 :root{
   /* ===== 색 : 여기만 바꾸면 전체가 바뀝니다 ===== */
@@ -314,7 +318,7 @@ body{flex-direction:column;justify-content:flex-start}
   <div class="label">주소 <span style="font-weight:600;color:var(--ink3)">(비워도 됩니다)</span></div>
   <input class="inp mb" id="rf-addr" placeholder="예) 서울 송파구 법원로 128">
   <div class="label">어떤 용도로 세를 주세요?</div>
-  <select class="inp mb" id="rf-use" style="appearance:auto;-webkit-appearance:menulist">
+  <select class="inp mb" id="rf-use" onchange="useChanged()" style="appearance:auto;-webkit-appearance:menulist">
     <option value="home">주거용 (살림집 · 부가세 면세)</option>
     <option value="biz">사무실·상가 (부가세 과세)</option>
   </select>
@@ -324,7 +328,15 @@ body{flex-direction:column;justify-content:flex-start}
   <div class="label">세입자 전화번호</div>
   <input class="inp mb" id="rf-ttel" type="tel" inputmode="numeric" placeholder="010-0000-0000">
   <div class="label">월세</div>
-  <input class="inp num mb" id="rf-rent" type="tel" inputmode="numeric" placeholder="예) 500000">
+  <input class="inp num mb" id="rf-rent" type="tel" inputmode="numeric" placeholder="예) 500000" oninput="vatNote()">
+  <div id="rf-vatbox" class="hidden">
+    <div class="label">부가세 (10%)</div>
+    <select class="inp" id="rf-vat" onchange="vatNote()" style="appearance:auto;-webkit-appearance:menulist">
+      <option value="sep">월세와 별도로 받아요 (월세의 10%)</option>
+      <option value="incl">월세에 포함되어 있어요</option>
+    </select>
+    <p class="sub mb" id="rf-vat-t" style="margin-top:6px;font-weight:700;color:#1D4ED8"></p>
+  </div>
   <div class="label">관리비·전기·수도는 누가 내나요?</div>
   <select class="inp mb" id="rf-util" onchange="utilChanged()" style="appearance:auto;-webkit-appearance:menulist">
     <option value="tenant">세입자가 관리실에 직접 내요</option>
@@ -355,6 +367,7 @@ body{flex-direction:column;justify-content:flex-start}
 <section class="scr" id="s-rlist">
   <h2 id="rl-title"></h2>
   <p class="sub mb" id="rl-sub" style="margin-top:4px"></p>
+  <div id="rl-sum"></div>
   <div id="rl-list" style="flex:1"></div>
   <button class="btn outline" onclick="openRoom(null)">＋ 호실 추가하기</button>
   <button class="btn" id="rl-done" onclick="finishRooms()">다 넣었어요</button>
@@ -1939,7 +1952,26 @@ function callFamily(){
    ========================================================= */
 function isRooms(){ return S.kind==='rooms'; }
 function roomLabel(r){ return ((r.bname||'')+' '+(r.ho||'')).trim() || '호실'; }
-function dueAmt(r){ return (r.rent||0)+(r.fee||0); }
+function vatOf(r){ return (r.use==='biz' && r.vat!=='incl') ? Math.round((r.rent||0)*0.1) : 0; }
+/* 월세에 포함된 부가세 (포함형일 때 신고용: 월세×10/110) */
+function vatInside(r){ return (r.use==='biz' && r.vat==='incl') ? Math.round((r.rent||0)*10/110) : 0; }
+function dueAmt(r){ return (r.rent||0)+(r.fee||0)+vatOf(r); }
+function useChanged(){
+  var biz = document.getElementById('rf-use').value==='biz';
+  document.getElementById('rf-vatbox').classList.toggle('hidden', !biz);
+  vatNote();
+}
+function vatNote(){
+  var el=document.getElementById('rf-vat-t'); if(!el) return;
+  if(document.getElementById('rf-use').value!=='biz'){ el.textContent=''; return; }
+  var rent=numOf('rf-rent');
+  if(!rent){ el.textContent='사무실·상가 임대는 부가세 신고 자료를 만들어 드려요.'; return; }
+  if(document.getElementById('rf-vat').value==='incl'){
+    el.textContent='월세 '+won(rent)+'원 안에 부가세 약 '+won(Math.round(rent*10/110))+'원이 들어 있는 것으로 계산합니다.';
+  } else {
+    el.textContent='월세 '+won(rent)+'원 + 부가세 '+won(Math.round(rent*0.1))+'원 = 매달 '+won(rent+Math.round(rent*0.1))+'원을 받습니다.';
+  }
+}
 function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dueDate(ym, day){
   var p=ym.split('-'), last=new Date(+p[0], +p[1], 0).getDate();
@@ -1967,7 +1999,7 @@ function ensureRMonth(){
     var it=null; M.items.forEach(function(x){ if(x.id===r.id) it=x; });
     var off = r.vacant || dueAmt(r)<=0 || (r.start && r.start>last);
     if(off){ if(it && !it.paid){ M.items.splice(M.items.indexOf(it),1); ch=true; } return; }
-    var want={label:roomLabel(r), tname:r.tname||'', ttel:r.ttel||'', amt:dueAmt(r), rent:r.rent||0, fee:r.fee||0, day:r.day||1};
+    var want={label:roomLabel(r), tname:r.tname||'', ttel:r.ttel||'', amt:dueAmt(r), rent:r.rent||0, fee:r.fee||0, vat:vatOf(r), day:r.day||1};
     if(!it){ it={id:r.id, paid:false, at:''}; for(var k in want) it[k]=want[k]; M.items.push(it); ch=true; }
     else if(!it.paid){ for(var k2 in want){ if(it[k2]!==want[k2]){ it[k2]=want[k2]; ch=true; } } }
   });
@@ -2161,15 +2193,25 @@ function renderRList(){
   document.getElementById('rl-title').textContent = S.setupDone ? '내 호실' : '호실 '+S.rooms.length+'곳을 넣었습니다';
   document.getElementById('rl-sub').textContent = S.setupDone ? '눌러서 고칠 수 있어요' : '더 있으면 추가하시고, 다 넣었으면 아래 단추를 눌러주세요';
   var rg=groupBy(S.rooms, function(r){ return r.bname||'건물'; });
+  /* 요약 : 보증금·월세 합계 */
+  var act=S.rooms.filter(function(r){ return !r.vacant; });
+  var dep=0, mon=0, vat=0;
+  act.forEach(function(r){ dep+=(r.deposit||0); mon+=dueAmt(r); vat+=vatOf(r); });
+  var vacCnt=S.rooms.length-act.length;
+  document.getElementById('rl-sum').innerHTML = S.rooms.length ?
+    '<div class="box g" style="padding:14px 16px;margin-bottom:14px">'+
+      '<p style="font-weight:800">호실 '+S.rooms.length+'곳'+(rg.length>1?' · 건물 '+rg.length+'곳':'')+(vacCnt?' · 빈 방 '+vacCnt:'')+'</p>'+
+      '<p class="sub" style="margin-top:6px;font-weight:700;line-height:1.7">다달이 받는 돈 <b style="color:var(--brand-dark)">'+won(mon)+'원</b>'+(vat?' (부가세 '+won(vat)+'원 포함)':'')+
+      '<br>보증금 모두 <b>'+won(dep)+'원</b></p></div>' : '';
   document.getElementById('rl-list').innerHTML = rg.map(function(g){
-    var head = rg.length>1 ? '<div class="label" style="margin-top:10px">'+esc(g.key)+' <span style="color:var(--ink3);font-weight:600">· '+g.items.length+'곳'+(g.items[0].addr?' · '+esc(g.items[0].addr):'')+'</span></div>' : '';
-    return head + g.items.map(function(r){
+    var head = '<div class="ghead"><b>'+esc(g.key)+'</b> <span class="sub" style="font-weight:600;color:var(--ink3)">· '+g.items.length+'곳'+(g.items[0].addr?'<br>'+esc(g.items[0].addr):'')+'</span></div>';
+    return '<div class="grp">' + head + g.items.map(function(r){
     var I = leaseInfo(r), act = needsAction(I), over = !!I && I.kind==='over';
     var cline = r.vacant ? '' : (I ? '<br>'+(over ? '<b style="color:var(--danger)">계약 끝난 지 '+I.span+' 지남 · 갱신 필요</b>' :
       (act ? '<b style="color:#92400E">계약 '+mdLabel(r.end)+'까지 · '+(I.kind==='today'?'오늘 끝나요':I.span+' 남음')+'</b>' : '계약 '+mdLabel(r.end)+'까지 · '+I.span+' 남음')) : '');
     return '<button class="card" style="'+(over?'border-color:var(--danger)':(act?'border-color:var(--warn)':''))+'" onclick="'+(act?'leaseSheet':'openRoom')+'(\''+r.id+'\')"><div style="min-width:0"><div class="ho">'+esc(rg.length>1?(r.ho||roomLabel(r)):roomLabel(r))+'</div>'+
-      '<div class="nn">'+(r.vacant?'빈 방':esc(r.tname||'세입자 이름 없음')+' · 월 '+won(dueAmt(r))+'원 · '+(r.day||1)+'일'+(r.util==='owner'?' · 관리비 포함':''))+cline+'</div></div>'+
-      '<span class="rt" style="color:'+(over?'var(--danger)':'var(--ink3)')+';font-size:var(--fs-small)">'+(act?(over?'갱신 ›':'확인 ›'):'고치기 ›')+'</span></button>'; }).join('');
+      '<div class="nn">'+(r.vacant?'빈 방':esc(r.tname||'세입자 이름 없음')+' · 월 '+won(dueAmt(r))+'원'+(vatOf(r)?'<span style="color:var(--ink3)"> (부가세 '+won(vatOf(r))+'원 포함)</span>':'')+' · '+(r.day||1)+'일'+(r.util==='owner'?' · 관리비 포함':''))+cline+'</div></div>'+
+      '<span class="rt" style="color:'+(over?'var(--danger)':'var(--ink3)')+';font-size:var(--fs-small)">'+(act?(over?'갱신 ›':'확인 ›'):'고치기 ›')+'</span></button>'; }).join('') + '</div>';
   }).join('')
     || '<div class="box cc" style="padding:26px"><p>아직 넣은 호실이 없어요</p></div>';
   document.getElementById('rl-done').classList.toggle('hidden', !!S.setupDone);
@@ -2187,6 +2229,7 @@ function openRoom(id){
   set('rf-dep',r.deposit||''); set('rf-rent',r.rent||''); set('rf-fee',r.fee||''); set('rf-day',r.day||''); set('rf-start',r.start); set('rf-end',r.end);
   document.getElementById('rf-util').value = r.util || (r.fee ? 'owner' : 'tenant'); utilChanged();
   document.getElementById('rf-use').value = r.use || 'home';
+  document.getElementById('rf-vat').value = r.vat || 'sep'; useChanged();
   document.querySelectorAll('#s-room .inp.ai').forEach(function(el){ el.classList.remove('ai'); });
   var ss=document.getElementById('rf-scan-sub'); if(ss) ss.innerHTML='계약서를 찍거나 사진첩에서 고르면 아래 칸이 채워집니다.<br>채워진 칸은 꼭 확인해 주세요.';
   document.getElementById('rf-vac').classList.toggle('on', !!r.vacant);
@@ -2348,7 +2391,7 @@ function leasePick(ev){
     if(F.util){ var u=document.getElementById('rf-util'); u.value=F.util; u.classList.add('ai'); utilChanged(); n++; }
     if(F.util==='owner' && F.fee) put('rf-fee',F.fee);
     if(F.use){ var us=document.getElementById('rf-use'); us.value=F.use; us.classList.add('ai'); n++; }
-    leaseNote();
+    useChanged(); leaseNote();
     if(F.tname || F.rent) document.getElementById('rf-vac').classList.remove('on');
     if(!n){ done('계약서에서 읽은 내용이 없습니다. 더 밝고 반듯하게 다시 찍어 주세요.', false); return; }
     var warn = j.confidence==='low' ? ' <b style="color:var(--danger)">잘 안 보이는 사진이라 틀린 곳이 있을 수 있어요.</b>' : '';
@@ -2363,7 +2406,7 @@ function saveRoom(){
   var g=function(k){ return document.getElementById(k).value.trim(); };
   var vac=document.getElementById('rf-vac').classList.contains('on');
   var o={ bname:g('rf-bname'), ho:g('rf-ho'), addr:g('rf-addr'), tname:g('rf-tname'), ttel:g('rf-ttel'),
-    deposit:numOf('rf-dep'), rent:numOf('rf-rent'), util:g('rf-util')||'tenant', use:g('rf-use')||'home', fee:0, day:numOf('rf-day'), start:g('rf-start'), end:g('rf-end'), vacant:vac };
+    deposit:numOf('rf-dep'), rent:numOf('rf-rent'), util:g('rf-util')||'tenant', use:g('rf-use')||'home', vat:(g('rf-use')==='biz' ? (g('rf-vat')||'sep') : ''), fee:0, day:numOf('rf-day'), start:g('rf-start'), end:g('rf-end'), vacant:vac };
   if(o.util==='owner'){ o.fee=numOf('rf-fee'); if(o.fee<=0 && !vac){ toast('매달 받는 관리비를 넣어주세요'); return; } }
   if(!o.bname){ toast('건물 이름을 넣어주세요'); return; }
   if(!o.ho){ toast('호수를 넣어주세요 (예: 1229호)'); return; }
