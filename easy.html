@@ -278,6 +278,7 @@ body{flex-direction:column;justify-content:flex-start}
     <option value="simple">간이과세자</option>
     <option value="corp">법인사업자</option>
   </select>
+  <div class="box mt hidden" id="me-nts" style="padding:12px 14px"><p class="sub" style="font-weight:700" id="me-nts-t"></p></div>
   <div class="box b mt hidden" id="me-tax-tip"><p class="sub" style="font-weight:700;color:#1D4ED8" id="me-tax-tip-t"></p></div>
   <div class="grow"></div>
   <button class="btn" onclick="saveMe()">다음</button>
@@ -1008,6 +1009,7 @@ function saveMe(){
   var no=document.getElementById('i-bizno').value.replace(/[^0-9]/g,'');
   if(no && !bizCheck(no)){ toast('사업자등록번호가 맞지 않아요. 다시 확인해 주세요'); document.getElementById('i-bizno').focus(); return; }
   S.biz.no=no; S.biz.name=document.getElementById('i-bizname').value.trim(); S.biz.tax=document.getElementById('i-biztax').value;
+  if(S.biz.nts && S.biz.nts.no!==no) S.biz.nts=null;
   save();
   if(S.setupDone){ toast('고쳤습니다'); go('bldginfo'); } else go('kind');
 }
@@ -1272,7 +1274,7 @@ function profileInputs(){
   document.getElementById('i-biztax').value=S.biz.tax||'';
   document.querySelectorAll('#s-me .inp.ai').forEach(function(el){ el.classList.remove('ai'); });
   var ss=document.getElementById('me-scan-sub'); if(ss) ss.textContent='찍거나 사진첩에서 고르면 아래 칸이 채워집니다.';
-  bizTaxChanged();
+  bizTaxChanged(); showNts();
   var t=document.getElementById('me-title');
   if(t) t.innerHTML = S.setupDone ? '내 정보<br>고치기' : (S.owner.name && !S.owner.bank ? '돈 받으실 통장만<br>알려주세요' : '성함과 계좌를<br>알려주세요');
 }
@@ -1290,7 +1292,43 @@ function bizCheck(n){
   return (10-(t%10))%10===Number(n[9]);
 }
 function bizFmt(n){ n=String(n||'').replace(/[^0-9]/g,''); return n.length===10 ? n.slice(0,3)+'-'+n.slice(3,5)+'-'+n.slice(5) : n; }
-function bizNoBlur(){ var el=document.getElementById('i-bizno'); el.value=bizFmt(el.value); }
+function bizNoBlur(){
+  var el=document.getElementById('i-bizno'); el.value=bizFmt(el.value);
+  var no=el.value.replace(/[^0-9]/g,'');
+  if(bizCheck(no) && !(S.biz.nts && S.biz.nts.no===no)) bizNts(no,'','');
+}
+/* ---------- 국세청에 물어보기 : 영업 중인지, 과세 유형, (등록증을 읽었으면) 대표자·개업일이 맞는지 ---------- */
+var STT_NAME = { open:'영업 중', paused:'휴업 중', closed:'폐업' };
+function bizNts(no, open, rep){
+  if(!FAC) return;
+  var box=document.getElementById('me-nts'), t=document.getElementById('me-nts-t');
+  box.classList.remove('hidden'); box.style.background=''; t.style.color='var(--ink3)'; t.textContent='국세청에 확인하는 중…';
+  fetch(FAC_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'bizCheck',tk:FAC.tk,no:no,open:open||'',rep:rep||''})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(!j.ok){ if(j.nokey){ box.classList.add('hidden'); return; } t.style.color='var(--danger)'; t.textContent=j.error||'확인하지 못했습니다'; return; }
+      S.biz.nts={ no:no, stt:j.stt, sttName:j.sttName, tax:j.tax, taxName:j.taxName, valid:j.valid, endDt:j.endDt, at:new Date().toISOString().slice(0,10) };
+      if(j.tax){ var sel=document.getElementById('i-biztax'); if(!sel.value || sel.classList.contains('ai')){ sel.value=j.tax; sel.classList.remove('ai'); bizTaxChanged(); } }
+      save(); showNts();
+    }).catch(function(){ t.style.color='var(--danger)'; t.textContent='인터넷 연결을 확인해 주세요.'; });
+}
+function showNts(){
+  var box=document.getElementById('me-nts'), t=document.getElementById('me-nts-t'), n=S.biz.nts;
+  if(!n || !n.no || n.no!==document.getElementById('i-bizno').value.replace(/[^0-9]/g,'')){ box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  var bad = !n.stt || n.stt!=='open' || n.valid===false;
+  box.style.background = bad ? 'var(--danger-light)' : '#E4F2EA'; t.style.color = bad ? 'var(--danger)' : '#1F6B45';
+  var h;
+  if(!n.stt) h='국세청에 없는 번호예요. 다시 확인해 주세요.';
+  else {
+    h=(bad?'⚠ ':'✓ ')+'국세청 확인 ('+n.at+') · '+(STT_NAME[n.stt]||n.sttName)+(n.taxName?' · '+esc(n.taxName):'')+(n.stt==='closed'&&n.endDt?' ('+n.endDt.slice(0,4)+'.'+n.endDt.slice(4,6)+'.'+n.endDt.slice(6)+')':'');
+    if(n.valid===true) h+='<br>대표자·개업일도 국세청 기록과 맞아요.';
+    else if(n.valid===false) h+='<br>대표자 이름이나 개업일이 국세청 기록과 달라요. 등록증을 다시 확인해 주세요.';
+  }
+  var sel=document.getElementById('i-biztax').value;
+  if(n.tax && sel && sel!==n.tax && !(sel==='corp')) h+='<br>고르신 과세 유형이 국세청 기록('+esc(n.taxName)+')과 달라요.';
+  t.innerHTML=h;
+}
 function bizTaxChanged(){
   var v=document.getElementById('i-biztax').value, box=document.getElementById('me-tax-tip');
   box.classList.toggle('hidden', !TAX_TIP[v]);
@@ -1319,6 +1357,7 @@ function bizPick(ev){
     var warn = (F.no && !F.valid) ? ' <b style="color:var(--danger)">등록번호가 잘못 읽힌 것 같아요. 꼭 확인해 주세요.</b>' : (j.confidence==='low' ? ' <b style="color:var(--danger)">잘 안 보이는 사진이라 틀린 곳이 있을 수 있어요.</b>' : '');
     done(n+'칸을 채웠어요. <b>노란 칸을 확인</b>하고 아래 단추를 눌러주세요.'+warn, true);
     toast(n+'칸을 채웠어요. 확인해 주세요');
+    if(F.no && F.valid) bizNts(F.no, (F.open||'').replace(/-/g,''), F.rep||'');
   }).catch(function(){ done('인터넷 연결을 확인해 주세요.', false); });
 }
 function showResume(){
