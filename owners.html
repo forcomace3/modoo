@@ -153,7 +153,7 @@ window.render=function(){
   $('tOwners').textContent=LIST.length+'명';
   $('tUnits').textContent=won(act.reduce(function(a,o){ return a+o.units; },0))+'세대';
   var ready=act.filter(function(o){ return o.setupDone; }), sent=ready.filter(function(o){ return o.sent && o.ym===ym; });
-  $('tSentL').textContent=(new Date().getMonth()+1)+'월 발송';
+  $('tSentL').textContent=(new Date().getMonth()+1)+'월 발송·수금 끝난 곳';
   $('tSent').textContent=sent.length+' / '+ready.length;
   $('tUnpaid').textContent=won(act.reduce(function(a,o){ return a+o.unpaidAmt; },0))+'원';
   var rows=LIST.filter(function(o){
@@ -165,15 +165,20 @@ window.render=function(){
   $('list').innerHTML=rows.map(function(o){
     var tags=[];
     if(o.disabled) tags.push('<span class="tag r">사용 정지</span>');
-    if(!o.setupDone) tags.push('<span class="tag y">건물 등록 중</span>');
+    if(!o.setupDone) tags.push('<span class="tag y">'+(o.kind==='rooms'?'호실 등록 중':'건물 등록 중')+'</span>');
+    else if(o.kind==='rooms'){
+      tags.push('<span class="tag">🔑 호실 '+o.units+'곳'+(o.vacant?' · 빈 방 '+o.vacant:'')+'</span>');
+      tags.push(o.dueN ? '<span class="tag '+(o.gotN===o.dueN?'g':'y')+'">'+(parseInt(ym.slice(5),10))+'월 월세 '+o.gotN+'/'+o.dueN+' 입금 · '+won(o.billed)+'원</span>'
+                       : '<span class="tag">이번 달 받을 월세 없음</span>');
+    }
     else{
       tags.push('<span class="tag">'+o.units+'세대'+(o.vacant?' · 빈 집 '+o.vacant:'')+'</span>');
       tags.push(o.sent && o.ym===ym ? '<span class="tag g">'+(parseInt(ym.slice(5),10))+'월 발송 완료 · '+won(o.billed)+'원</span>'
                                     : '<span class="tag y">'+(parseInt(ym.slice(5),10))+'월 아직 안 보냄</span>');
     }
-    if(o.unpaidN) tags.push('<span class="tag r">미납 '+o.unpaidN+'건 · '+won(o.unpaidAmt)+'원</span>');
+    if(o.unpaidN) tags.push('<span class="tag r">'+(o.kind==='rooms'?'날짜 지난 미납 ':'미납 ')+o.unpaidN+'건 · '+won(o.unpaidAmt)+'원</span>');
     return '<div class="card'+(o.disabled?' off':'')+'">'+
-      '<div class="row1"><div style="flex:1;min-width:0"><div class="nm">'+esc(o.bldg||'(건물 이름 없음)')+'</div>'+
+      '<div class="row1"><div style="flex:1;min-width:0"><div class="nm">'+esc(o.bldg||(o.kind==='rooms'?'(호실 없음)':'(건물 이름 없음)'))+'</div>'+
       '<div class="sub">'+esc(o.name||'이름 없음')+' · '+esc(tel(o.phone))+(o.addr?'<br>'+esc(o.addr):'')+'</div></div>'+
       '<div class="sub" style="text-align:right;white-space:nowrap">가입 '+day(o.createdAt)+'<br>최근 '+day(o.updatedAt)+'</div></div>'+
       '<div class="tags">'+tags.join('')+'</div>'+

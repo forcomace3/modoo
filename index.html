@@ -361,6 +361,7 @@
       <div class="lg-sec">🏢 건물 종합 관리</div>
       <button class="fac-go" id="facGoPro"><span class="fi">💰</span><span><b>수납·계약 관리</b><small>임대 계약 · 관리비 부과·정산 · 수납 · 세금계산서</small></span><span class="ar">›</span></button>
       <button class="fac-go" id="facGoEmp"><span class="fi" style="background:#E8EBF7">🛠️</span><span><b>현장·직원 관리</b><small>업무 지시 · 점검 일지 · 고장 접수 · 급여명세서 · 결재</small></span><span class="ar">›</span></button>
+      <button class="fac-go" id="facGoOwners"><span class="fi" style="background:#E6F4EA">🏘️</span><span><b>간편 관리 운영</b><small>가입한 건물주 · 발송·미납 현황 · 대신 넣어 드리기 (포컴 관리자)</small></span><span class="ar">›</span></button>
       <div style="font-size:12px;color:#8A8A96;text-align:center;line-height:1.6;margin-top:6px">수납·계약 관리는 관리자·관리소장만 들어갈 수 있습니다.</div>
     </div>
     <div id="lgPick" class="hide">
@@ -2100,9 +2101,9 @@
     finally{setTimeout(function(){bs.forEach(function(b){b.disabled=false;});},2500);}
   }
   function showFac(){$("lgHub").classList.add("hide");$("lgPick").classList.add("hide");$("lgForm").classList.add("hide");$("lgFac").classList.remove("hide");}
-  $("hubEasy").addEventListener("click",function(){openFacPage("fac");});$("hubPro").addEventListener("click",function(){window.__pendFac=null;showFac();});
+  $("hubEasy").addEventListener("click",function(){location.href=SITE+"easy.html?me=1";});$("hubPro").addEventListener("click",function(){window.__pendFac=null;showFac();});
   $("pickBack").addEventListener("click",function(){if(window.__pendFac==="fac"){window.__pendFac=null;showHub();}else{window.__pendFac=null;showFac();}});$("facBack").addEventListener("click",showHub);
-  $("facGoPro").addEventListener("click",function(){openFacPage("facpro");});$("facGoEmp").addEventListener("click",function(){window.__pendFac=null;showPick();});
+  $("facGoPro").addEventListener("click",function(){openFacPage("facpro");});$("facGoEmp").addEventListener("click",function(){window.__pendFac=null;showPick();});$("facGoOwners").addEventListener("click",function(){location.href=SITE+"owners.html";});
   // ---------- 현장 관리 (큰 메뉴 · 세부 기능은 FLD에 차례로 추가) ----------
   var FLD={
     task:{t:"업무 지시",d:"기계실·방재실·보일러실·미화·보안 등 현장 근무자 배정과 업무 지시",items:["근무자·근무조 배정","업무 지시 등록과 완료 확인","지시 내역 조회"]},
