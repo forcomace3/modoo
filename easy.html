@@ -30,6 +30,7 @@
   ============================================================
 -->
 <style>
+.inp.ai{background-color:#FFF8D6;border-color:#E3B341}
 select.inp{background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 14px center;padding-right:44px}
 :root{
   /* ===== 색 : 여기만 바꾸면 전체가 바뀝니다 ===== */
@@ -232,7 +233,7 @@ body{flex-direction:column;justify-content:flex-start}
 <!-- ================= 가입하기 ================= -->
 <section class="scr" id="s-join">
   <h2>처음 오셨군요</h2>
-  <p class="sub mb2" style="margin-top:6px">휴대폰 번호와 비밀번호만 정하시면 됩니다</p>
+  <p class="sub mb2" style="margin-top:6px">여기서 <b>한 번만</b> 넣으시면 다시 묻지 않습니다</p>
   <div id="jn-err" class="box r mb hidden"><p class="sub" style="font-weight:800" id="jn-err-t"></p></div>
   <div class="label">성함</div>
   <input class="inp mb" id="jn-name" autocomplete="name" placeholder="김순자">
@@ -241,7 +242,9 @@ body{flex-direction:column;justify-content:flex-start}
   <div class="label">비밀번호 (숫자 4~6자리)</div>
   <input class="inp ctr mb" id="jn-pin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••">
   <div class="label">비밀번호 한 번 더</div>
-  <input class="inp ctr" id="jn-pin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••">
+  <input class="inp ctr mb" id="jn-pin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••">
+  <div class="label">월세·관리비 받으실 통장 <span style="font-weight:600;color:var(--ink3)">(나중에 넣어도 됩니다)</span></div>
+  <input class="inp" id="jn-bank" placeholder="국민 123456-01-234567">
   <div class="box y mt"><p class="sub" style="font-weight:700">비밀번호는 <b>꼭 적어 두세요.</b><br>잊으시면 02-423-7723 으로 전화 주세요.</p></div>
   <div class="grow" style="min-height:14px"></div>
   <button class="btn" id="jn-go" onclick="ownerJoin()">가입하고 시작하기</button>
@@ -251,10 +254,10 @@ body{flex-direction:column;justify-content:flex-start}
 <section class="scr" id="s-me">
   <div class="steps"><i class="on"></i><i class="on"></i><i></i><i></i></div>
   <div class="saved">✓ 저장됨</div>
-  <h2 class="mb2">성함과 계좌를<br>알려주세요</h2>
+  <h2 class="mb2" id="me-title">성함과 계좌를<br>알려주세요</h2>
   <div class="label">성함</div>
   <input class="inp mb" id="i-name" placeholder="김순자">
-  <div class="label">관리비 받으실 통장</div>
+  <div class="label">월세·관리비 받으실 통장</div>
   <input class="inp mb" id="i-bank" placeholder="국민 123456-01-234567">
   <div class="label">연락처 <span style="font-weight:600;color:var(--ink3)">(세입자가 물어볼 번호 · 비워도 됩니다)</span></div>
   <input class="inp" id="i-phone" type="tel" inputmode="numeric" placeholder="010-0000-0000">
@@ -280,7 +283,12 @@ body{flex-direction:column;justify-content:flex-start}
 <!-- ================= 호실 넣기 (호실 임대) ================= -->
 <section class="scr" id="s-room">
   <h2 id="rf-title"></h2>
-  <p class="sub mb2" style="margin-top:6px">모르는 칸은 비워두셔도 됩니다</p>
+  <p class="sub mb" style="margin-top:6px">모르는 칸은 비워두셔도 됩니다</p>
+  <div class="box t" style="padding:12px 12px 10px;margin-bottom:14px">
+    <button class="btn outline" id="rf-scan" style="margin:0;background:#fff" onclick="document.getElementById('rf-file').click()">📷 계약서 사진으로 채우기</button>
+    <p class="sub" id="rf-scan-sub" style="text-align:center;margin-top:8px;color:var(--ink2)">계약서를 찍거나 사진첩에서 고르면 아래 칸이 채워집니다.<br>채워진 칸은 꼭 확인해 주세요.</p>
+  </div>
+  <input type="file" accept="image/*" id="rf-file" class="hidden" onchange="leasePick(event)">
   <div class="label">건물 이름</div>
   <input class="inp mb" id="rf-bname" placeholder="예) 문정 SK V1 기숙사">
   <div class="label">호수</div>
@@ -917,6 +925,7 @@ function go(id, noPush){
     nav.classList.add('on');
     document.querySelectorAll('#nav button').forEach(function(b){ b.classList.toggle('on', b.dataset.nav===(RNAV[id]||id)); });
   } else nav.classList.remove('on');
+  if(id==='me') profileInputs();
   if(id==='rhome') renderRHome();
   if(id==='rmoney') renderRMoney();
   if(id==='rlist') renderRList();
@@ -1212,7 +1221,27 @@ var STEP_NAME = { phone:'휴대폰 번호', otp:'인증번호', me:'성함과 �
 function resumeOrStart(){
   if(S.setupDone){ go('home'); return; }
   if(S.step && S.step!=='splash'){ showResume(); return; }
+  if(profileDone()){ go('kind'); return; }
   go('me');
+}
+/* ---------- 내 정보(성함·연락처·통장) : 가입할 때 넣은 것을 그대로 씁니다 ---------- */
+function telFmt(t){ t=String(t||'').replace(/[^0-9]/g,''); return t.length===11 ? t.slice(0,3)+'-'+t.slice(3,7)+'-'+t.slice(7) : (t.length===10 ? t.slice(0,3)+'-'+t.slice(3,6)+'-'+t.slice(6) : t); }
+function profileDone(){ return !!(S.owner && S.owner.name && S.owner.bank); }
+function profileFromAccount(){
+  if(!(FAC && isMulti()) || FAC.view) return;
+  var ch=false, bk='';
+  try{ bk=sessionStorage.getItem('fc_newbank')||''; sessionStorage.removeItem('fc_newbank'); }catch(e){}
+  if(!S.owner.name && FAC.ownerName){ S.owner.name=FAC.ownerName; ch=true; }
+  if(!S.phone && !S.setupDone && FAC.ownerPhone){ S.phone=telFmt(FAC.ownerPhone); ch=true; }
+  if(!S.owner.bank && bk){ S.owner.bank=bk; ch=true; }
+  if(ch) save();
+}
+function profileInputs(){
+  document.getElementById('i-name').value=S.owner.name||'';
+  document.getElementById('i-bank').value=S.owner.bank||'';
+  document.getElementById('i-phone').value=S.phone||'';
+  var t=document.getElementById('me-title');
+  if(t) t.innerHTML = S.setupDone ? '내 이름·통장<br>고치기' : (S.owner.name && !S.owner.bank ? '돈 받으실 통장만<br>알려주세요' : '성함과 계좌를<br>알려주세요');
 }
 function showResume(){
   document.getElementById('r-bldg').textContent = (S.bldg.name||'건물')+' · 설정 중';
@@ -2039,11 +2068,42 @@ function openRoom(id){
   set('rf-bname',r.bname); set('rf-ho',r.ho); set('rf-addr',r.addr); set('rf-tname',r.tname); set('rf-ttel',r.ttel);
   set('rf-dep',r.deposit||''); set('rf-rent',r.rent||''); set('rf-fee',r.fee||''); set('rf-day',r.day||''); set('rf-start',r.start); set('rf-end',r.end);
   document.getElementById('rf-util').value = r.util || (r.fee ? 'owner' : 'tenant'); utilChanged();
+  document.querySelectorAll('#s-room .inp.ai').forEach(function(el){ el.classList.remove('ai'); });
+  var ss=document.getElementById('rf-scan-sub'); if(ss) ss.innerHTML='계약서를 찍거나 사진첩에서 고르면 아래 칸이 채워집니다.<br>채워진 칸은 꼭 확인해 주세요.';
   document.getElementById('rf-vac').classList.toggle('on', !!r.vacant);
   document.getElementById('rf-del').classList.toggle('hidden', !id);
   go('room');
 }
 function toggleRVac(){ document.getElementById('rf-vac').classList.toggle('on'); }
+/* ---------- 계약서 사진으로 채우기 (서버 AI) ----------
+   사진은 폰에서 줄여서 보내고, 서버는 읽은 뒤 바로 버립니다. 채워진 칸은 노랗게 표시합니다. */
+function leasePick(ev){
+  var f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f) return;
+  if(!FAC){ toast('먼저 들어와 주세요'); return; }
+  var b=document.getElementById('rf-scan'), sub=document.getElementById('rf-scan-sub');
+  b.disabled=true; b.textContent='읽는 중… 잠시만요'; sub.textContent='보통 5~10초 걸립니다';
+  var done=function(msg, ok){ b.disabled=false; b.textContent='📷 계약서 사진으로 채우기'; sub.innerHTML = ok ? msg : '<span style="color:var(--danger)">'+esc(msg)+'</span>'; };
+  shrinkPhoto(f).then(function(c){
+    var k=Math.min(1, 1800/Math.max(c.width,c.height));
+    if(k<1){ var c2=document.createElement('canvas'); c2.width=Math.round(c.width*k); c2.height=Math.round(c.height*k); c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height); c=c2; }
+    var data=c.toDataURL('image/jpeg',0.85);
+    return fetch(FAC_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'leaseRead',tk:FAC.tk,image:data})}).then(function(r){ return r.json(); });
+  }).then(function(j){
+    if(!j.ok){ done(j.error||'읽지 못했습니다', false); return; }
+    var F=j.fields||{}, n=0;
+    var put=function(id,v){ if(v===''||v===0||v==null) return; var el=document.getElementById(id); el.value=v; el.classList.add('ai'); n++; };
+    put('rf-bname',F.bname); put('rf-ho',F.ho); put('rf-addr',F.addr); put('rf-tname',F.tname); put('rf-ttel',F.ttel);
+    put('rf-dep',F.deposit); put('rf-rent',F.rent); put('rf-day',F.day); put('rf-start',F.start); put('rf-end',F.end);
+    if(F.util){ var u=document.getElementById('rf-util'); u.value=F.util; u.classList.add('ai'); utilChanged(); n++; }
+    if(F.util==='owner' && F.fee) put('rf-fee',F.fee);
+    if(F.tname || F.rent) document.getElementById('rf-vac').classList.remove('on');
+    if(!n){ done('계약서에서 읽은 내용이 없습니다. 더 밝고 반듯하게 다시 찍어 주세요.', false); return; }
+    var warn = j.confidence==='low' ? ' <b style="color:var(--danger)">잘 안 보이는 사진이라 틀린 곳이 있을 수 있어요.</b>' : '';
+    done(n+'칸을 채웠어요. <b>노란 칸을 확인</b>하고 저장을 눌러주세요.'+warn+(j.notes?'<br><span style="color:var(--ink3)">'+esc(j.notes)+'</span>':''), true);
+    toast(n+'칸을 채웠어요. 확인해 주세요');
+    try{ document.getElementById('s-room').scrollTop=0; }catch(e){}
+  }).catch(function(){ done('인터넷 연결을 확인해 주세요.', false); });
+}
 function utilChanged(){ document.getElementById('rf-feebox').classList.toggle('hidden', document.getElementById('rf-util').value!=='owner'); }
 var UTIL_NAME = { tenant:'세입자가 직접 냄', owner:'내가 받아서 냄', incl:'월세에 포함' };
 function saveRoom(){
@@ -2119,6 +2179,7 @@ function ownerJoin(){
   var b=document.getElementById('jn-go'); b.disabled=true; ownerErr('jn','');
   ownerPost({action:'ownerJoin', phone:ph, pin:p1, name:nm}, function(j){
     b.disabled=false;
+    if(j.ok){ try{ var bk=document.getElementById('jn-bank').value.trim(); if(bk) sessionStorage.setItem('fc_newbank', bk); }catch(e){} }
     if(j.ok) ownerEnter(j); else ownerErr('jn', j.error||'가입하지 못했습니다');
   });
 }
@@ -2168,15 +2229,15 @@ function importData(ev){
 }
 function resetAll(){
   sheet('<h2 class="cc" style="color:var(--danger)">전부 지우고<br>처음부터 다시 할까요?</h2>'+
-    '<div class="box r mt cc"><p style="font-weight:700">지금까지 넣으신 내용이 <b>모두 사라집니다.</b><br>되돌릴 수 없어요.</p></div>'+
-    (isMulti() ? '<div class="box mt cc"><p class="sub" style="font-weight:700">가입하신 전화번호와 비밀번호는 그대로 남습니다.</p></div>' : '')+
+    '<div class="box r mt cc"><p style="font-weight:700">지금까지 넣으신 건물·호실·세입자가 <b>모두 사라집니다.</b><br>되돌릴 수 없어요.</p></div>'+
+    '<div class="box mt cc"><p class="sub" style="font-weight:700">내 이름·통장'+(isMulti()?'·가입하신 전화번호와 비밀번호':'')+'는 그대로 남습니다.</p></div>'+
     '<button class="btn danger" style="margin-top:16px" onclick="doReset()">네, 지우고 다시 할게요</button>'+
     '<button class="btn gray" onclick="closeSheet()">아니요, 그대로 둘게요</button>');
 }
 function doReset(){
-  var size = S.size || '';
+  var size = S.size || '', keepOwner = copyOf(S.owner||{name:'',bank:''}), keepPhone = S.phone||'';
   S=JSON.parse(JSON.stringify(DEFAULT)); MEM=null;
-  S.size = size;                                   /* 글씨 크기는 그대로 둡니다 */
+  S.size = size; S.owner = keepOwner; S.phone = keepPhone;   /* 내 이름·통장·연락처는 다시 묻지 않습니다 */                                   /* 글씨 크기는 그대로 둡니다 */
   try{ localStorage.removeItem(KEY); }catch(e){}
   /* 화면에 남아 있는 예전 입력값을 비웁니다 (들어가기·가입 칸은 제외) */
   document.querySelectorAll('#app .scr:not(#s-login):not(#s-join) input').forEach(function(el){
@@ -2186,13 +2247,10 @@ function doReset(){
   document.querySelectorAll('#app .opt.on').forEach(function(el){ if(el.id!=='o-center') el.classList.remove('on'); });
   var fb=document.getElementById('family-box'); if(fb) fb.classList.add('hidden');
   document.getElementById('o-center').classList.add('on');
-  if(FAC && isMulti()){
-    if(FAC.ownerName) document.getElementById('i-name').value=FAC.ownerName;
-    if(FAC.ownerPhone) document.getElementById('i-phone').value=FAC.ownerPhone;
-  }
+  profileFromAccount(); profileInputs();
   RMV=null; MV=null; editOne=false; STACK=[];
   if(FAC){ __facPending = JSON.stringify(S); facFlush(null, true); }
-  closeSheet(); applyKind(); toast('모두 지웠습니다. 처음부터 다시 시작합니다');
+  closeSheet(); applyKind(); toast('건물·호실을 모두 지웠습니다. 내 이름·통장은 그대로 두었습니다');
   go('splash', true);
 }
 
@@ -2219,10 +2277,7 @@ if(isMulti() && !FAC){
 else if(S.setupDone) go('home', true);
 else if(S.step && S.step!=='splash') showResume();
 else go('splash', true);
-if(FAC && isMulti()){
-  if(!S.owner.name && FAC.ownerName) document.getElementById('i-name').value=FAC.ownerName;
-  if(!S.phone && FAC.ownerPhone) document.getElementById('i-phone').value=FAC.ownerPhone;
-}
+profileFromAccount();
 
 if(S.phone) document.getElementById('i-phone').value=S.phone;
 if(S.owner.name) document.getElementById('i-name').value=S.owner.name;
