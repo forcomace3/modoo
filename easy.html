@@ -393,6 +393,7 @@ body{flex-direction:column;justify-content:flex-start}
     <div><div class="ho">날짜 지난 미입금</div></div>
     <div class="rt" id="rh-unpaid-t" style="color:var(--danger)"></div>
   </button>
+  <div id="rh-check"></div>
   <div id="rh-soon"></div>
   <div id="rh-biz"></div>
   <div class="grow"></div>
@@ -2037,17 +2038,55 @@ function roomOf(id){ var r=null; S.rooms.forEach(function(x){ if(x.id===id) r=x;
    · 독촉 : 받는 날이 N일 지났는데 안 들어온 것 (보낸 뒤 7일 지나면 다시 올라옴)
    자동으로 보내지는 않고, 단추 한 번에 문자 화면이 열립니다. */
 function todayTexts(){
-  var t=todayStr(), b=Number(S.remind.before), a=Number(S.remind.after), out=[];
+  var t=todayStr(), b=Number(S.remind.before), out=[];
   Object.keys(S.rmonths||{}).sort().forEach(function(ym){
     (S.rmonths[ym].items||[]).forEach(function(it){
       if(it.paid) return;
       var due=dueDate(ym,it.day);
-      if(b>0 && !it.noticed && t>=addDays(due,-b) && t<=due) out.push({ym:ym, it:it, kind:'notice', due:due});
-      if(a>0 && t>=addDays(due,a) && (!it.dunned || t>=addDays(it.dunned,7))) out.push({ym:ym, it:it, kind:'dun', due:due});
+      if(b>0 && !it.noticed && t>=addDays(due,-b) && t<due) out.push({ym:ym, it:it, kind:'notice', due:due});
     });
   });
   return out;
 }
+/* ---------- 입금 확인 : 받는 날부터, 들어왔다고 표시할 때까지 매일 묻습니다 ---------- */
+function payChecks(){
+  var t=todayStr(), out=[];
+  Object.keys(S.rmonths||{}).sort().forEach(function(ym){
+    (S.rmonths[ym].items||[]).forEach(function(it){
+      if(it.paid) return;
+      var due=dueDate(ym,it.day);
+      if(t>=due) out.push({ym:ym, it:it, due:due, late:Math.round((new Date(t+'T00:00:00')-new Date(due+'T00:00:00'))/86400000)});
+    });
+  });
+  return out;
+}
+function renderCheck(){
+  var box=document.getElementById('rh-check'); if(!box) return;
+  var L=payChecks();
+  if(!L.length){ box.innerHTML=''; return; }
+  var h='<div class="label" style="margin-top:16px">입금 확인 <span style="color:var(--ink3);font-weight:600">· 통장에 들어왔는지 봐주세요</span></div>';
+  L.forEach(function(x){
+    var t0=(x.late===0);
+    h+='<div class="box" style="padding:14px 15px;margin-bottom:10px;border:2px solid '+(t0?'var(--warn)':'var(--danger)')+';background:'+(t0?'var(--warn-light)':'var(--danger-light)')+'">'+
+      '<div style="font-size:calc(var(--fs-body) + 2px);font-weight:800">'+esc(x.it.label)+'</div>'+
+      '<div style="font-size:var(--fs-small);color:var(--ink2);font-weight:600;margin-top:2px">'+esc(x.it.tname||'세입자')+' · '+won(x.it.amt)+'원 · '+
+      (t0?'<b style="color:#92400E">오늘이 받는 날이에요</b>':'<b style="color:var(--danger)">'+mdLabel(x.due)+' 받을 돈 · '+x.late+'일 지남</b>')+'</div>'+
+      '<div style="display:flex;gap:8px;margin-top:12px">'+
+        '<button class="btn" style="flex:1;margin:0" onclick="payGot(\''+x.ym+'\',\''+x.it.id+'\')">✓ 들어왔어요</button>'+
+        '<button class="btn outline" style="flex:1;margin:0;color:var(--danger);border-color:var(--danger);background:#fff" onclick="payDun(\''+x.ym+'\',\''+x.it.id+'\')">💬 독촉 문자</button>'+
+      '</div>'+
+      (x.it.dunned?'<p class="sub cc" style="margin-top:8px;font-weight:700">독촉 문자 보냈음 · '+mdLabel(x.it.dunned)+'</p>':'')+
+      '</div>';
+  });
+  box.innerHTML=h;
+}
+function payGot(ym,id){
+  var it=rItem(ym,id); if(!it) return;
+  it.paid=true; it.at=todayStr(); save();
+  toast(esc(it.label)+' 들어왔다고 표시했습니다');
+  if(CUR==='rhome') renderRHome(); else if(CUR==='rmoney') renderRMoney();
+}
+function payDun(ym,id){ sendToday(ym,id,'dun'); if(CUR==='rhome') renderRHome(); }
 function renderToday(){
   var box=document.getElementById('rh-today'); if(!box) return;
   var L=todayTexts();
@@ -2066,22 +2105,20 @@ function sendToday(ym,id,kind){
   var it=rItem(ym,id); if(!it) return;
   var t=rentText(ym,it,kind==='dun'), tel=telOf({tel:it.ttel});
   if(kind==='dun') it.dunned=todayStr(); else it.noticed=todayStr();
-  save(); renderToday();
+  save(); renderToday(); renderCheck();
   if(tel) facOpen(smsUrl([tel], t)); else copyText(t, '전화번호가 없어 내용을 복사했어요. 카톡에 붙여넣으세요');
 }
 function askRemind(){
   var opt=function(sel,vals,unit){ return vals.map(function(v){ return '<option value="'+v+'"'+(v===sel?' selected':'')+'>'+(v===0?'보내지 않음':v+'일'+unit)+'</option>'; }).join(''); };
   sheet('<h2 class="cc">문자 보내는 날</h2>'+
-    '<div class="box b mt"><p class="sub" style="font-weight:700;color:#1D4ED8">정한 날이 되면 <b>홈 화면에 "오늘 보낼 문자"</b>로 올라옵니다.<br>누르기만 하면 문자 화면이 열려요.</p></div>'+
+    '<div class="box b mt"><p class="sub" style="font-weight:700;color:#1D4ED8">정한 날이 되면 <b>홈 화면에 "오늘 보낼 문자"</b>로 올라옵니다.<br>받는 날부터는 <b>입금 확인</b>이 자동으로 떠서,<br>안 들어왔으면 바로 독촉 문자를 보낼 수 있어요.</p></div>'+
     '<div class="label" style="margin-top:14px">받는 날 며칠 전에 안내할까요?</div>'+
     '<select class="inp" id="rm-before" style="appearance:auto;-webkit-appearance:menulist">'+opt(Number(S.remind.before),[0,1,2,3,5,7],' 전')+'</select>'+
-    '<div class="label" style="margin-top:12px">받는 날이 며칠 지나면 독촉할까요?</div>'+
-    '<select class="inp" id="rm-after" style="appearance:auto;-webkit-appearance:menulist">'+opt(Number(S.remind.after),[0,1,2,3,5,7],' 지나면')+'</select>'+
     '<button class="btn" style="margin-top:16px" onclick="saveRemind()">저장</button>'+
     '<button class="btn gray" onclick="closeSheet()">닫기</button>');
 }
 function saveRemind(){
-  S.remind={before:Number(document.getElementById('rm-before').value), after:Number(document.getElementById('rm-after').value)};
+  S.remind={before:Number(document.getElementById('rm-before').value), after:Number(S.remind.after)||0};
   save(); closeSheet(); toast('저장했습니다');
 }
 
@@ -2098,7 +2135,7 @@ function renderRHome(){
   document.getElementById('rh-task-sub').textContent = M.items.length
     ? '받을 돈 '+won(sumAmt(M.items))+'원 · 받은 돈 '+won(sumAmt(paid))+'원' : '호실을 넣거나 빈 방 표시를 풀어 주세요';
   var u=rUnpaid(), ub=document.getElementById('rh-unpaid');
-  ub.classList.toggle('hidden', !u.late.length);
+  ub.classList.add('hidden');
   document.getElementById('rh-unpaid-t').textContent=u.late.length+'건 · '+won(sumAmt(u.late))+'원';
   var h='';
   S.rooms.forEach(function(r){
@@ -2108,7 +2145,7 @@ function renderRHome(){
   document.getElementById('rh-soon').innerHTML = h ? '<div class="label" style="margin-top:16px">챙기실 일</div>'+h : '';
   document.getElementById('rh-biz').innerHTML = S.biz.no ? '' :
     '<button class="card mt" onclick="go(\'me\')"><div><div class="ho">사업자등록증 넣어두기</div><div class="nn">사진 한 장이면 돼요 · 신고 때 쓸 자료를 만들어 드려요</div></div><span class="rt" style="color:var(--ink3);font-size:var(--fs-small)">넣기 ›</span></button>';
-  renderToday();
+  renderToday(); renderCheck();
 }
 
 /* ---------- 돈 확인 ---------- */
