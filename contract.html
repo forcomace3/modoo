@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=840">
+<title>계약서 · 모두의관리</title><link rel="icon" type="image/png" href="logo.png">
+<meta name="robots" content="noindex">
+<style>
+body{font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;margin:0;background:#E9E8E2;color:#000}
+.bar{position:sticky;top:0;background:#1F2A5B;color:#fff;padding:10px 14px;display:flex;gap:8px;align-items:center;z-index:5}
+.bar b{flex:1;font-size:14px}
+.bar button{background:#fff;color:#1F2A5B;border:none;border-radius:999px;padding:9px 14px;font-weight:800;font-size:14px}
+.tip{max-width:210mm;margin:10px auto 0;padding:0 10px;font-size:13px;color:#5B5B53;line-height:1.5}
+.page{background:#fff;width:210mm;min-height:297mm;margin:10px auto 30px;padding:11mm 15mm 8mm;box-sizing:border-box;box-shadow:0 2px 12px rgba(0,0,0,.12);font-size:8.9pt;line-height:1.36}
+h1{text-align:center;font-size:17pt;margin:0 0 3mm;letter-spacing:1px}
+.pre{font-size:8.8pt;margin-bottom:3mm}
+h2{font-size:9.6pt;margin:2.5mm 0 1.2mm}
+table{width:100%;border-collapse:collapse;margin-bottom:2mm}
+td{border:1px solid #000;padding:1mm 2mm;vertical-align:middle;font-size:8.7pt}
+td.k{background:#EEE;font-weight:700;white-space:nowrap;width:19mm;text-align:center}
+td.v{white-space:nowrap}
+.cl{margin:0 0 0.9mm}
+.sp{margin:0 0 0.7mm;padding-left:1mm}
+.line{display:inline-block;border-bottom:1px solid #000;min-width:38mm;height:4mm;vertical-align:bottom}
+.sig{margin-top:3mm;text-align:center}
+.foot{text-align:center;font-size:7.5pt;color:#555;margin-top:2mm}
+.tiny{font-size:7pt;color:#999;text-align:right;margin-top:1mm}
+@media print{ body{background:#fff} .bar,.tip{display:none} .page{box-shadow:none;margin:0;width:auto;min-height:auto;padding:9mm 13mm 6mm} @page{size:A4;margin:0} }
+
+</style></head><body>
+<div class="bar"><b>📄 계약서 미리보기</b><button onclick="window.print()">🖨 인쇄 · PDF 저장</button></div>
+<div class="tip">폰에서는 "인쇄" 화면에서 <b>PDF로 저장</b>을 고르면 파일이 됩니다. 빈 줄은 손으로 적으세요(토지·건물 표시, 주소, 주민·법인번호). 두 분이 서명한 뒤 사진을 찍어 앱의 📎 첨부 자료에 붙여 두세요.</div>
+<div class="page" id="pg"></div>
+<script>
+function won(n){ return (Math.round(Number(n)||0)).toLocaleString('ko-KR'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function kd(x){ if(!x) return '    년    월    일'; var p=String(x).split('-'); return p[0]+'년 '+p[1]+'월 '+p[2]+'일'; }
+function kor(n){ var u=['','일','이','삼','사','오','육','칠','팔','구'],p=['','십','백','천']; function chunk(v){ var s=''; for(var i=3;i>=0;i--){ var d=Math.floor(v/Math.pow(10,i))%10; if(d) s+=((d===1&&i>=1)?'':u[d])+p[i]; } return s; }
+  var man=Math.floor(n/10000), rest=n%10000, s=''; if(man>=10000) s+=chunk(Math.floor(man/10000))+'억'; if(man%10000) s+=chunk(man%10000)+'만'; if(rest) s+=chunk(rest); return s||'영'; }
+function months(a,b){ if(!a||!b) return ''; var p=a.split('-').map(Number),q=b.split('-').map(Number); var m=(q[0]-p[0])*12+(q[1]-p[1])+1; return m; }
+var P=null;
+try{ var m=/[#&]p=([A-Za-z0-9_-]+)/.exec(location.hash); if(m){ var b=m[1].replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='='; P=JSON.parse(decodeURIComponent(escape(atob(b)))); } }catch(e){ P=null; }
+if(!P){ document.getElementById('pg').innerHTML='<p>계약서 내용을 받지 못했습니다. 앱에서 "📄 갱신계약서 만들기"를 다시 눌러 주세요.</p>'; }
+else render(P);
+function render(P){
+  var form=P.form||'blank', renew=!!P.renew, vat=!!P.vat;
+  var TITLE={ house:'주택 월세 임대차 계약서', shop:'상가건물 월세 임대차 계약서', dorm:'공장(기타공장(기숙사)) 월세 계약서', blank:'월세 임대차 계약서' }[form]||'월세 임대차 계약서';
+  if(renew) TITLE=TITLE.replace('계약서','갱신 계약서');
+  var pre = renew ? '본 계약은 '+kd(P.prevStart)+'자 체결된 위 부동산 임대차계약의 갱신 계약으로서, 임대인과 임차인 쌍방은 아래 표시 부동산에 관하여 다음 계약 내용과 같이 임대차계약을 체결한다.'
+                  : '임대인과 임차인 쌍방은 아래 표시 부동산에 관하여 다음 계약 내용과 같이 임대차계약을 체결한다.';
+  var rentV=Number(P.rent)||0, vatV=Math.round(rentV*0.1), dep=Number(P.deposit)||0;
+  var addr=(P.addr||'')+(P.bname?'  '+P.bname:'')+(P.ho?' '+P.ho:'');
+  var h='<h1>'+esc(TITLE)+'</h1><p class="pre">'+esc(pre)+'</p>';
+  h+='<h2>1. 부동산의 표시</h2><table><tr><td class="k">소재지</td><td colspan="5">'+esc(addr)+'</td></tr>'+
+     '<tr><td class="k">토 지</td><td class="v">지목 </td><td class="k">대지권</td><td></td><td class="k">면적</td><td> ㎡</td></tr>'+
+     '<tr><td class="k">건 물</td><td class="v">구조 </td><td class="k">용도</td><td class="v">'+esc({house:'주택',shop:'',dorm:'공장(기타공장(기숙사))',blank:''}[form]||'')+'</td><td class="k">면적</td><td> ㎡</td></tr>'+
+     '<tr><td class="k">임대할 부분</td><td colspan="3">'+esc(P.ho?P.ho+' 전체':'')+'</td><td class="k">면적</td><td> ㎡</td></tr></table>';
+  h+='<h2>2. 계약내용</h2><p class="cl">제1조 [목적] 위 부동산의 임대차에 관하여 임대인과 임차인은 합의에 의하여 임차보증금 및 차임을 아래와 같이 지급하기로 한다.</p>';
+  h+='<table><tr><td class="k">보 증 금</td><td>금 '+kor(dep)+'원정 (₩'+won(dep)+')</td><td style="font-size:8pt">'+(renew?'기존 임대차계약의 보증금으로 갈음하며 별도 수수 없음':'계약 시 지급')+'</td></tr>'+
+     '<tr><td class="k">차    임</td><td>금 '+kor(rentV)+'원정 (₩'+won(rentV)+')'+(vat?'  부가세 별도':(form==='house'?'  (주택 임대 · 부가세 면세)':''))+'</td><td style="font-size:8pt">매월 '+(P.day?P.day+'일':'    일')+' 후불로 지급한다'+(vat?' (부가세 ₩'+won(vatV)+' 별도, 합계 ₩'+won(rentV+vatV)+')':'')+'</td></tr></table>';
+  var mo=months(P.start,P.end);
+  var cls=[
+    '제2조 [존속기간] 임대차 기간은 '+kd(P.start)+'부터 '+kd(P.end)+'까지'+(mo?' ('+mo+'개월)':'')+'로 한다.',
+    '제3조 [용도변경 및 전대 등] 임차인은 임대인의 동의 없이 위 부동산의 용도나 구조를 변경하거나 전대, 임차권 양도 또는 담보제공을 하지 못하며 임대차 목적 이외의 용도로 사용할 수 없다.',
+    '제4조 [계약의 해지] 임차인의 차임 연체액이 '+(form==='shop'?'3기':(form==='house'?'2기':'3기'))+'의 차임액에 달하거나, 제3조를 위반하였을 때 임대인은 즉시 본 계약을 해지할 수 있다.',
+    '제5조 [계약의 종료] 임대차계약이 종료된 경우 임차인은 위 부동산을 원상으로 회복하여 임대인에게 반환한다. 이러한 경우 임대인은 보증금을 임차인에게 반환하고, 연체 임대료 또는 손해배상금이 있을 때는 이들을 제하고 그 잔액을 반환한다.',
+    '제6조 [채무불이행과 손해배상] 임대인 또는 임차인이 본 계약상의 내용에 대하여 불이행이 있을 경우 그 상대방은 불이행한 자에 대하여 서면으로 최고하고 계약을 해제할 수 있다. 이 경우 계약 당사자는 계약해제에 따른 손해배상을 각각 상대방에게 청구할 수 있다.',
+    '제7조 [갱신] 임대차 기간 만료 전 당사자 일방이 서면으로 다른 의사를 표시하지 않는 한 본 계약은 동일한 조건으로 1년간 갱신된 것으로 본다.'+(form==='house'?' 주택임대차보호법상 임차인의 계약갱신요구권은 이 조항과 관계없이 보장된다.':(form==='shop'?' 상가건물임대차보호법상 임차인의 계약갱신요구권은 이 조항과 관계없이 보장된다.':''))
+  ];
+  h+=cls.map(function(c){ return '<p class="cl">'+esc(c)+'</p>'; }).join('');
+  var raiseSp = P.raise ? '임대료는 '+kd(P.start)+'부터 월 '+won(P.raise.from)+'원에서 월 '+won(P.raise.to)+'원('+P.raise.pct+'% 인상)으로 조정하며, 임차인은 이에 동의하였다.' : '';
+  var sp5 = P.raise ? '임대차 기간 1년 연장 시 임대료는 동일한 조건으로 하되, 직전 조정일로부터 1년 이상 경과한 경우 관련 법령의 범위(5%) 안에서 협의하여 조정할 수 있다.' : '임대차 기간 1년 연장 시 임대료는 동일한 조건으로 한다.';
+  var SP={
+    dorm:['현 시설물 상태에서의 임대차 계약임 (전입신고 안 하는 조건임).','옵션은 ______________________________________________ (분실 시 임차인이 보상한다).','모든 제세공과금은 잔금일(갱신 시 갱신 개시일) 기준으로 정산한다 (관리비, 도시가스, 장기수선충당금 등).','임대차 기간 종료 후 임차인은 퇴실 청소비를 지불한다 (깨끗하게 청소된 경우는 제외).',sp5,'임대인과 임차인은 개인정보를 계약서 작성과 고객관리를 위해 제공하는 것에 동의함.','임대료는 부가가치세 별도이다.','본 계약서에 기재되지 않은 사항은 민법 및 일반 부동산 거래 관례에 따른다.'],
+    house:['현 시설물 상태에서의 임대차 계약임.','옵션은 ______________________________________________ (분실·파손 시 임차인이 보상한다).','관리비·공과금은 입주일(갱신 시 갱신 개시일) 기준으로 정산한다.','임대차 기간 종료 후 임차인은 통상의 청소를 하고 반환한다.',sp5,'임대인과 임차인은 개인정보를 계약서 작성과 관리를 위해 제공하는 것에 동의함.','주택 임대로 임대료에 부가가치세는 없다.','본 계약서에 기재되지 않은 사항은 주택임대차보호법, 민법 및 일반 부동산 거래 관례에 따른다.'],
+    shop:['현 시설물 상태에서의 임대차 계약임.','임차인의 인테리어·시설 설치는 임대인 동의 후 임차인 비용으로 하며, 종료 시 원상회복한다.','관리비·공과금은 입주일(갱신 시 갱신 개시일) 기준으로 정산한다.','임대차 기간 종료 후 임차인은 원상회복하여 반환한다.',sp5,'임대인과 임차인은 개인정보를 계약서 작성과 관리를 위해 제공하는 것에 동의함.','임대료는 부가가치세 별도이며 임대인은 세금계산서를 발행한다.','본 계약서에 기재되지 않은 사항은 상가건물임대차보호법, 민법 및 일반 부동산 거래 관례에 따른다.'],
+    blank:['현 시설물 상태에서의 임대차 계약임.','관리비·공과금은 입주일 기준으로 정산한다.',sp5,'임대료는 부가가치세 별도이다.','본 계약서에 기재되지 않은 사항은 민법 및 일반 부동산 거래 관례에 따른다.']
+  }[form];
+  if(raiseSp) SP.splice(4,0,raiseSp);
+  h+='<h2>[ 특약사항 ]</h2>'+SP.map(function(s,i){ return '<p class="sp">'+(i+1)+'. '+esc(s)+'</p>'; }).join('')+'<p class="sp">'+(SP.length+1)+'. <span class="line" style="min-width:150mm"></span></p>';
+  h+='<p class="cl" style="margin-top:2mm">■ 임대료 입금계좌 : '+esc(P.bank||'')+' <span class="line"></span>  (예금주: '+esc(P.lessor)+')</p>';
+  h+='<p class="sig">본 계약을 증명하기 위하여 계약 당사자가 이의 없음을 확인하고 각자 서명 또는 날인한다.<br><b style="font-size:10pt">20    년    월    일</b></p>';
+  var idLabel = P.bizno ? '사업자등록번호' : '주민(법인)등록번호';
+  h+='<table style="margin-top:2mm"><tr><td class="k">임대인</td><td class="k">주 소</td><td colspan="4"></td></tr>'+
+     '<tr><td></td><td class="k">주민등록번호</td><td style="width:38mm"></td><td class="k">전화</td><td style="width:30mm">'+esc(P.ltel||'')+'</td><td>성명  '+esc(P.lessor)+'   (인)</td></tr>'+
+     '<tr><td class="k">임차인</td><td class="k">주 소</td><td colspan="4"></td></tr>'+
+     '<tr><td></td><td class="k">'+idLabel+'</td><td>'+esc(P.bizno||'')+'</td><td class="k">전화</td><td>'+esc(P.ttel||'')+'</td><td>성명  '+esc(P.bizname?P.bizname+(P.tname?' 대표 '+P.tname:''):P.tname)+'   (인)</td></tr></table>';
+  h+='<p class="foot">임대인과 임차인은 본 계약서를 2부 작성하여 각 1부씩 보관한다.'+(form==='house'||form==='shop'?' 법무부 표준계약서 서식은 모두의관리 자료실에서 받을 수 있습니다.':'')+'</p>';
+  h+='<p class="tiny">모두의관리 · '+esc(P.catName||'')+' · '+esc(P.law||'')+' 기준 · 참고용 서식(법률 자문 아님)</p>';
+  document.getElementById('pg').innerHTML=h;
+  document.title=(P.bname||'')+' '+(P.ho||'')+' '+TITLE;
+}
+</script>
+</body></html>
