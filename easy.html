@@ -342,6 +342,7 @@ body{flex-direction:column;justify-content:flex-start}
   <p class="sub" id="rf-end-info" style="margin-top:8px;font-weight:700"></p>
   <div><button class="btn outline hidden" id="rf-renew" style="margin-top:10px" onclick="leaseSheet(roomId)">🔄 계약 갱신하기</button></div>
   <div><button class="btn outline hidden" id="rf-msgs" style="margin-top:10px" onclick="msgEditor(roomId)">✉️ 이 호실 문자 문구 보기·고치기</button></div>
+  <div><button class="btn gray" style="margin-top:10px" onclick="openDocs()">📄 계약서 서식 받기 (자료실)</button></div>
   <div id="rf-hist"></div>
   <div class="label" style="margin-top:22px">이 호실 사업자등록증 <span style="font-weight:600;color:var(--ink3)">(사업장마다 따로 있어요 · 부가세도 따로 신고해 드려요)</span></div>
   <div><button class="btn outline" id="me-scan" style="margin-bottom:6px" onclick="document.getElementById('me-file').click()">📷 사업자등록증 사진으로 채우기</button></div>
@@ -784,6 +785,10 @@ body{flex-direction:column;justify-content:flex-start}
     <div style="font-size:30px">☎</div>
     <div style="flex:1"><div style="font-size:calc(var(--fs-body)+2px);font-weight:800">전화로 도와주세요</div>
     <div class="sub" style="color:var(--help)">02-423-7723 · 평일 9시~6시</div></div></button>
+  <button class="box" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:none" onclick="openDocs()">
+    <div style="font-size:30px">📚</div>
+    <div style="flex:1"><div style="font-size:calc(var(--fs-body)+2px);font-weight:800">자료실 · 계약서 서식</div>
+    <div class="sub">월세 계약서 공란 양식 · 법무부 표준계약서</div></div></button>
   <button class="box v" id="hp-family" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:none" onclick="callFamily()">
     <div style="font-size:30px">👨</div>
     <div style="flex:1"><div style="font-size:calc(var(--fs-body)+2px);font-weight:800" id="hp-fname">가족에게 물어보기</div>
@@ -2182,6 +2187,7 @@ var rdYm='', rdId='';
 function rItem(ym,id){ var r=null; ((S.rmonths[ym]||{}).items||[]).forEach(function(x){ if(x.id===id) r=x; }); return r; }
 /* ---------- 문자 문구 : 표준 문구 + 호실별로 고쳐 저장 ----------
    { } 안의 낱말은 보낼 때 자동으로 바뀝니다. r.msgs[kind] 에 고친 문구가 있으면 그것을, 없으면 표준을 씁니다. */
+function openDocs(){ facOpen((FAC ? FAC.site : '') + 'docs.html'); }
 var MSG_KINDS=[['notice','전날 안내'],['dun1','1차 독촉'],['dun2','2차 독촉'],['dun3','3차 독촉']];
 var MSG_VARS=['{월}','{금액}','{납부일}','{지연일수}','{계좌}','{예금주}','{세입자}','{호실}','{내일}'];
 function stdTemplate(kind, biz){
