@@ -35,6 +35,8 @@
 .grp .ghead{padding:10px 4px 8px;border-bottom:1.5px dashed #D7DEE8;margin-bottom:10px}
 .grp .ghead b{font-size:var(--fs-body)}
 .grp .card{background:#fff}
+.chip{border:1.5px solid #D7DEE8;background:#fff;border-radius:999px;padding:7px 12px;font-size:var(--fs-small);font-weight:700;color:var(--ink2)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
 select.inp{background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 14px center;padding-right:44px}
 :root{
   /* ===== 색 : 여기만 바꾸면 전체가 바뀝니다 ===== */
@@ -339,6 +341,7 @@ body{flex-direction:column;justify-content:flex-start}
   <input class="inp" id="rf-end" type="date" onchange="leaseNote()" oninput="leaseNote()">
   <p class="sub" id="rf-end-info" style="margin-top:8px;font-weight:700"></p>
   <div><button class="btn outline hidden" id="rf-renew" style="margin-top:10px" onclick="leaseSheet(roomId)">🔄 계약 갱신하기</button></div>
+  <div><button class="btn outline hidden" id="rf-msgs" style="margin-top:10px" onclick="msgEditor(roomId)">✉️ 이 호실 문자 문구 보기·고치기</button></div>
   <div id="rf-hist"></div>
   <div class="label" style="margin-top:22px">이 호실 사업자등록증 <span style="font-weight:600;color:var(--ink3)">(사업장마다 따로 있어요 · 부가세도 따로 신고해 드려요)</span></div>
   <div><button class="btn outline" id="me-scan" style="margin-bottom:6px" onclick="document.getElementById('me-file').click()">📷 사업자등록증 사진으로 채우기</button></div>
@@ -1990,7 +1993,7 @@ function ensureRMonth(){
     var it=null; M.items.forEach(function(x){ if(x.id===r.id) it=x; });
     var off = r.vacant || dueAmt(r)<=0 || (r.start && r.start>last);
     if(off){ if(it && !it.paid){ M.items.splice(M.items.indexOf(it),1); ch=true; } return; }
-    var want={label:roomLabel(r), tname:r.tname||'', ttel:r.ttel||'', amt:dueAmt(r), rent:r.rent||0, fee:r.fee||0, vat:vatOf(r), day:r.day||1};
+    var want={label:roomLabel(r), ho:r.ho||'', use:r.use||'', tname:r.tname||'', ttel:r.ttel||'', amt:dueAmt(r), rent:r.rent||0, fee:r.fee||0, vat:vatOf(r), day:r.day||1};
     if(!it){ it={id:r.id, paid:false, at:''}; for(var k in want) it[k]=want[k]; M.items.push(it); ch=true; }
     else if(!it.paid){ for(var k2 in want){ if(it[k2]!==want[k2]){ it[k2]=want[k2]; ch=true; } } }
   });
@@ -2063,9 +2066,9 @@ function renderCheck(){
       (t0?'<b style="color:#92400E">오늘이 받는 날이에요</b>':'<b style="color:var(--danger)">'+mdLabel(x.due)+' 받을 돈 · '+x.late+'일 지남</b>')+'</div>'+
       '<div style="display:flex;gap:8px;margin-top:12px">'+
         '<button class="btn" style="flex:1;margin:0" onclick="payGot(\''+x.ym+'\',\''+x.it.id+'\')">✓ 들어왔어요</button>'+
-        '<button class="btn outline" style="flex:1;margin:0;color:var(--danger);border-color:var(--danger);background:#fff" onclick="payDun(\''+x.ym+'\',\''+x.it.id+'\')">💬 독촉 문자</button>'+
+        '<button class="btn outline" style="flex:1;margin:0;color:var(--danger);border-color:var(--danger);background:#fff" onclick="payDun(\''+x.ym+'\',\''+x.it.id+'\')">💬 '+Math.min((x.it.dunN||0)+1,3)+'차 독촉 문자</button>'+
       '</div>'+
-      (x.it.dunned?'<p class="sub cc" style="margin-top:8px;font-weight:700">독촉 문자 보냈음 · '+mdLabel(x.it.dunned)+'</p>':'')+
+      ((x.it.dunLog&&x.it.dunLog.length)?'<p class="sub cc" style="margin-top:8px;font-weight:700">'+x.it.dunLog.slice(0,3).map(function(d,i){ return (i+1)+'차 보냄 '+mdLabel(d); }).join(' · ')+(x.it.dunned===todayStr()?' · <b>오늘 보냈어요</b>':'')+'</p>':'')+
       '</div>';
   });
   box.innerHTML=h;
@@ -2081,7 +2084,8 @@ function renderToday(){
   var box=document.getElementById('rh-today'); if(!box) return;
   var L=todayTexts();
   if(!L.length){ box.innerHTML=''; return; }
-  var h='<div class="label" style="margin-top:16px">오늘 보낼 문자 <span style="color:var(--ink3);font-weight:600">· 누르면 문자 화면이 열려요</span></div>';
+  var h='<div class="label" style="margin-top:16px">오늘 보낼 문자 <span style="color:var(--ink3);font-weight:600">· 누르면 문자 화면이 열려요</span>'+
+    '<a onclick="askRemind()" style="float:right;color:var(--brand-dark);font-weight:800;cursor:pointer">⏰ 정하기</a></div>';
   L.forEach(function(x){
     var dun=(x.kind==='dun'), late=Math.round((new Date(todayStr()+'T00:00:00')-new Date(x.due+'T00:00:00'))/86400000);
     h+='<button class="card" style="'+(dun?'border-color:var(--danger);background:var(--danger-light)':'border-color:var(--info);background:var(--info-light)')+'" onclick="sendToday(\''+x.ym+'\',\''+x.it.id+'\',\''+x.kind+'\')">'+
@@ -2093,8 +2097,10 @@ function renderToday(){
 }
 function sendToday(ym,id,kind){
   var it=rItem(ym,id); if(!it) return;
-  var t=rentText(ym,it,kind==='dun'), tel=telOf({tel:it.ttel});
-  if(kind==='dun') it.dunned=todayStr(); else it.noticed=todayStr();
+  var stage = kind==='dun' ? Math.min((it.dunN||0)+1, 3) : 0;
+  var t=rentText(ym,it,stage), tel=telOf({tel:it.ttel});
+  if(kind==='dun'){ it.dunned=todayStr(); it.dunN=(it.dunN||0)+1; if(!it.dunLog) it.dunLog=[]; it.dunLog.push(todayStr()); }
+  else it.noticed=todayStr();
   save(); renderToday(); renderCheck();
   if(tel) facOpen(smsUrl([tel], t)); else copyText(t, '전화번호가 없어 내용을 복사했어요. 카톡에 붙여넣으세요');
 }
@@ -2174,19 +2180,75 @@ function renderRMoney(){
 }
 var rdYm='', rdId='';
 function rItem(ym,id){ var r=null; ((S.rmonths[ym]||{}).items||[]).forEach(function(x){ if(x.id===id) r=x; }); return r; }
-function rentText(ym,it,late){
-  var mm=parseInt(ym.split('-')[1],10);
-  if(late) return '['+it.label+'] '+mm+'월분 월세 '+won(it.amt)+'원이 아직 확인되지 않았습니다.'+(S.owner.bank?' 입금 계좌 : '+S.owner.bank+'.':'')+' 확인 부탁드립니다. 감사합니다.';
-  var L=['['+it.label+'] '+mm+'월분 월세 안내 (납부일 '+mdLabel(dueDate(ym,it.day))+')',''];
-  L.push('· 월세 : '+won(it.rent)+'원');
-  if(it.fee) L.push('· 관리비 (전기·수도 등) : '+won(it.fee)+'원');
-  L.push(''); L.push('▶ 내실 금액 : '+won(it.amt)+'원');
-  L.push('▶ 내실 날 : '+mdLabel(dueDate(ym,it.day)));
-  if(S.owner.bank) L.push('▶ 입금 : '+S.owner.bank);
-  if(S.phone) L.push('▶ 문의 : '+S.phone);
-  L.push(''); L.push((S.owner.name||'임대인')+' 드림');
-  return L.join('\n');
+/* ---------- 문자 문구 : 표준 문구 + 호실별로 고쳐 저장 ----------
+   { } 안의 낱말은 보낼 때 자동으로 바뀝니다. r.msgs[kind] 에 고친 문구가 있으면 그것을, 없으면 표준을 씁니다. */
+var MSG_KINDS=[['notice','전날 안내'],['dun1','1차 독촉'],['dun2','2차 독촉'],['dun3','3차 독촉']];
+var MSG_VARS=['{월}','{금액}','{납부일}','{지연일수}','{계좌}','{예금주}','{세입자}','{호실}','{내일}'];
+function stdTemplate(kind, biz){
+  if(kind==='notice') return ['안녕하세요.','{내일}은 {월}월분 월세 납부일입니다.','· 납부 금액: {금액}원'+(biz?' (VAT 포함)':''),'· 입금 계좌: {계좌}','※ 특별한 사정으로 늦어질 경우, 예상 납부일과 함께 미리 문자 주시길 부탁드립니다. 감사합니다.'].join('\n');
+  if(kind==='dun1') return ['안녕하세요, 임대인입니다.','{월}월분 월세({금액}원)가 아직 입금 확인되지 않아 문자드립니다.','혹시 확인이 누락되었거나 입금 전이시라면 확인 부탁드리겠습니다. 감사합니다.','· 계좌: {계좌}'].join('\n');
+  if(kind==='dun2') return ['안녕하세요. {월}월분 월세({금액}원)가 납부일({납부일}) 기준 {지연일수}일 지연되고 있습니다.','내용을 확인하시어 빠른 입금 부탁드립니다. 사정이 있으실 경우 미리 연락 주시기 바랍니다.','· 입금 계좌: {계좌}'].join('\n');
+  return ['안녕하세요. {월}월분 월세({금액}원)가 현재 {지연일수}일째 미납 상태입니다.','임대차 계약 규정에 따라 연체 이자가 가산되거나 불이익이 발생할 수 있습니다. 오늘 중으로 입금 완료해 주시거나 부득이한 사정이 있으신 경우 즉시 유선 연락 부탁드립니다. 감사합니다.','· 입금 계좌: {계좌}'].join('\n');
 }
+function msgCtx(label, ho, tname, amt, due, lateN){
+  var d=daysTo(due);
+  return { '{월}':String(parseInt(due.split('-')[1],10)), '{금액}':won(amt), '{납부일}':mdLabel(due), '{지연일수}':String(Math.max(0,lateN)),
+    '{계좌}':(S.owner.bank?S.owner.bank+(S.owner.name?' (예금주: '+S.owner.name+')':''):'(통장을 내 정보에 넣어주세요)'),
+    '{예금주}':S.owner.name||'', '{세입자}':tname||'', '{호실}':label||'', '{내일}':(d===1?'내일':d===0?'오늘':mdLabel(due)) };
+}
+function fillTemplate(tpl, ctx){ return String(tpl||'').replace(/\{[^{}]+\}/g, function(k){ return (k in ctx) ? ctx[k] : k; }); }
+function msgTemplate(r, kind){ return (r && r.msgs && r.msgs[kind]) ? r.msgs[kind] : stdTemplate(kind, !!(r ? r.use==='biz' : false)); }
+/* 문자 만들기 : stage 0=안내, 1·2·3=독촉 */
+function rentText(ym,it,stage){
+  var due=dueDate(ym,it.day), r=findRoom(it.id);
+  var lateN=Math.round((new Date(todayStr()+'T00:00:00')-new Date(due+'T00:00:00'))/86400000);
+  var kind = stage ? 'dun'+Math.min(stage,3) : 'notice';
+  var tpl = (r && r.msgs && r.msgs[kind]) ? r.msgs[kind] : stdTemplate(kind, (r ? r.use==='biz' : it.use==='biz'));
+  return fillTemplate(tpl, msgCtx(it.label, it.ho, it.tname, it.amt, due, lateN));
+}
+/* ----- 고치기 창 ----- */
+var MSG_ED={id:null, kind:'notice'};
+function msgEditor(id, kind){
+  var r=findRoom(id); if(!r) return;
+  MSG_ED.id=id; MSG_ED.kind=kind||MSG_ED.kind||'notice';
+  var cur=msgTemplate(r, MSG_ED.kind), custom=!!(r.msgs&&r.msgs[MSG_ED.kind]);
+  var tabs=MSG_KINDS.map(function(k){ var on=(k[0]===MSG_ED.kind), ch=!!(r.msgs&&r.msgs[k[0]]);
+    return '<button class="chip'+(on?' on':'')+'" onclick="msgEditor(\''+id+'\',\''+k[0]+'\')">'+k[1]+(ch?' ✎':'')+'</button>'; }).join('');
+  sheet('<h2 class="cc">'+esc(roomLabel(r))+'<br>문자 문구</h2>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px">'+tabs+'</div>'+
+    '<div class="label" style="margin-top:12px">'+(custom?'<span style="color:var(--brand-dark)">이 호실에 맞게 고친 문구</span>':'표준 문구')+'</div>'+
+    '<textarea class="inp" id="msg-ta" rows="7" style="height:auto;line-height:1.5;font-size:var(--fs-small)" oninput="msgPreview()">'+esc(cur)+'</textarea>'+
+    '<p class="sub" style="margin-top:6px;font-weight:600;color:var(--ink3)">{ } 안 낱말은 보낼 때 자동으로 바뀝니다: '+MSG_VARS.join(' ')+'</p>'+
+    '<div class="label" style="margin-top:12px">이렇게 나갑니다</div>'+
+    '<div class="box" id="msg-pv" style="white-space:pre-wrap;font-size:var(--fs-small);line-height:1.55;padding:12px 14px"></div>'+
+    '<button class="btn" style="margin-top:14px" onclick="msgSave(false)">이 호실에 저장</button>'+
+    '<button class="btn outline" onclick="msgSave(true)">모든 호실에 똑같이 저장</button>'+
+    (custom?'<button class="linkbtn" onclick="msgReset()">표준 문구로 되돌리기</button>':'')+
+    '<button class="btn gray" onclick="closeSheet()">닫기</button>');
+  msgPreview();
+}
+function msgPreview(){
+  var r=findRoom(MSG_ED.id); if(!r) return;
+  var ym=thisYm(), due=dueDate(ym, r.day||1), tpl=document.getElementById('msg-ta').value;
+  var lateN = MSG_ED.kind==='notice' ? -1 : (MSG_ED.kind==='dun1'?2:MSG_ED.kind==='dun2'?5:12);
+  var due2 = MSG_ED.kind==='notice' ? addDays(todayStr(),1) : addDays(todayStr(),-lateN);
+  document.getElementById('msg-pv').textContent = fillTemplate(tpl, msgCtx(roomLabel(r), r.ho, r.tname, dueAmt(r), due2, lateN));
+}
+function msgSave(all){
+  var t=document.getElementById('msg-ta').value.replace(/\r/g,'').trim();
+  if(!t){ toast('문구를 넣어주세요'); return; }
+  var kind=MSG_ED.kind;
+  var apply=function(r){ if(!r.msgs) r.msgs={}; if(t===stdTemplate(kind, r.use==='biz')) delete r.msgs[kind]; else r.msgs[kind]=t; };
+  if(all) S.rooms.forEach(apply); else { var r=findRoom(MSG_ED.id); if(r) apply(r); }
+  save(); toast(all?'모든 호실에 저장했습니다':'저장했습니다');
+  msgEditor(MSG_ED.id, kind);
+}
+function msgReset(){
+  var r=findRoom(MSG_ED.id); if(!r) return;
+  if(r.msgs) delete r.msgs[MSG_ED.kind];
+  save(); toast('표준 문구로 되돌렸습니다'); msgEditor(MSG_ED.id, MSG_ED.kind);
+}
+
 function openRDue(ym,id){
   var it=rItem(ym,id); if(!it) return;
   rdYm=ym; rdId=id;
@@ -2268,6 +2330,7 @@ function openRoom(id){
   document.getElementById('rf-vac').classList.toggle('on', !!r.vacant);
   document.getElementById('rf-del').classList.toggle('hidden', !id);
   document.getElementById('rf-renew').classList.toggle('hidden', !(id && r.end && !r.vacant));
+  document.getElementById('rf-msgs').classList.toggle('hidden', !id);
   leaseNote(); renderHist(r);
   go('room');
 }
