@@ -74,6 +74,7 @@ function render(P){
     blank:['현 시설물 상태에서의 임대차 계약임.','관리비·공과금은 입주일 기준으로 정산한다.',sp5,'임대료는 부가가치세 별도이다.','본 계약서에 기재되지 않은 사항은 민법 및 일반 부동산 거래 관례에 따른다.']
   }[form];
   if(raiseSp) SP.splice(4,0,raiseSp);
+  (P.extra||[]).forEach(function(x){ if(x) SP.splice(SP.length-1,0,String(x)); });
   h+='<h2>[ 특약사항 ]</h2>'+SP.map(function(s,i){ return '<p class="sp">'+(i+1)+'. '+esc(s)+'</p>'; }).join('')+'<p class="sp">'+(SP.length+1)+'. <span class="line" style="min-width:150mm"></span></p>';
   h+='<p class="cl" style="margin-top:2mm">■ 임대료 입금계좌 : '+esc(P.bank||'')+' <span class="line"></span>  (예금주: '+esc(P.lessor)+')</p>';
   h+='<p class="sig">본 계약을 증명하기 위하여 계약 당사자가 이의 없음을 확인하고 각자 서명 또는 날인한다.<br><b style="font-size:10pt">20    년    월    일</b></p>';

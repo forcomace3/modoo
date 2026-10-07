@@ -2666,7 +2666,7 @@ function openRInfo(id){
   h+=riBox('📅 계약 기간',
     riRow('기간', (r.start?fmtDate(r.start):'?')+' ~ '+(r.end?fmtDate(r.end):'?'))+
     (I ? riRow('남은 기간', I.kind==='over'?'끝난 지 '+I.span+' 지남':(I.kind==='today'?'오늘 끝나요':I.span+' 남음'), over?'var(--danger)':(act?'#92400E':'')) : ''),
-    (r.end && !r.vacant ? '<button class="btn outline" id="ri-renew" style="margin:10px 0 0" onclick="openRenew(\''+id+'\')">🔄 계약 갱신하기</button>'+(r.raise&&r.raise.to===r.rent?'<p class="sub" style="margin-top:8px;font-weight:700;color:#1F6B45">'+fmtDate(r.raisedAt||r.start)+' 월세 '+won(r.raise.from)+'원 → '+won(r.raise.to)+'원 ('+r.raise.pct+'%) · '+(r.raise.how==='link'?'세입자 링크 동의':'계약서 서명으로 동의')+'</p>':'')+'<button class="btn gray" id="ri-contract" style="margin:8px 0 0" onclick="contractOpen(\''+id+'\')">📄 이 내용으로 계약서 만들기</button>' : '')+
+    (r.end && !r.vacant ? '<button class="btn outline" id="ri-renew" style="margin:10px 0 0" onclick="openRenew(\''+id+'\')">🔄 계약 갱신하기</button>'+(r.raise&&r.raise.to===r.rent?'<p class="sub" style="margin-top:8px;font-weight:700;color:#1F6B45">'+fmtDate(r.raisedAt||r.start)+' 월세 '+won(r.raise.from)+'원 → '+won(r.raise.to)+'원 ('+r.raise.pct+'%) · '+(r.raise.how==='link'?'세입자 링크 동의':'계약서 서명으로 동의')+'</p>':'') : '')+
     (H.length ? '<div class="label" style="margin-top:12px">지난 계약</div>'+H.map(function(x){ return '<p class="sub" style="font-weight:600;padding:4px 0">'+fmtDate(x.start)+' ~ '+fmtDate(x.end)+(x.ended?' (종료)':'')+' · '+esc(x.tname||'')+' · 월 '+won(x.rent)+'원</p>'; }).join('') : ''));
   /* 사업자등록증 */
   var B=r.biz||{};
@@ -2790,6 +2790,9 @@ function openRenew(id){
     '<p class="sub" style="margin-top:8px;font-weight:600;color:var(--ink3)">올리려면 세입자와 합의가 필요합니다. 여기서 고른 금액은 <b>제안</b>이고, 세입자가 동의하고 계약서에 서명해야 효력이 생깁니다.</p></div>';
   /* 세입자 동의 */
   h+='<div class="box mb hidden" id="rn-consent" style="padding:12px 14px"><p style="font-weight:800">📨 세입자 안내·동의</p><div id="rn-consent-b"></div></div>';
+  h+='<div class="box mb" style="padding:12px 14px"><p style="font-weight:800">📝 계약서에 넣을 특약 <span class="sub" style="font-weight:600;color:var(--ink3)">(선택 · 한 줄에 하나)</span></p>'+
+     '<p class="sub" style="margin-top:4px;font-weight:600">기본 특약(원상회복·정산·개인정보 등)은 자동으로 들어가요. 더 넣을 조건만 적으세요. 월세를 올리면 조정 특약도 자동으로 붙습니다.</p>'+
+     '<textarea class="inp" id="rn-sp" rows="3" style="margin-top:8px;min-height:80px;line-height:1.5" placeholder="예) 주차 1대 무료\n예) 반려동물 금지">'+esc(r.special||'')+'</textarea></div>';
   h+='<button class="btn" id="rn-save" onclick="doRenew2()">갱신 저장</button>'+
      '<button class="btn gray" onclick="back()">뒤로</button>'+
      '<p class="sub" style="margin-top:10px;color:var(--ink3);font-weight:600;text-align:center"><a href="javascript:openDocsLaw()" style="color:var(--ink3)">월세 조정 기준·법령 안내 보기 ›</a></p>';
@@ -2874,6 +2877,7 @@ function renewCommit(noConsent){
   r.hist.push({start:r.start||'', end:r.end||'', rent:r.rent||0, deposit:r.deposit||0, tname:r.tname||'', at:todayStr()});
   var old=r.rent||0;
   r.start=st; r.end=en; r.rent=rent; r.deposit=dep; r.renewAsked='';
+  var spEl=document.getElementById('rn-sp'); if(spEl) r.special=spEl.value.trim();
   if(rent>old){ r.raisedAt=st; r.raise={from:old, to:rent, pct:Math.round((rent-old)/old*1000)/10, at:todayStr(), consent:(RN.consent&&RN.consent.status==='agreed'&&!noConsent)?RN.consent.id:'', how:noConsent?'sign':'link'}; }
   save(); ensureRMonth(); toast('갱신했습니다 · '+fmtDate(en)+'까지');
   STACK=[]; go('rlist', true); openRInfo(id);
@@ -2892,12 +2896,12 @@ function contractOpen(id){
     tname:r.tname||'', ttel:r.ttel||'', lessor:S.owner.name||'', ltel:S.phone||'', bank:S.owner.bank||'',
     deposit:r.deposit||0, rent:r.rent||0, vat:(r.use==='biz'&&r.vat!=='incl')?1:0, day:r.day||0, start:r.start||'', end:r.end||'',
     prevStart:prev?prev.start:'', prevEnd:prev?prev.end:'', prevRent:prev?prev.rent:0, renew:!!prev,
-    raise:(r.raise&&r.raise.to===r.rent)?r.raise:null, bizno:(r.biz&&r.biz.no)?bizFmt(r.biz.no):'', bizname:(r.biz&&r.biz.name)||'' };
+    raise:(r.raise&&r.raise.to===r.rent)?r.raise:null, extra:String(r.special||'').split('\n').map(function(x){ return x.trim(); }).filter(Boolean).slice(0,8), bizno:(r.biz&&r.biz.no)?bizFmt(r.biz.no):'', bizname:(r.biz&&r.biz.name)||'' };
   facOpen(FAC.site+'contract.html#p='+b64u(JSON.stringify(p)));
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1007-7';
+var APP_BUILD='1007-8';
 (function(){ try{
   var el=document.getElementById('app-ver'); if(el) el.textContent='앱 판 번호 '+APP_BUILD;
   if(!/^https?:$/.test(location.protocol)) return;
