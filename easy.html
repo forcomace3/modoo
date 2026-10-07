@@ -836,6 +836,7 @@ body{flex-direction:column;justify-content:flex-start}
     <div class="pd">서울 송파구 문정동 가든파이브 라이프 T-9088호 (05838)<br>
       02-423-7723 · 사업자등록번호 230-81-02966</div>
   </div>
+  <p class="sub" id="app-ver" style="text-align:center;color:var(--ink3);margin-top:18px"></p>
 </section>
 
 <nav class="nav" id="nav">
@@ -2526,6 +2527,17 @@ function doEndLease(id){
 /* ---------- 첨부 자료 : 계약서·등록증 사진을 호실에 남겨 둡니다 (비공개 저장소) ----------
    r.docs = [{path, kind:'lease'|'biz'|'etc', at:'YYYY-MM-DD', name}] . 사진을 읽을 때(계약서·등록증) 자동으로도 남깁니다. */
 var DOC_NAME={lease:'계약서',biz:'사업자등록증',etc:'기타'};
+/* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
+var APP_BUILD='1007-5';
+(function(){ try{
+  var el=document.getElementById('app-ver'); if(el) el.textContent='앱 판 번호 '+APP_BUILD;
+  if(!/^https?:$/.test(location.protocol)) return;
+  fetch(location.pathname+'?t='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.text():''; }).then(function(t){
+    var m=t.match(/var APP_BUILD='([^']+)'/); if(!m||m[1]===APP_BUILD) return;
+    try{ if(sessionStorage.getItem('fc_upd')===m[1]) return; sessionStorage.setItem('fc_upd',m[1]); }catch(e){ return; }
+    var q=new URLSearchParams(location.search); q.set('v',m[1]); location.replace(location.pathname+'?'+q.toString()+location.hash);
+  }).catch(function(){});
+}catch(e){} })();
 var DOC_URL={}, PEND_DOCS=[], DOC_KIND='etc';
 function docPost(body){ return fetch(FAC_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({tk:FAC.tk},FAC.view?{owner:FAC.owner}:{},body))}).then(function(r){ return r.json(); }); }
 function docSave(roomIdX, kind, dataUrl, name){
@@ -2564,7 +2576,7 @@ function docFilePicked(ev){
 function renderDocs(r){
   var box=document.getElementById('rf-docs'); if(!box) return;
   var L=(r&&r.docs)||[];
-  if(!L.length){ box.innerHTML='<p class="sub" style="font-weight:600;color:var(--ink3);margin:4px 0 8px">아직 첨부한 자료가 없어요. 계약서나 등록증 사진을 읽으면 여기에 자동으로 남습니다.</p>'; return; }
+  if(!L.length){ box.innerHTML='<p class="sub" style="font-weight:600;color:var(--ink3);margin:4px 0 8px">아직 첨부한 자료가 없어요. 아래 단추로 계약서·등록증 사진을 올려 주세요. (전에 읽힌 사진은 보관되지 않았습니다. 앞으로 읽는 사진은 자동으로 남아요.)</p>'; return; }
   box.innerHTML=L.slice().reverse().map(function(d,i){
     var idx=L.length-1-i, pdf=/\.pdf$/i.test(d.path);
     return '<div class="card" style="padding:10px 12px;margin-bottom:8px;cursor:pointer" onclick="docOpen('+idx+')">'+
