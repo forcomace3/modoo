@@ -340,6 +340,14 @@ body{flex-direction:column;justify-content:flex-start}
   <div class="label">계약 끝나는 날 <span style="font-weight:600;color:var(--ink3)">(석 달 전부터 알려드려요)</span></div>
   <input class="inp" id="rf-end" type="date" onchange="leaseNote()" oninput="leaseNote()">
   <p class="sub" id="rf-end-info" style="margin-top:8px;font-weight:700"></p>
+  <div class="label" style="margin-top:22px">📎 첨부 자료 <span style="font-weight:600;color:var(--ink3)">(계약서·등록증 사진이 여기 남아요 · 본인만 볼 수 있어요)</span></div>
+  <div id="rf-docs"></div>
+  <div style="display:flex;gap:8px">
+    <button class="btn outline" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="docPick('lease')">📷 계약서</button>
+    <button class="btn outline" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="docPick('biz')">📷 등록증</button>
+    <button class="btn outline" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="docPick('etc')">📎 기타</button>
+  </div>
+  <input type="file" accept="image/*,application/pdf" id="rf-docfile" class="hidden" onchange="docFilePicked(event)">
   <div><button class="btn outline hidden" id="rf-renew" style="margin-top:10px" onclick="leaseSheet(roomId)">🔄 계약 갱신하기</button></div>
   <div><button class="btn outline hidden" id="rf-msgs" style="margin-top:10px" onclick="msgEditor(roomId)">✉️ 이 호실 문자 문구 보기·고치기</button></div>
   <div><button class="btn gray" style="margin-top:10px" onclick="openDocs()">📄 계약서 서식 받기 (자료실)</button></div>
@@ -1351,7 +1359,7 @@ function bizTaxChanged(){
   if(TAX_TIP[v]) document.getElementById('me-tax-tip-t').innerHTML=TAX_TIP[v];
 }
 function bizPick(ev){
-  var f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f) return;
+  var f=ev.target.files&&ev.target.files[0], data=''; ev.target.value=''; if(!f) return;
   if(!FAC){ toast('먼저 들어와 주세요'); return; }
   var b=document.getElementById('me-scan'), sub=document.getElementById('me-scan-sub');
   b.disabled=true; b.textContent='읽는 중… 잠시만요'; sub.textContent='보통 5~10초 걸립니다';
@@ -1359,11 +1367,12 @@ function bizPick(ev){
   shrinkPhoto(f).then(function(c){
     var k=Math.min(1, 1800/Math.max(c.width,c.height));
     if(k<1){ var c2=document.createElement('canvas'); c2.width=Math.round(c.width*k); c2.height=Math.round(c.height*k); c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height); c=c2; }
-    var data=c.toDataURL('image/jpeg',0.85);
+    data=c.toDataURL('image/jpeg',0.85);
     return fetch(FAC_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'bizRead',tk:FAC.tk,image:data})}).then(function(r){ return r.json(); });
   }).then(function(j){
     if(!j.ok){ done(j.error||'읽지 못했습니다', false); return; }
     var F=j.fields||{}, n=0;
+    queueDoc('biz', data);
     var put=function(id,v){ if(!v) return; var el=document.getElementById(id); el.value=v; el.classList.add('ai'); n++; };
     put('i-bizno',bizFmt(F.no)); put('i-bizname',F.name);
     if(F.tax){ var t=document.getElementById('i-biztax'); t.value=F.tax; t.classList.add('ai'); bizTaxChanged(); n++; }
@@ -2376,7 +2385,7 @@ function openRoom(id){
   document.getElementById('rf-del').classList.toggle('hidden', !id);
   document.getElementById('rf-renew').classList.toggle('hidden', !(id && r.end && !r.vacant));
   document.getElementById('rf-msgs').classList.toggle('hidden', !id);
-  leaseNote(); renderHist(r);
+  leaseNote(); renderHist(r); renderDocs(id ? r : null); PEND_DOCS=[];
   go('room');
 }
 /* ---------- 계약 기간 : 얼마나 남았는지·지났는지 자동 계산 · 갱신 · 종료 ---------- */
@@ -2514,11 +2523,82 @@ function doEndLease(id){
   save(); ensureRMonth(); closeSheet(); toast('빈 방으로 바꿨습니다');
   renewRefresh(id);
 }
+/* ---------- 첨부 자료 : 계약서·등록증 사진을 호실에 남겨 둡니다 (비공개 저장소) ----------
+   r.docs = [{path, kind:'lease'|'biz'|'etc', at:'YYYY-MM-DD', name}] . 사진을 읽을 때(계약서·등록증) 자동으로도 남깁니다. */
+var DOC_NAME={lease:'계약서',biz:'사업자등록증',etc:'기타'};
+var DOC_URL={}, PEND_DOCS=[], DOC_KIND='etc';
+function docPost(body){ return fetch(FAC_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({tk:FAC.tk},FAC.view?{owner:FAC.owner}:{},body))}).then(function(r){ return r.json(); }); }
+function docSave(roomIdX, kind, dataUrl, name){
+  var r=findRoom(roomIdX); if(!r||!FAC) return Promise.resolve(null);
+  return docPost({action:'docUpload',room:roomIdX,kind:kind,image:dataUrl}).then(function(j){
+    if(!j.ok){ toast(j.error||'자료를 저장하지 못했어요'); return null; }
+    if(!r.docs) r.docs=[];
+    r.docs.push({path:j.path,kind:j.kind,at:j.at,name:name||''}); save();
+    if(roomId===roomIdX) renderDocs(r);
+    return j.path;
+  }).catch(function(){ toast('인터넷 연결을 확인해 주세요'); return null; });
+}
+/* 사진을 읽은 직후 호출 : 호실이 저장돼 있으면 바로, 아니면 저장할 때 같이 */
+function queueDoc(kind, dataUrl){
+  if(roomId) docSave(roomId, kind, dataUrl);
+  else PEND_DOCS.push({kind:kind, data:dataUrl});
+}
+function flushPendDocs(newId){
+  var L=PEND_DOCS; PEND_DOCS=[];
+  L.forEach(function(x){ docSave(newId, x.kind, x.data); });
+}
+function docPick(kind){ DOC_KIND=kind; if(!roomId){ toast('호실을 먼저 저장한 뒤 첨부할 수 있어요'); return; } document.getElementById('rf-docfile').click(); }
+function docFilePicked(ev){
+  var f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f||!roomId) return;
+  toast('올리는 중…');
+  if(f.type==='application/pdf'){
+    if(f.size>6*1024*1024){ toast('PDF가 너무 큽니다 (6MB 이하)'); return; }
+    var rd=new FileReader(); rd.onload=function(){ docSave(roomId, DOC_KIND, String(rd.result), f.name); }; rd.readAsDataURL(f); return;
+  }
+  shrinkPhoto(f).then(function(c){
+    var k=Math.min(1, 1800/Math.max(c.width,c.height));
+    if(k<1){ var c2=document.createElement('canvas'); c2.width=Math.round(c.width*k); c2.height=Math.round(c.height*k); c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height); c=c2; }
+    docSave(roomId, DOC_KIND, c.toDataURL('image/jpeg',0.85), f.name);
+  });
+}
+function renderDocs(r){
+  var box=document.getElementById('rf-docs'); if(!box) return;
+  var L=(r&&r.docs)||[];
+  if(!L.length){ box.innerHTML='<p class="sub" style="font-weight:600;color:var(--ink3);margin:4px 0 8px">아직 첨부한 자료가 없어요. 계약서나 등록증 사진을 읽으면 여기에 자동으로 남습니다.</p>'; return; }
+  box.innerHTML=L.slice().reverse().map(function(d,i){
+    var idx=L.length-1-i, pdf=/\.pdf$/i.test(d.path);
+    return '<div class="card" style="padding:10px 12px;margin-bottom:8px;cursor:pointer" onclick="docOpen('+idx+')">'+
+      '<div id="doc-th-'+idx+'" style="width:56px;height:56px;border-radius:10px;background:#EEF1F5;display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;flex-shrink:0">'+(pdf?'📄':'🖼')+'</div>'+
+      '<div style="flex:1;min-width:0"><div class="ho" style="font-size:var(--fs-body)">'+(DOC_NAME[d.kind]||'자료')+'</div><div class="nn">'+esc(d.at||'')+(d.name?' · '+esc(d.name):'')+'</div></div>'+
+      '<button class="linkbtn" style="width:auto;color:var(--danger);padding:6px" onclick="event.stopPropagation();docDel('+idx+')">지우기</button></div>';
+  }).join('');
+  L.forEach(function(d,idx){ if(/\.pdf$/i.test(d.path)) return; docUrlOf(d.path).then(function(u){ var th=document.getElementById('doc-th-'+idx); if(th&&u) th.innerHTML='<img src="'+u+'" style="width:100%;height:100%;object-fit:cover">'; }); });
+}
+function docUrlOf(path){
+  if(DOC_URL[path] && DOC_URL[path].exp>Date.now()) return Promise.resolve(DOC_URL[path].url);
+  return docPost({action:'docUrl',path:path}).then(function(j){ if(!j.ok) return ''; DOC_URL[path]={url:j.url,exp:Date.now()+50*60000}; return j.url; }).catch(function(){ return ''; });
+}
+function docOpen(idx){ var r=findRoom(roomId); var d=r&&r.docs&&r.docs[idx]; if(!d) return; docUrlOf(d.path).then(function(u){ if(u) facOpen(u); else toast('자료를 열지 못했어요'); }); }
+function docDel(idx){
+  var r=findRoom(roomId); var d=r&&r.docs&&r.docs[idx]; if(!d) return;
+  sheet('<h2 class="cc" style="color:var(--danger)">'+(DOC_NAME[d.kind]||'자료')+' 자료를<br>지울까요?</h2>'+
+    '<div class="box r mt cc"><p style="font-weight:700">'+esc(d.at||'')+'에 넣은 자료가 저장소에서 지워집니다.<br>되돌릴 수 없어요.</p></div>'+
+    '<button class="btn danger" style="margin-top:16px" onclick="docDelGo('+idx+')">네, 지울게요</button>'+
+    '<button class="btn gray" onclick="closeSheet()">아니요</button>');
+}
+function docDelGo(idx){
+  var r=findRoom(roomId); var d=r&&r.docs&&r.docs[idx]; if(!d) return;
+  closeSheet();
+  docPost({action:'docDelete',path:d.path}).then(function(j){
+    if(!j.ok){ toast(j.error||'지우지 못했어요'); return; }
+    r.docs.splice(idx,1); save(); renderDocs(r); toast('지웠습니다');
+  }).catch(function(){ toast('인터넷 연결을 확인해 주세요'); });
+}
 function toggleRVac(){ document.getElementById('rf-vac').classList.toggle('on'); }
 /* ---------- 계약서 사진으로 채우기 (서버 AI) ----------
    사진은 폰에서 줄여서 보내고, 서버는 읽은 뒤 바로 버립니다. 채워진 칸은 노랗게 표시합니다. */
 function leasePick(ev){
-  var f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f) return;
+  var f=ev.target.files&&ev.target.files[0], data=''; ev.target.value=''; if(!f) return;
   if(!FAC){ toast('먼저 들어와 주세요'); return; }
   var b=document.getElementById('rf-scan'), sub=document.getElementById('rf-scan-sub');
   b.disabled=true; b.textContent='읽는 중… 잠시만요'; sub.textContent='보통 5~10초 걸립니다';
@@ -2526,11 +2606,12 @@ function leasePick(ev){
   shrinkPhoto(f).then(function(c){
     var k=Math.min(1, 1800/Math.max(c.width,c.height));
     if(k<1){ var c2=document.createElement('canvas'); c2.width=Math.round(c.width*k); c2.height=Math.round(c.height*k); c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height); c=c2; }
-    var data=c.toDataURL('image/jpeg',0.85);
+    data=c.toDataURL('image/jpeg',0.85);
     return fetch(FAC_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'leaseRead',tk:FAC.tk,image:data})}).then(function(r){ return r.json(); });
   }).then(function(j){
     if(!j.ok){ done(j.error||'읽지 못했습니다', false); return; }
     var F=j.fields||{}, n=0;
+    queueDoc('lease', data);
     var put=function(id,v){ if(v===''||v===0||v==null) return; var el=document.getElementById(id); el.value=v; el.classList.add('ai'); n++; };
     put('rf-bname',F.bname); put('rf-ho',F.ho); put('rf-addr',F.addr); put('rf-tname',F.tname); put('rf-ttel',F.ttel);
     put('rf-dep',F.deposit); put('rf-rent',F.rent); put('rf-day',F.day); put('rf-start',F.start); put('rf-end',F.end);
@@ -2566,8 +2647,9 @@ function saveRoom(){
     rep:RB.rep||'', addr:RB.addr||'', open:RB.open||'', type:RB.type||'', item:RB.item||'', nts:(RB.nts&&RB.nts.no===bno)?RB.nts:null };
   if(/^[0-9]+$/.test(o.ho)) o.ho += '호';
   if(roomId){ S.rooms.forEach(function(x){ if(x.id===roomId){ for(var k in o) x[k]=o[k]; } }); }
-  else { o.id='r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); S.rooms.push(o); }
+  else { o.id='r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); o.docs=[]; S.rooms.push(o); }
   save(); ensureRMonth(); toast('저장했습니다');
+  if(!roomId && PEND_DOCS.length) flushPendDocs(o.id);
   STACK=[]; go('rlist');
 }
 function askDelRoom(){
