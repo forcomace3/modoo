@@ -2711,7 +2711,7 @@ function openRInfo(id){
   h+=riBox('📅 계약 기간',
     riRow('기간', (r.start?fmtDate(r.start):'?')+' ~ '+(r.end?fmtDate(r.end):'?'))+
     (I ? riRow('남은 기간', I.kind==='over'?'끝난 지 '+I.span+' 지남':(I.kind==='today'?'오늘 끝나요':I.span+' 남음'), over?'var(--danger)':(act?'#92400E':'')) : ''),
-    (r.end && !r.vacant ? '<button class="btn outline" id="ri-renew" style="margin:10px 0 0" onclick="openRenew(\''+id+'\')">🔄 계약 갱신하기</button>'+(contractLatest(r)?'<div style="display:flex;gap:8px;margin-top:8px"><button class="btn gray" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="contractOpen(\''+id+'\')">📄 계약서 보기</button><button class="btn gray" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="contractSend(\''+id+'\')">📨 세입자에게 보내기</button></div><div id="ri-contract-st"></div>':'')+(r.raise&&r.raise.to===r.rent?'<p class="sub" style="margin-top:8px;font-weight:700;color:#1F6B45">'+fmtDate(r.raisedAt||r.start)+' 월세 '+won(r.raise.from)+'원 → '+won(r.raise.to)+'원 ('+r.raise.pct+'%) · '+(r.raise.how==='link'?'세입자 링크 동의':'계약서 서명으로 동의')+'</p>':'') : '')+
+    (r.end && !r.vacant ? '<button class="btn outline" id="ri-renew" style="margin:10px 0 0" onclick="openRenew(\''+id+'\')">🔄 계약 갱신하기</button>'+((r.start&&r.end)?'<div style="display:flex;gap:8px;margin-top:8px"><button class="btn gray" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="contractOpen(\''+id+'\')">📄 계약서 보기</button><button class="btn gray" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="contractSend(\''+id+'\')">📨 세입자에게 보내기</button></div>'+(contractCurrent(r)?'':'<button class="btn outline" id="ri-attach" style="margin:8px 0 0;padding:12px;font-size:var(--fs-small)" onclick="contractAttachNow(\''+id+'\')">📎 지금 계약서를 첨부 자료에 넣기</button>')+'<div id="ri-contract-st"></div>':'')+(r.raise&&r.raise.to===r.rent?'<p class="sub" style="margin-top:8px;font-weight:700;color:#1F6B45">'+fmtDate(r.raisedAt||r.start)+' 월세 '+won(r.raise.from)+'원 → '+won(r.raise.to)+'원 ('+r.raise.pct+'%) · '+(r.raise.how==='link'?'세입자 링크 동의':'계약서 서명으로 동의')+'</p>':'') : '')+
     (H.length ? '<div class="label" style="margin-top:12px">지난 계약</div><div id="ri-hist">'+histRows(r)+'</div>' : ''));
   /* 사업자등록증 */
   var B=r.biz||{};
@@ -2935,7 +2935,7 @@ function renewCommit(noConsent){
     '<button class="btn outline" onclick="closeSheet();docPick(\'lease\')">📷 서명한 계약서 사진 붙이기</button>'+
     '<button class="btn gray" onclick="closeSheet()">나중에</button>');
   contractAttach(id).then(function(path){
-    var t=document.getElementById('rn-attach'); if(t) t.innerHTML = path ? '✓ 갱신계약서가 첨부 자료에 들어갔어요' : '<span style="color:var(--danger)">계약서를 첨부하지 못했어요. 인터넷을 확인하고 한눈에 보기에서 다시 만들 수 있어요.</span>';
+    var t=document.getElementById('rn-attach'); if(t) t.innerHTML = path==='snap' ? '✓ 갱신계약서를 앱 안에 남겼어요 (PDF 파일은 한눈에 보기에서 다시 만들 수 있어요)' : path ? '✓ 갱신계약서(PDF)가 첨부 자료에 들어갔어요' : '<span style="color:var(--danger)">계약서를 첨부하지 못했어요. 인터넷을 확인하고 한눈에 보기에서 다시 만들 수 있어요.</span>';
     ['rn-open','rn-send'].forEach(function(k){ var b=document.getElementById(k); if(b) b.disabled=false; });
     if(path && CUR==='rinfo' && roomId===id){ var sc=document.getElementById('s-rinfo'); var y=sc?sc.scrollTop:0; openRInfo(id); if(sc) sc.scrollTop=y; }
   });
@@ -2996,9 +2996,9 @@ function renewUndoGo(id){
   closeSheet();
   var tag=fmtDate(curStart)+'~'+fmtDate(curEnd);
   (r.docs||[]).slice().forEach(function(d){
-    if(/\.html$/i.test(d.path) && String(d.name||'').indexOf(tag)>=0 && String(d.name||'').indexOf('서명 전')>=0){
+    if((!d.path || /\.(pdf|html)$/i.test(d.path)) && d.snap && String(d.name||'').indexOf(tag)>=0 && String(d.name||'').indexOf('서명 전')>=0){
       var i=r.docs.indexOf(d); if(i>=0) r.docs.splice(i,1);
-      if(FAC) docPost({action:'docDelete',path:d.path}).catch(function(){});
+      if(FAC && d.path) docPost({action:'docDelete',path:d.path}).catch(function(){});
     }
   });
   r.start=h.start; r.end=h.end; r.rent=h.rent; r.deposit=h.deposit; if(h.tname) r.tname=h.tname;
@@ -3019,25 +3019,74 @@ function contractPayload(r){
     laddr:S.owner.addr||'', lrrn:S.owner.rrn||'', taddr:r.taddr||((r.tbiz&&r.tbiz.no)?(r.tbiz.addr||''):''), trrn:r.trrn||'',
     tbizno:(r.tbiz&&r.tbiz.no)?bizFmt(r.tbiz.no):'', tbizname:(r.tbiz&&r.tbiz.no)?(r.tbiz.name||''):'', tbizrep:(r.tbiz&&r.tbiz.no)?(r.tbiz.rep||''):'' };
 }
+function loadJs(src){ return new Promise(function(ok,no){ var t=document.createElement('script'); t.src=src; t.onload=ok; t.onerror=no; document.head.appendChild(t); }); }
+var PDFLIB=null;
+function pdfLibs(){
+  if(window.html2canvas && window.jspdf) return Promise.resolve();
+  if(PDFLIB) return PDFLIB;
+  PDFLIB=loadJs('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js').then(function(){ return loadJs('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'); }).catch(function(e){ PDFLIB=null; throw e; });
+  return PDFLIB;
+}
+/* contract.html 을 안 보이는 창에 그려 A4 한 장 PDF 로 만든다 */
+function makePdf(p){
+  return pdfLibs().then(function(){ return new Promise(function(ok,no){
+    var f=document.createElement('iframe'), done=false;
+    f.style.cssText='position:fixed;left:-10000px;top:0;width:900px;height:1400px;border:0;visibility:hidden';
+    var fin=function(err,out){ if(done) return; done=true; clearTimeout(to); try{ f.remove(); }catch(e){} if(err) no(err); else ok(out); };
+    var to=setTimeout(function(){ fin(new Error('timeout')); },25000);
+    f.onload=function(){ setTimeout(function(){
+      try{
+        var pg=f.contentDocument.getElementById('pg'); if(!pg||!pg.innerText.trim()) return fin(new Error('empty'));
+        pg.style.boxShadow='none'; pg.style.margin='0';
+        window.html2canvas(pg,{scale:2,backgroundColor:'#ffffff',logging:false}).then(function(c){
+          var pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',compress:true});
+          var w=210, h=c.height*210/c.width; if(h>297){ h=297; w=c.width*297/c.height; }
+          pdf.addImage(c.toDataURL('image/jpeg',0.9),'JPEG',(210-w)/2,0,w,h);
+          var out=pdf.output('datauristring').replace(/^data:application\/pdf;[^,]*,/,'data:application/pdf;base64,');
+          fin(null,out);
+        }).catch(function(e){ fin(e); });
+      }catch(e){ fin(e); }
+    },400); };
+    f.src=FAC.site+'contract.html#p='+b64u(JSON.stringify(p));
+    document.body.appendChild(f);
+  }); });
+}
+function contractName(r){ return (r.hist&&r.hist.length?'갱신계약서 ':'계약서 ')+fmtDate(r.start)+'~'+fmtDate(r.end)+' (서명 전)'; }
 function contractAttach(id){
   var r=findRoom(id); if(!r||!FAC) return Promise.resolve(null);
-  var p=contractPayload(r);
-  return fetch(FAC.site+'contract.html?x='+Date.now(),{cache:'no-store'}).then(function(x){ return x.text(); }).then(function(tpl){
-    var html=tpl.replace('<script>', '<script>window.__P='+JSON.stringify(p).replace(/<\/script/gi,'<\\/script')+';<\/script><script>');
-    var data='data:text/html;base64,'+btoa(unescape(encodeURIComponent(html)));
-    var name='갱신계약서 '+fmtDate(r.start)+'~'+fmtDate(r.end)+' (서명 전)';
-    return docSave(id,'lease',data,name);
-  }).catch(function(){ return null; });
+  var p=contractPayload(r), name=contractName(r), period=(r.start||'')+'~'+(r.end||'');
+  var dropLocal=function(){ r.docs=(r.docs||[]).filter(function(x){ return !( !x.path && x.snap && x.period===period ); }); };
+  var keepSnap=function(path){ dropLocal(); var d=(r.docs||[]).filter(function(x){ return x.path===path; })[0]; if(d){ d.snap=p; d.period=period; } save(); if(roomId===id) renderDocs(r); return path; };
+  return makePdf(p).then(function(data){
+    return docSave(id,'lease',data,name).then(function(path){ return path ? keepSnap(path) : Promise.reject(new Error('upload')); });
+  }).catch(function(){
+    /* PDF 를 못 만들면(인터넷·옛 폰) 앱 안에 계약서 내용을 그대로 남긴다 : 열면 그 내용으로 다시 그려짐 */
+    dropLocal(); if(!r.docs) r.docs=[];
+    r.docs.push({path:'', kind:'lease', at:todayStr(), name:name, snap:p, period:period}); save();
+    if(roomId===id) renderDocs(r);
+    return 'snap';
+  });
 }
 function contractLatest(r){
-  var L=((r&&r.docs)||[]).filter(function(d){ return /\.html$/i.test(d.path); });
-  return L.length ? L[L.length-1] : null;
+  var L=((r&&r.docs)||[]).filter(function(d){ return d.snap || /\.(pdf|html)$/i.test(d.path||''); });
+  if(!L.length) return null;
+  var cur=(r.start||'')+'~'+(r.end||''), m=L.filter(function(d){ return d.period===cur; });
+  return (m.length?m:L)[ (m.length?m:L).length-1 ];
+}
+function contractCurrent(r){ var d=contractLatest(r); return !!(d && d.period===(r.start||'')+'~'+(r.end||'')); }
+function contractAttachNow(id){
+  toast('계약서를 만들어 첨부하는 중…');
+  contractAttach(id).then(function(path){ toast(path==='snap'?'계약서를 앱 안에 남겼어요 (파일은 인터넷이 될 때 다시 만들 수 있어요)':(path?'계약서를 첨부 자료에 넣었어요':'첨부하지 못했어요')); if(CUR==='rinfo') openRInfo(id); });
 }
 /* 세입자에게 계약서 링크 보내기 : 30일짜리 링크, 세입자는 열어 보고 '확인했습니다' */
 function contractSend(id){
   var r=findRoom(id); if(!r||!FAC) return;
   var d=contractLatest(r);
-  if(!d){ toast('먼저 계약서를 만들어 주세요'); return; }
+  if(!d || !d.path || !contractCurrent(r)){
+    toast('계약서 파일을 먼저 만드는 중…');
+    contractAttach(id).then(function(path){ var d2=contractLatest(r); if(path && path!=='snap' && d2 && d2.path) contractSend(id); else toast('계약서 파일을 만들지 못했어요. 인터넷을 확인해 주세요'); });
+    return;
+  }
   toast('링크를 만드는 중…');
   var payload={ room:roomLabel(r), owner:S.owner.name||'임대인', tname:r.tname||'', start:r.start||'', end:r.end||'', rent:r.rent||0, deposit:r.deposit||0, vat:(r.use==='biz'&&r.vat!=='incl')?1:0, label:d.name||'갱신계약서', path:d.path };
   docPost({action:'consentNew', kind:'contract', room:id, payload:payload}).then(function(j){
@@ -3066,7 +3115,8 @@ function b64u(s){ return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-'
 function contractOpen(id){
   var r=findRoom(id); if(!r) return;
   var d=contractLatest(r);
-  if(d && FAC){ docUrlOf(d.path).then(function(u){ if(u) facOpen(u); else contractOpenNow(id); }); return; }
+  if(d && !d.path && d.snap){ facOpen(FAC.site+'contract.html#p='+b64u(JSON.stringify(d.snap))); return; }
+  if(d && FAC && /\.pdf$/i.test(d.path)){ docUrlOf(d.path).then(function(u){ if(u) facOpen(u); else contractOpenNow(id); }); return; }
   contractOpenNow(id);
 }
 function contractOpenNow(id){
@@ -3195,7 +3245,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1008-6';
+var APP_BUILD='1008-7';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
@@ -3261,19 +3311,19 @@ function renderDocs(r){
   var L=(r&&r.docs)||[];
   if(!L.length){ box.innerHTML='<p class="sub" style="font-weight:600;color:var(--ink3);margin:4px 0 8px">아직 첨부한 자료가 없어요. 아래 단추로 계약서·등록증 사진을 올려 주세요. 사진으로 읽어 넣은 서류는 자동으로 남아요.</p>'; return; }
   box.innerHTML=L.slice().reverse().map(function(d,i){
-    var idx=L.length-1-i, pdf=/\.(pdf|html?)$/i.test(d.path);
+    var idx=L.length-1-i, pdf=!d.path || /\.(pdf|html?)$/i.test(d.path);
     return '<div class="card" style="padding:10px 12px;margin-bottom:8px;cursor:pointer" onclick="docOpen('+idx+')">'+
       '<div id="doc-th-'+idx+'" style="width:56px;height:56px;border-radius:10px;background:#EEF1F5;display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;flex-shrink:0">'+(pdf?'📄':'🖼')+'</div>'+
       '<div style="flex:1;min-width:0"><div class="ho" style="font-size:var(--fs-body)">'+(DOC_NAME[d.kind]||'자료')+'</div><div class="nn">'+esc(d.at||'')+(d.name?' · '+esc(d.name):'')+'</div></div>'+
       '<button class="linkbtn" style="width:auto;color:var(--danger);padding:6px" onclick="event.stopPropagation();docDel('+idx+')">지우기</button></div>';
   }).join('');
-  L.forEach(function(d,idx){ if(/\.(pdf|html?)$/i.test(d.path)) return; docUrlOf(d.path).then(function(u){ var th=document.getElementById('doc-th-'+idx); if(th&&u) th.innerHTML='<img src="'+u+'" style="width:100%;height:100%;object-fit:cover">'; }); });
+  L.forEach(function(d,idx){ if(!d.path || /\.(pdf|html?)$/i.test(d.path)) return; docUrlOf(d.path).then(function(u){ var th=document.getElementById('doc-th-'+idx); if(th&&u) th.innerHTML='<img src="'+u+'" style="width:100%;height:100%;object-fit:cover">'; }); });
 }
 function docUrlOf(path){
   if(DOC_URL[path] && DOC_URL[path].exp>Date.now()) return Promise.resolve(DOC_URL[path].url);
   return docPost({action:'docUrl',path:path}).then(function(j){ if(!j.ok) return ''; DOC_URL[path]={url:j.url,exp:Date.now()+50*60000}; return j.url; }).catch(function(){ return ''; });
 }
-function docOpen(idx){ var r=findRoom(roomId); var d=r&&r.docs&&r.docs[idx]; if(!d) return; docUrlOf(d.path).then(function(u){ if(u) facOpen(u); else toast('자료를 열지 못했어요'); }); }
+function docOpen(idx){ var r=findRoom(roomId); var d=r&&r.docs&&r.docs[idx]; if(!d) return; if(!d.path && d.snap){ facOpen(FAC.site+'contract.html#p='+b64u(JSON.stringify(d.snap))); return; } docUrlOf(d.path).then(function(u){ if(u) facOpen(u); else toast('자료를 열지 못했어요'); }); }
 function docDel(idx){
   var r=findRoom(roomId); var d=r&&r.docs&&r.docs[idx]; if(!d) return;
   sheet('<h2 class="cc" style="color:var(--danger)">'+(DOC_NAME[d.kind]||'자료')+' 자료를<br>지울까요?</h2>'+
@@ -3284,6 +3334,7 @@ function docDel(idx){
 function docDelGo(idx){
   var r=findRoom(roomId); var d=r&&r.docs&&r.docs[idx]; if(!d) return;
   closeSheet();
+  if(!d.path){ r.docs.splice(idx,1); save(); renderDocs(r); toast('지웠습니다'); return; }
   docPost({action:'docDelete',path:d.path}).then(function(j){
     if(!j.ok){ toast(j.error||'지우지 못했어요'); return; }
     r.docs.splice(idx,1); save(); renderDocs(r); toast('지웠습니다');
