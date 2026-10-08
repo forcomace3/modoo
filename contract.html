@@ -68,21 +68,23 @@ function render(P){
   var raiseSp = P.raise ? '임대료는 '+kd(P.start)+'부터 월 '+won(P.raise.from)+'원에서 월 '+won(P.raise.to)+'원('+P.raise.pct+'% 인상)으로 조정하며, 임차인은 이에 동의하였다.' : '';
   var sp5 = P.raise ? '임대차 기간 1년 연장 시 임대료는 동일한 조건으로 하되, 직전 조정일로부터 1년 이상 경과한 경우 관련 법령의 범위(5%) 안에서 협의하여 조정할 수 있다.' : '임대차 기간 1년 연장 시 임대료는 동일한 조건으로 한다.';
   var SP={
-    dorm:['현 시설물 상태에서의 임대차 계약임 (전입신고 안 하는 조건임).','옵션은 ______________________________________________ (분실 시 임차인이 보상한다).','모든 제세공과금은 잔금일(갱신 시 갱신 개시일) 기준으로 정산한다 (관리비, 도시가스, 장기수선충당금 등).','임대차 기간 종료 후 임차인은 퇴실 청소비를 지불한다 (깨끗하게 청소된 경우는 제외).',sp5,'임대인과 임차인은 개인정보를 계약서 작성과 고객관리를 위해 제공하는 것에 동의함.','임대료는 부가가치세 별도이다.','본 계약서에 기재되지 않은 사항은 민법 및 일반 부동산 거래 관례에 따른다.'],
-    house:['현 시설물 상태에서의 임대차 계약임.','옵션은 ______________________________________________ (분실·파손 시 임차인이 보상한다).','관리비·공과금은 입주일(갱신 시 갱신 개시일) 기준으로 정산한다.','임대차 기간 종료 후 임차인은 통상의 청소를 하고 반환한다.',sp5,'임대인과 임차인은 개인정보를 계약서 작성과 관리를 위해 제공하는 것에 동의함.','주택 임대로 임대료에 부가가치세는 없다.','본 계약서에 기재되지 않은 사항은 주택임대차보호법, 민법 및 일반 부동산 거래 관례에 따른다.'],
+    dorm:['현 시설물 상태에서의 임대차 계약임 (전입신고 안 하는 조건임).','기본 옵션으로 제공되는 제품의 파손, 혹은 키 분실 시 임차인이 보상한다.','모든 제세공과금은 잔금일(갱신 시 갱신 개시일) 기준으로 정산한다 (관리비, 도시가스, 장기수선충당금 등).','임대차 기간 종료 후 임차인은 퇴실 청소비를 지불한다 (깨끗하게 청소된 경우는 제외).',sp5,'임대인과 임차인은 개인정보를 계약서 작성과 고객관리를 위해 제공하는 것에 동의함.','임대료는 부가가치세 별도이다.','본 계약서에 기재되지 않은 사항은 민법 및 일반 부동산 거래 관례에 따른다.'],
+    house:['현 시설물 상태에서의 임대차 계약임.','기본 옵션으로 제공되는 제품의 파손, 혹은 키 분실 시 임차인이 보상한다.','관리비·공과금은 입주일(갱신 시 갱신 개시일) 기준으로 정산한다.','임대차 기간 종료 후 임차인은 통상의 청소를 하고 반환한다.',sp5,'임대인과 임차인은 개인정보를 계약서 작성과 관리를 위해 제공하는 것에 동의함.','주택 임대로 임대료에 부가가치세는 없다.','본 계약서에 기재되지 않은 사항은 주택임대차보호법, 민법 및 일반 부동산 거래 관례에 따른다.'],
     shop:['현 시설물 상태에서의 임대차 계약임.','임차인의 인테리어·시설 설치는 임대인 동의 후 임차인 비용으로 하며, 종료 시 원상회복한다.','관리비·공과금은 입주일(갱신 시 갱신 개시일) 기준으로 정산한다.','임대차 기간 종료 후 임차인은 원상회복하여 반환한다.',sp5,'임대인과 임차인은 개인정보를 계약서 작성과 관리를 위해 제공하는 것에 동의함.','임대료는 부가가치세 별도이며 임대인은 세금계산서를 발행한다.','본 계약서에 기재되지 않은 사항은 상가건물임대차보호법, 민법 및 일반 부동산 거래 관례에 따른다.'],
     blank:['현 시설물 상태에서의 임대차 계약임.','관리비·공과금은 입주일 기준으로 정산한다.',sp5,'임대료는 부가가치세 별도이다.','본 계약서에 기재되지 않은 사항은 민법 및 일반 부동산 거래 관례에 따른다.']
   }[form];
   if(raiseSp) SP.splice(4,0,raiseSp);
   (P.extra||[]).forEach(function(x){ if(x) SP.splice(SP.length-1,0,String(x)); });
   h+='<h2>[ 특약사항 ]</h2>'+SP.map(function(s,i){ return '<p class="sp">'+(i+1)+'. '+esc(s)+'</p>'; }).join('')+'<p class="sp">'+(SP.length+1)+'. <span class="line" style="min-width:150mm"></span></p>';
-  h+='<p class="cl" style="margin-top:2mm">■ 임대료 입금계좌 : '+esc(P.bank||'')+' <span class="line"></span>  (예금주: '+esc(P.lessor)+')</p>';
+  h+='<p class="cl" style="margin-top:2mm">■ 임대료 입금계좌 : '+(P.bank?esc(P.bank)+'  (예금주: '+esc(P.lessor)+')':'<span class="line" style="min-width:70mm"></span>  (예금주: '+esc(P.lessor)+')')+'</p>';
   h+='<p class="sig">본 계약을 증명하기 위하여 계약 당사자가 이의 없음을 확인하고 각자 서명 또는 날인한다.<br><b style="font-size:10pt">20    년    월    일</b></p>';
-  var idLabel = P.bizno ? '사업자등록번호' : '주민(법인)등록번호';
-  h+='<table style="margin-top:2mm"><tr><td class="k">임대인</td><td class="k">주 소</td><td colspan="4"></td></tr>'+
-     '<tr><td></td><td class="k">주민등록번호</td><td style="width:38mm"></td><td class="k">전화</td><td style="width:30mm">'+esc(P.ltel||'')+'</td><td>성명  '+esc(P.lessor)+'   (인)</td></tr>'+
-     '<tr><td class="k">임차인</td><td class="k">주 소</td><td colspan="4"></td></tr>'+
-     '<tr><td></td><td class="k">'+idLabel+'</td><td>'+esc(P.bizno||'')+'</td><td class="k">전화</td><td>'+esc(P.ttel||'')+'</td><td>성명  '+esc(P.bizname?P.bizname+(P.tname?' 대표 '+P.tname:''):P.tname)+'   (인)</td></tr></table>';
+  /* 서명란 : 임대인(내 정보의 주소·주민등록번호 · 호실 사업자번호) / 임차인(세입자 주소·주민등록번호, 사업자면 사업자등록번호·상호·대표) */
+  var tBiz = !!P.tbizno;
+  var tName = tBiz ? (P.tbizname||'')+(P.tbizrep||P.tname ? ' 대표 '+(P.tbizrep||P.tname) : '') : (P.tname||'');
+  h+='<table style="margin-top:2mm"><tr><td class="k">임대인</td><td class="k">주 소</td><td colspan="4">'+esc(P.laddr||'')+(P.bizno?'<span style="float:right">사업자등록번호 '+esc(P.bizno)+'</span>':'')+'</td></tr>'+
+     '<tr><td></td><td class="k">주민등록번호</td><td style="width:38mm">'+esc(P.lrrn||'')+'</td><td class="k">전화</td><td style="width:30mm">'+esc(P.ltel||'')+'</td><td>성명  '+esc(P.lessor)+'   (인)</td></tr>'+
+     '<tr><td class="k">임차인</td><td class="k">주 소</td><td colspan="4">'+esc(P.taddr||'')+'</td></tr>'+
+     '<tr><td></td><td class="k">'+(tBiz?'사업자등록번호':'주민등록번호')+'</td><td>'+esc(tBiz?P.tbizno:(P.trrn||''))+'</td><td class="k">전화</td><td>'+esc(P.ttel||'')+'</td><td>성명  '+esc(tName)+'   (인)</td></tr></table>';
   h+='<p class="foot">임대인과 임차인은 본 계약서를 2부 작성하여 각 1부씩 보관한다.'+(form==='house'||form==='shop'?' 법무부 표준계약서 서식은 모두의관리 자료실에서 받을 수 있습니다.':'')+'</p>';
   h+='<p class="tiny">모두의관리 · '+esc(P.catName||'')+' · '+esc(P.law||'')+' 기준 · 참고용 서식(법률 자문 아님)</p>';
   document.getElementById('pg').innerHTML=h;
