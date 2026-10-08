@@ -2483,6 +2483,7 @@ function renderHist(r){
 }
 /* 홈·목록에 쓰는 카드 한 줄 */
 function leaseCard(r){
+  if(r.start && !r.vacant && r.start>todayStr()) return '<button class="card" style="border-color:var(--warn);background:var(--warn-light)" onclick="openRInfo(\''+r.id+'\')"><div style="min-width:0"><div class="ho">'+esc(roomLabel(r))+'</div><div class="nn" style="color:#92400E">계약이 '+fmtDate(r.start)+'에 시작해요 · 그때까지는 월세 목록에 안 나와요<br>잘못 갱신한 거라면 눌러서 \'마지막 갱신 취소\'</div></div><span class="rt" style="color:#92400E">시작 전</span></button>';
   var I=leaseInfo(r); if(!needsAction(I)) return '';
   var over=(I.kind==='over');
   return '<button class="card" style="'+(over?'border-color:var(--danger);background:var(--danger-light)':'border-color:var(--warn);background:var(--warn-light)')+'" onclick="leaseSheet(\''+r.id+'\')">'+
@@ -3153,7 +3154,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1008-4';
+var APP_BUILD='1008-5';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
