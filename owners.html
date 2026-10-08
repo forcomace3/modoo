@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#212D64">
 <meta name="robots" content="noindex">
-<title>모두의관리 · 간편 관리 운영</title>
+<title>간편 관리 · 회원 관리 (Admin)</title>
 <link rel="icon" type="image/png" href="logo.png">
 <style>
 :root{--brand:#10893E;--brand-dark:#0B6B30;--brand-light:#E6F4EA;--navy:#212D64;--danger:#DC2626;--danger-light:#FEE9E9;
@@ -66,12 +66,30 @@ button{border:none;background:none;cursor:pointer}
 .li b{color:var(--ink)}
 .room{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
 .room .t{font-weight:800;font-size:14.5px}
+.stat.fold #statB{display:none}
+.stat h3 .sum{font-size:12.5px;color:var(--ink2);font-weight:700;flex:1;text-align:right;margin-right:6px}
+.fchips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.fchip{font-size:13px;font-weight:800;padding:7px 12px;border-radius:999px;background:#fff;border:1.5px solid var(--line);color:var(--ink2);cursor:pointer}
+.fchip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.sel{border:1.5px solid var(--line);border-radius:999px;padding:6px 10px;font-size:13px;font-weight:800;background:#fff;color:var(--ink2)}
+.rows{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.rw{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding:11px 14px;border-bottom:1px solid #EEF1F5;cursor:pointer}
+.rw:last-child{border-bottom:none}.rw:hover{background:#F8FAFC}.rw.off{opacity:.55}
+.rw .n{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rw .n small{font-weight:700;color:var(--ink2);font-size:12.5px;margin-left:6px}
+.rw .b{font-size:12.5px;color:var(--ink2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rw .st{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rw .ic{display:flex;gap:4px;justify-content:flex-end;white-space:nowrap}
+.dot{display:inline-block;font-size:11.5px;font-weight:800;padding:3px 7px;border-radius:999px;background:#EEF1F5;color:var(--ink2)}
+.dot.r{background:var(--danger-light);color:var(--danger)}.dot.y{background:var(--warn-light);color:var(--warn)}.dot.g{background:var(--brand-light);color:var(--brand-dark)}
+.cnt{font-size:12.5px;color:var(--ink2);font-weight:700;margin:0 2px 8px}
+@media(max-width:560px){.rw{grid-template-columns:minmax(0,1fr) auto}.rw .st{grid-column:1/-1;margin-top:-4px}}
 </style>
 </head>
 <body>
 <div class="top">
   <button onclick="location.href='index.html?home=1'">⌂ 처음으로</button>
-  <b>간편 관리 운영</b>
+  <b>간편 관리 · 회원 관리</b>
   <button onclick="load()">새로 고침</button>
 </div>
 
@@ -93,18 +111,21 @@ button{border:none;background:none;cursor:pointer}
   <!-- 목록 -->
   <div id="vList" class="hide">
     <div id="err" class="msg hide"></div>
-    <div class="stat" id="stat"><h3><span>🖥 서버 상태</span><button class="btn sm gray" onclick="loadStatus()">다시 보기</button></h3><div id="statB" class="sub">불러오는 중…</div></div>
+    <div class="stat fold" id="stat"><h3 style="cursor:pointer" onclick="toggleStat()"><span>🖥 서버 상태</span><span class="sum" id="statSum">확인하는 중…</span><button class="btn sm gray" onclick="event.stopPropagation();loadStatus()">다시 보기</button></h3><div id="statB" class="sub" style="margin-top:8px">불러오는 중…</div></div>
     <div class="tiles">
       <div class="tile"><small>가입한 건물주</small><b id="tOwners">-</b></div>
       <div class="tile"><small>등록된 세대</small><b id="tUnits">-</b></div>
-      <div class="tile"><small id="tSentL">이번 달 발송</small><b id="tSent">-</b></div>
-      <div class="tile r"><small>아직 안 들어온 돈</small><b id="tUnpaid">-</b></div>
+      <div class="tile"><small>이번 주 앱 사용</small><b id="tActive">-</b></div>
+      <div class="tile r"><small>확인 필요한 건물주</small><b id="tWarn">-</b></div>
     </div>
     <div class="bar">
-      <input class="inp" id="q" placeholder="건물 · 이름 · 전화번호로 찾기" oninput="render()">
+      <input class="inp" id="q" placeholder="이름 · 전화번호 · 건물로 찾기" oninput="render()">
+      <select class="sel" id="sortBy" onchange="render()"><option value="act">최근 활동순</option><option value="warn">문제 많은 순</option><option value="name">이름순</option><option value="new">가입순</option></select>
       <button class="btn" onclick="openNew()">＋ 건물주 등록</button>
     </div>
-    <div id="list"></div>
+    <div class="fchips" id="fchips"></div>
+    <div class="cnt" id="cnt"></div>
+    <div class="rows" id="list"></div>
   </div>
 </div>
 
@@ -162,55 +183,63 @@ window.load=function(){
     });
   }).catch(function(){ show('list'); $('err').textContent='인터넷 연결을 확인해 주세요.'; $('err').classList.remove('hide'); });
 };
+var FILTER='all';
+window.toggleStat=function(){ $('stat').classList.toggle('fold'); };
+window.setFilter=function(f){ FILTER=f; render(); };
+function warnList(o){
+  var w=[];
+  if(o.disabled) w.push(['정지','']);
+  if(!o.setupDone) w.push(['설정 중','y']);
+  if(o.unpaidN) w.push(['미납 '+o.unpaidN,'r']);
+  if(o.errs7) w.push(['오류 '+o.errs7,'r']);
+  if(o.consentWait) w.push(['동의 대기','y']);
+  if(o.noCat) w.push(['구분 미정 '+o.noCat,'y']);
+  if(o.appBuild && SITE_BUILD && o.appBuild!==SITE_BUILD) w.push(['옛 판','y']);
+  return w;
+}
+function warnScore(o){ return (o.unpaidN?4:0)+(o.errs7?3:0)+(o.consentWait?2:0)+(o.noCat?1:0)+((o.appBuild&&SITE_BUILD&&o.appBuild!==SITE_BUILD)?1:0)+(!o.setupDone?1:0); }
 window.render=function(){
   var ym=thisYm(), q=$('q').value.trim().toLowerCase().replace(/-/g,'');
   var act=LIST.filter(function(o){ return !o.disabled; });
   $('tOwners').textContent=LIST.length+'명';
   $('tUnits').textContent=won(act.reduce(function(a,o){ return a+o.units; },0))+'세대';
-  var ready=act.filter(function(o){ return o.setupDone; }), sent=ready.filter(function(o){ return o.sent && o.ym===ym; });
-  $('tSentL').textContent=(new Date().getMonth()+1)+'월 발송·수금 끝난 곳';
-  $('tSent').textContent=sent.length+' / '+ready.length;
-  $('tUnpaid').textContent=won(act.reduce(function(a,o){ return a+o.unpaidAmt; },0))+'원';
+  var wk=Date.now()-7*86400000;
+  $('tActive').textContent=act.filter(function(o){ var d=new Date(o.appSeen||o.updatedAt||0); return d.getTime()>wk; }).length+' / '+act.length+'명';
+  var wn=act.filter(function(o){ return warnScore(o)>0; }).length;
+  $('tWarn').textContent=wn+'명'; $('tWarn').parentNode.classList.toggle('r', wn>0);
+  /* 필터 칩 (개수 포함) */
+  var F=[['all','전체',LIST.length],['warn','확인 필요',LIST.filter(function(o){ return !o.disabled && warnScore(o)>0; }).length],['unpaid','미납',LIST.filter(function(o){ return !o.disabled && o.unpaidN; }).length],
+         ['setup','설정 중',LIST.filter(function(o){ return !o.disabled && !o.setupDone; }).length],['off','정지',LIST.filter(function(o){ return o.disabled; }).length]];
+  $('fchips').innerHTML=F.map(function(f){ return '<span class="fchip'+(FILTER===f[0]?' on':'')+'" onclick="setFilter(\''+f[0]+'\')">'+f[1]+' '+f[2]+'</span>'; }).join('');
   var rows=LIST.filter(function(o){
+    if(FILTER==='warn' && !(!o.disabled && warnScore(o)>0)) return false;
+    if(FILTER==='unpaid' && !(!o.disabled && o.unpaidN)) return false;
+    if(FILTER==='setup' && !(!o.disabled && !o.setupDone)) return false;
+    if(FILTER==='off' && !o.disabled) return false;
     if(!q) return true;
     return (o.bldg+' '+o.name+' '+o.phone+' '+o.addr+' '+o.memo).toLowerCase().indexOf(q)>=0;
   });
+  var sb=$('sortBy').value;
+  rows.sort(function(a,b){
+    if(sb==='name') return String(a.name||'').localeCompare(String(b.name||''),'ko');
+    if(sb==='new') return String(b.createdAt||'').localeCompare(String(a.createdAt||''));
+    if(sb==='warn'){ var d=warnScore(b)-warnScore(a); if(d) return d; }
+    return String(b.updatedAt||'').localeCompare(String(a.updatedAt||''));
+  });
+  $('cnt').textContent=rows.length+'명'+(q||FILTER!=='all'?' (전체 '+LIST.length+'명)':'')+' · 누르면 자세히 보입니다';
   if(!LIST.length){ $('list').innerHTML='<div class="empty">아직 가입한 건물주가 없습니다.<br>“＋ 건물주 등록”으로 대신 가입시켜 드릴 수 있습니다.</div>'; return; }
-  if(!rows.length){ $('list').innerHTML='<div class="empty">찾는 건물주가 없습니다.</div>'; return; }
+  if(!rows.length){ $('list').innerHTML='<div class="empty">해당하는 건물주가 없습니다.</div>'; return; }
   $('list').innerHTML=rows.map(function(o){
-    var tags=[];
-    if(o.disabled) tags.push('<span class="tag r">사용 정지</span>');
-    if(!o.setupDone) tags.push('<span class="tag y">'+(o.kind==='rooms'?'호실 등록 중':'건물 등록 중')+'</span>');
-    else if(o.kind==='rooms'){
-      tags.push('<span class="tag">🔑 호실 '+o.units+'곳'+(o.vacant?' · 빈 방 '+o.vacant:'')+'</span>');
-      tags.push(o.dueN ? '<span class="tag '+(o.gotN===o.dueN?'g':'y')+'">'+(parseInt(ym.slice(5),10))+'월 월세 '+o.gotN+'/'+o.dueN+' 입금 · '+won(o.billed)+'원</span>'
-                       : '<span class="tag">이번 달 받을 월세 없음</span>');
-    }
-    else{
-      tags.push('<span class="tag">'+o.units+'세대'+(o.vacant?' · 빈 집 '+o.vacant:'')+'</span>');
-      tags.push(o.sent && o.ym===ym ? '<span class="tag g">'+(parseInt(ym.slice(5),10))+'월 발송 완료 · '+won(o.billed)+'원</span>'
-                                    : '<span class="tag y">'+(parseInt(ym.slice(5),10))+'월 아직 안 보냄</span>');
-    }
-    if(o.unpaidN) tags.push('<span class="tag r">'+(o.kind==='rooms'?'날짜 지난 미납 ':'미납 ')+o.unpaidN+'건 · '+won(o.unpaidAmt)+'원</span>');
-    if(o.noCat) tags.push('<span class="tag y">구분 안 정한 호실 '+o.noCat+'</span>');
-    if(o.consentWait) tags.push('<span class="tag y">세입자 동의 대기 '+o.consentWait+'</span>');
-    if(o.taxAuto) tags.push('<span class="tag g">세금계산서 자동 '+o.taxAuto+'</span>');
-    if(o.errs7) tags.push('<span class="tag r">앱 오류 '+o.errs7+'건 (7일)</span>');
-    if(o.appBuild) tags.push('<span class="tag '+(SITE_BUILD&&o.appBuild!==SITE_BUILD?'y':'')+'">앱 '+esc(o.appBuild)+(SITE_BUILD&&o.appBuild!==SITE_BUILD?' (옛 판)':'')+' · '+day(o.appSeen)+'</span>');
-    return '<div class="card'+(o.disabled?' off':'')+'">'+
-      '<div class="row1"><div style="flex:1;min-width:0"><div class="nm">'+esc(o.bldg||(o.kind==='rooms'?'(호실 없음)':'(건물 이름 없음)'))+'</div>'+
-      '<div class="sub">'+esc(o.name||'이름 없음')+' · '+esc(tel(o.phone))+(o.addr?'<br>'+esc(o.addr):'')+'</div></div>'+
-      '<div class="sub" style="text-align:right;white-space:nowrap">가입 '+day(o.createdAt)+'<br>최근 '+day(o.updatedAt)+'</div></div>'+
-      '<div class="tags">'+tags.join('')+'</div>'+
-      (o.memo?'<div class="memo">'+esc(o.memo)+'</div>':'')+
-      '<div class="acts" style="margin-top:10px">'+
-        '<button class="btn sm" onclick="enter(\''+o.id+'\')">들어가 보기</button>'+
-        '<button class="btn sm line" onclick="detail(\''+o.id+'\')">🔍 자세히</button>'+
-        '<a class="btn sm line" href="tel:'+esc(o.phone)+'">📞 전화</a>'+
-        '<button class="btn sm gray" onclick="openMemo(\''+o.id+'\')">메모</button>'+
-        '<button class="btn sm gray" onclick="openPin(\''+o.id+'\')">비밀번호 다시 정하기</button>'+
-        '<button class="btn sm gray" onclick="toggleOff(\''+o.id+'\')">'+(o.disabled?'정지 풀기':'사용 정지')+'</button>'+
-      '</div></div>';
+    var st;
+    if(o.disabled) st='<span style="color:var(--ink3)">사용 정지</span>';
+    else if(!o.setupDone) st='<span style="color:var(--warn)">'+(o.kind==='rooms'?'호실 등록 중':'건물 등록 중')+'</span>';
+    else if(o.kind==='rooms') st=o.dueN ? '<span style="color:'+(o.gotN===o.dueN?'var(--brand-dark)':'var(--warn)')+'">'+(parseInt(ym.slice(5),10))+'월 '+o.gotN+'/'+o.dueN+' 입금</span> · '+won(o.billed)+'원' : '이번 달 받을 월세 없음';
+    else st=(o.sent && o.ym===ym) ? '<span style="color:var(--brand-dark)">'+(parseInt(ym.slice(5),10))+'월 발송 완료</span> · '+won(o.billed)+'원' : '<span style="color:var(--warn)">'+(parseInt(ym.slice(5),10))+'월 아직 안 보냄</span>';
+    var w=warnList(o).map(function(x){ return '<span class="dot '+x[1]+'">'+x[0]+'</span>'; }).join('');
+    return '<div class="rw'+(o.disabled?' off':'')+'" onclick="detail(\''+o.id+'\')">'+
+      '<div><div class="n">'+esc(o.name||'이름 없음')+'<small>'+esc(tel(o.phone))+'</small></div><div class="b">'+esc(o.bldg||'')+(o.units?' · '+o.units+(o.kind==='rooms'?'호실':'세대'):'')+'</div></div>'+
+      '<div class="st">'+st+'<br><span style="font-weight:600;color:var(--ink3)">최근 '+day(o.updatedAt)+(o.appBuild?' · 앱 '+esc(o.appBuild):'')+'</span></div>'+
+      '<div class="ic">'+(w||'<span class="dot g">정상</span>')+'</div></div>';
   }).join('');
 };
 function find(id){ for(var i=0;i<LIST.length;i++) if(LIST[i].id===id) return LIST[i]; return null; }
@@ -242,8 +271,13 @@ window.loadStatus=function(){
     h+='<div class="kv"><span>앱 오류 (24시간)</span><b style="color:'+(j.errors24?'var(--danger)':'var(--brand-dark)')+'">'+j.errors24+'건</b></div>';
     if(j.errorsRecent&&j.errorsRecent.length) h+=j.errorsRecent.slice(0,3).map(function(e){ var o=find(e.owner_id); return '<div class="li">'+when(e.at)+' · <b>'+esc(o?(o.name||o.bldg):e.owner_id)+'</b> · '+esc(e.build||'')+'<br>'+esc(e.msg)+'</div>'; }).join('');
     b.innerHTML=h;
+    var bad=[]; if(!K.ai) bad.push('AI 키'); if(!K.nts) bad.push('국세청 키'); if(!K.solapi) bad.push('솔라피 키');
+    (Array.isArray(j.cron)?j.cron:[]).forEach(function(c){ if(c.last_start && c.last_status!=='succeeded') bad.push((JOBNAME[c.jobname]||c.jobname)+' 실패'); });
+    if(so && so.ok && ((so.balance||0)+(so.point||0))<1000) bad.push('솔라피 충전');
+    if(j.errors24) bad.push('앱 오류 '+j.errors24);
+    $('statSum').innerHTML = bad.length ? '<span style="color:var(--danger)">⚠ '+esc(bad.join(' · '))+'</span>' : '<span style="color:var(--brand-dark)">✓ 모두 정상'+(j.testMode?' · 테스트 모드':'')+'</span>';
     render();
-  }).catch(function(){ b.innerHTML='<span style="color:var(--danger)">인터넷 연결을 확인해 주세요.</span>'; });
+  }).catch(function(){ b.innerHTML='<span style="color:var(--danger)">인터넷 연결을 확인해 주세요.</span>'; $('statSum').textContent='확인 실패'; });
 };
 /* ---------- 건물주 상세 ---------- */
 var CAT_NM={house:'주택',shop:'상가·사무실',dorm:'기숙사·사택',etc:'기타'};
@@ -294,7 +328,7 @@ window.detail=function(id){
     h+='<div class="sec"><h4>⚠ 앱 오류 기록</h4>'+(j.errors.length?j.errors.map(function(e){ return '<div class="li">'+when(e.at)+' · '+esc(e.build||'')+(e.screen?' · 화면 '+esc(e.screen):'')+'<br><b>'+esc(e.msg)+'</b>'+(e.src?' <span style="color:var(--ink3)">'+esc(e.src)+'</span>':'')+'</div>'; }).join(''):'<div class="li">없음</div>')+'</div>';
     /* 메모 · 단추 */
     if(O.memo) h+='<div class="sec"><h4>📝 메모</h4><div class="memo">'+esc(O.memo)+'</div></div>';
-    h+='<div class="acts" style="margin-top:16px"><button class="btn sm" onclick="closeSheet();enter(\''+id+'\')">들어가 보기</button><a class="btn sm line" href="tel:'+esc(O.phone)+'">📞 전화</a><button class="btn sm gray" onclick="openMemo(\''+id+'\')">메모</button><button class="btn sm gray" onclick="closeSheet()">닫기</button></div>';
+    h+='<div class="acts" style="margin-top:16px"><button class="btn sm" onclick="closeSheet();enter(\''+id+'\')">들어가 보기</button><a class="btn sm line" href="tel:'+esc(O.phone)+'">📞 전화</a><button class="btn sm gray" onclick="openMemo(\''+id+'\')">메모</button><button class="btn sm gray" onclick="openPin(\''+id+'\')">비밀번호 다시 정하기</button><button class="btn sm gray" onclick="toggleOff(\''+id+'\')">'+(O.disabled?'정지 풀기':'사용 정지')+'</button><button class="btn sm gray" onclick="closeSheet()">닫기</button></div>';
     $('sheet').innerHTML=h; $('sheet').scrollTop=0;
   }).catch(function(){ toast('인터넷 연결을 확인해 주세요'); });
 };
