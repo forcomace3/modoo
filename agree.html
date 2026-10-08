@@ -34,7 +34,18 @@ a{color:#1D4ED8}
   <h1 id="h-title">월세 조정 안내</h1>
   <div class="sub" id="h-sub"></div>
 
-  <div class="sec"><h2>조정 내용</h2>
+  <div class="sec hidden" id="c-sec"><h2>계약서 내용</h2>
+    <div class="row"><span>호실</span><b id="c-room"></b></div>
+    <div class="row"><span>임대인</span><b id="c-owner"></b></div>
+    <div class="row"><span>계약 기간</span><b id="c-term"></b></div>
+    <div class="row"><span>월세</span><b class="big" id="c-rent"></b></div>
+    <div class="row"><span>보증금</span><b id="c-dep"></b></div>
+    <button class="btn ok" id="c-open" onclick="openContract()">📄 계약서 열기</button>
+    <p class="note" id="c-open-s" style="margin-top:8px;text-align:center">계약서 전체 내용을 열어서 확인해 주세요. 링크는 보낸 날부터 30일 동안 열립니다.</p>
+  </div>
+  <div class="warn hidden" id="c-warn">이 계약서는 임대인이 준비한 갱신 계약서(서명 전)입니다. 내용을 확인하셨다는 답은 기록으로 남지만, 계약의 효력은 두 분이 서명한 계약서로 생깁니다. 고칠 부분이 있으면 "수정 요청"으로 알려 주세요. 이 페이지는 법률 자문이 아닙니다.</div>
+
+  <div class="sec" id="r-sec"><h2>조정 내용</h2>
     <div class="row"><span>호실</span><b id="v-room"></b></div>
     <div class="row"><span>임대인</span><b id="v-owner"></b></div>
     <div class="row"><span>지금 월세</span><b id="v-from"></b></div>
@@ -45,7 +56,7 @@ a{color:#1D4ED8}
     <div class="row"><span>보증금</span><b id="v-dep"></b></div>
   </div>
 
-  <div class="sec"><h2>근거</h2>
+  <div class="sec" id="r-law"><h2>근거</h2>
     <div class="row"><span>호실 구분</span><b id="v-cat"></b></div>
     <div class="row"><span>적용 법률</span><b id="v-law"></b></div>
     <div class="note" id="v-note" style="margin-top:8px"></div>
@@ -53,13 +64,13 @@ a{color:#1D4ED8}
     <p class="note" style="margin-top:10px">법령 원문과 자세한 안내: <a id="v-lawlink" href="docs.html#law" target="_blank" rel="noopener">월세 조정 기준 안내 보기</a></p>
   </div>
 
-  <div class="warn">이 안내는 임대인이 제안하는 내용이며, 동의하셔야 효력이 생깁니다. 동의하신 뒤에도 최종 조건은 두 분이 서명하는 갱신 계약서로 확정됩니다. 궁금한 점은 임대인에게 직접 문의하세요. 이 페이지는 법률 자문이 아닙니다.</div>
+  <div class="warn" id="r-warn">이 안내는 임대인이 제안하는 내용이며, 동의하셔야 효력이 생깁니다. 동의하신 뒤에도 최종 조건은 두 분이 서명하는 갱신 계약서로 확정됩니다. 궁금한 점은 임대인에게 직접 문의하세요. 이 페이지는 법률 자문이 아닙니다.</div>
 
   <div class="sec" id="answer" style="margin-top:14px"><h2>답하기</h2>
     <label>성함</label><input id="i-name" placeholder="세입자(임차인) 성함" maxlength="30">
     <label>한마디 (선택)</label><input id="i-memo" placeholder="예) 2월부터 적용 희망" maxlength="200">
-    <button class="btn ok" onclick="answer(true)">내용을 확인했고, 조정에 동의합니다</button>
-    <button class="btn no" onclick="answer(false)">동의하지 않습니다</button>
+    <button class="btn ok" id="b-yes" onclick="answer(true)">내용을 확인했고, 조정에 동의합니다</button>
+    <button class="btn no" id="b-no" onclick="answer(false)">동의하지 않습니다</button>
     <p class="note" style="margin-top:10px;text-align:center">답하신 내용과 시각이 임대인에게 전달되고 기록으로 남습니다.</p>
   </div>
 
@@ -77,7 +88,7 @@ function won(n){ return (Math.round(Number(n)||0)).toLocaleString('ko-KR'); }
 function fd(x){ if(!x) return '-'; var p=String(x).split('-'); return p.length===3 ? p[0]+'.'+parseInt(p[1],10)+'.'+parseInt(p[2],10) : x; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function q(k){ var m=new RegExp('[?&]'+k+'=([^&#]*)').exec(location.search); return m?decodeURIComponent(m[1]):''; }
-var T=q('t'), P=null;
+var T=q('t'), P=null, KIND='raise', CURL='';
 function post(b){ return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)}).then(function(r){ return r.json(); }); }
 function show(id,on){ document.getElementById(id).classList.toggle('hidden',!on); }
 function fail(m){ show('loading',false); show('main',false); show('err',true); document.getElementById('err-t').textContent=m; }
@@ -85,13 +96,37 @@ function finish(status, name){
   show('answer',false); show('done',true);
   var ok=status==='agreed';
   document.querySelector('#done .ic').textContent = ok?'✅':'📩';
+  if(KIND==='contract'){
+    document.getElementById('done-t').textContent = ok ? '확인해 주셔서 감사합니다' : '수정 요청이 전달되었습니다';
+    document.getElementById('done-s').textContent = ok ? (name?name+'님이 ':'')+'계약서 내용을 확인하신 것으로 기록되었습니다. 서명은 임대인과 만나서(또는 서명본 사진으로) 진행됩니다.' : '임대인에게 전달되었습니다. 고친 계약서를 다시 보내 드릴 수 있어요.';
+    return;
+  }
   document.getElementById('done-t').textContent = ok ? '동의해 주셔서 감사합니다' : '답변이 전달되었습니다';
   document.getElementById('done-s').textContent = ok ? (name?name+'님의 동의가 ':'동의가 ')+'기록되었습니다. 임대인이 갱신 계약서를 준비해 연락드릴 거예요.' : '임대인에게 전달되었습니다. 임대인이 다시 연락드릴 수 있어요.';
+}
+function openContract(){ if(!CURL){ alert('링크 기간이 지났어요. 임대인에게 다시 보내 달라고 해 주세요.'); return; } window.open(CURL,'_blank'); }
+function showContract(j){
+  KIND='contract'; CURL=j.url||'';
+  document.title='계약서 확인 · 모두의관리'; document.querySelector('.top').textContent='모두의관리 · 계약서 확인';
+  document.getElementById('h-title').textContent='갱신 계약서 확인';
+  document.getElementById('h-sub').textContent=(P.owner||'임대인')+'님이 '+(P.tname?P.tname+'님께 ':'')+'보내는 계약서입니다.';
+  ['r-sec','r-law','r-warn'].forEach(function(id){ show(id,false); }); show('c-sec',true); show('c-warn',true);
+  document.getElementById('c-room').textContent=P.room||'';
+  document.getElementById('c-owner').textContent=P.owner||'';
+  document.getElementById('c-term').textContent=fd(P.start)+' ~ '+fd(P.end);
+  document.getElementById('c-rent').innerHTML=won(P.rent)+'원'+(P.vat?'<br><span style="font-size:12px;color:#6B6B63;font-weight:600">부가세 별도</span>':'');
+  document.getElementById('c-dep').textContent=won(P.deposit)+'원';
+  if(j.expired||!CURL){ var b=document.getElementById('c-open'); b.textContent='링크 기간이 지났어요'; b.disabled=true; b.style.opacity='.5'; document.getElementById('c-open-s').textContent='보낸 날부터 30일이 지나 계약서를 열 수 없어요. 임대인에게 다시 보내 달라고 해 주세요.'; }
+  document.getElementById('b-yes').textContent='계약서 내용을 확인했습니다';
+  document.getElementById('b-no').textContent='수정 요청 (한마디에 적어 주세요)';
+  document.getElementById('i-memo').placeholder='예) 특약 2번 날짜가 달라요';
+  document.querySelector('#answer .note').textContent='답하신 내용과 시각이 임대인에게 전달되고 기록으로 남습니다.';
 }
 if(!T) fail('링크가 올바르지 않습니다.');
 else post({action:'consentView', t:T}).then(function(j){
   if(!j.ok){ fail(j.error||'안내를 찾을 수 없습니다.'); return; }
   P=j.payload||{}; show('loading',false); show('main',true);
+  if(j.kind==='contract'){ showContract(j); if(j.status!=='sent') finish(j.status, j.answer&&j.answer.name); return; }
   var pct=Number(P.pct)||0;
   document.getElementById('h-sub').textContent=(P.owner||'임대인')+'님이 '+(P.tname?P.tname+'님께 ':'')+'보내는 안내입니다.';
   document.getElementById('v-room').textContent=P.room||'';
@@ -112,7 +147,9 @@ else post({action:'consentView', t:T}).then(function(j){
 function answer(agree){
   var name=document.getElementById('i-name').value.trim();
   if(!name){ alert('성함을 넣어 주세요.'); document.getElementById('i-name').focus(); return; }
-  if(!confirm(agree ? '월 '+won(P.rentTo)+'원으로 조정하는 데 동의합니다. 맞나요?' : '동의하지 않는 것으로 전달할까요?')) return;
+  var memo=document.getElementById('i-memo').value.trim();
+  if(KIND==='contract' && !agree && !memo){ alert('어느 부분을 고쳐야 하는지 한마디에 적어 주세요.'); document.getElementById('i-memo').focus(); return; }
+  if(!confirm(KIND==='contract' ? (agree ? '계약서 내용을 확인한 것으로 임대인에게 전달합니다. 맞나요?' : '수정 요청을 전달할까요?') : (agree ? '월 '+won(P.rentTo)+'원으로 조정하는 데 동의합니다. 맞나요?' : '동의하지 않는 것으로 전달할까요?'))) return;
   post({action:'consentAnswer', t:T, name:name, agree:agree, memo:document.getElementById('i-memo').value, ua:navigator.userAgent.slice(0,120)}).then(function(j){
     if(!j.ok){ if(j.done){ finish(j.status,''); return; } alert(j.error||'전달하지 못했습니다. 다시 눌러 주세요.'); return; }
     finish(j.status, name);

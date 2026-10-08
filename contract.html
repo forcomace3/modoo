@@ -36,7 +36,7 @@ function kor(n){ var u=['','일','이','삼','사','오','육','칠','팔','구'
   var man=Math.floor(n/10000), rest=n%10000, s=''; if(man>=10000) s+=chunk(Math.floor(man/10000))+'억'; if(man%10000) s+=chunk(man%10000)+'만'; if(rest) s+=chunk(rest); return s||'영'; }
 function months(a,b){ if(!a||!b) return ''; var p=a.split('-').map(Number),q=b.split('-').map(Number); var m=(q[0]-p[0])*12+(q[1]-p[1])+1; return m; }
 var P=null;
-try{ var m=/[#&]p=([A-Za-z0-9_-]+)/.exec(location.hash); if(m){ var b=m[1].replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='='; P=JSON.parse(decodeURIComponent(escape(atob(b)))); } }catch(e){ P=null; }
+try{ if(window.__P){ P=window.__P; } else { var m=/[#&]p=([A-Za-z0-9_-]+)/.exec(location.hash); if(m){ var b=m[1].replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='='; P=JSON.parse(decodeURIComponent(escape(atob(b)))); } } }catch(e){ P=null; }
 if(!P){ document.getElementById('pg').innerHTML='<p>계약서 내용을 받지 못했습니다. 앱에서 "📄 갱신계약서 만들기"를 다시 눌러 주세요.</p>'; }
 else render(P);
 function render(P){

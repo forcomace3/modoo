@@ -2696,7 +2696,7 @@ function openRInfo(id){
   h+=riBox('📅 계약 기간',
     riRow('기간', (r.start?fmtDate(r.start):'?')+' ~ '+(r.end?fmtDate(r.end):'?'))+
     (I ? riRow('남은 기간', I.kind==='over'?'끝난 지 '+I.span+' 지남':(I.kind==='today'?'오늘 끝나요':I.span+' 남음'), over?'var(--danger)':(act?'#92400E':'')) : ''),
-    (r.end && !r.vacant ? '<button class="btn outline" id="ri-renew" style="margin:10px 0 0" onclick="openRenew(\''+id+'\')">🔄 계약 갱신하기</button>'+(r.raise&&r.raise.to===r.rent?'<p class="sub" style="margin-top:8px;font-weight:700;color:#1F6B45">'+fmtDate(r.raisedAt||r.start)+' 월세 '+won(r.raise.from)+'원 → '+won(r.raise.to)+'원 ('+r.raise.pct+'%) · '+(r.raise.how==='link'?'세입자 링크 동의':'계약서 서명으로 동의')+'</p>':'') : '')+
+    (r.end && !r.vacant ? '<button class="btn outline" id="ri-renew" style="margin:10px 0 0" onclick="openRenew(\''+id+'\')">🔄 계약 갱신하기</button>'+(contractLatest(r)?'<div style="display:flex;gap:8px;margin-top:8px"><button class="btn gray" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="contractOpen(\''+id+'\')">📄 계약서 보기</button><button class="btn gray" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="contractSend(\''+id+'\')">📨 세입자에게 보내기</button></div><div id="ri-contract-st"></div>':'')+(r.raise&&r.raise.to===r.rent?'<p class="sub" style="margin-top:8px;font-weight:700;color:#1F6B45">'+fmtDate(r.raisedAt||r.start)+' 월세 '+won(r.raise.from)+'원 → '+won(r.raise.to)+'원 ('+r.raise.pct+'%) · '+(r.raise.how==='link'?'세입자 링크 동의':'계약서 서명으로 동의')+'</p>':'') : '')+
     (H.length ? '<div class="label" style="margin-top:12px">지난 계약</div>'+H.map(function(x){ return '<p class="sub" style="font-weight:600;padding:4px 0">'+fmtDate(x.start)+' ~ '+fmtDate(x.end)+(x.ended?' (종료)':'')+' · '+esc(x.tname||'')+' · 월 '+won(x.rent)+'원</p>'; }).join('') : ''));
   /* 사업자등록증 */
   var B=r.biz||{};
@@ -2718,7 +2718,7 @@ function openRInfo(id){
      '<button class="btn outline" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="docPick(\'biz\')">📷 등록증</button>'+
      '<button class="btn outline" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="docPick(\'etc\')">📎 기타</button></div>';
   document.getElementById('ri-body').innerHTML=h;
-  go('rinfo'); renderDocs(r); if(taxReady(r)==='ok') taxLoadBox(id);
+  go('rinfo'); renderDocs(r); if(taxReady(r)==='ok') taxLoadBox(id); if(contractLatest(r)) contractStatus(id);
 }
 
 /* ===== 30차 : 호실 구분(적용 법률) · 계약 갱신 페이지 · 월세 조정 안내·세입자 동의 · 갱신계약서 만들기 =====
@@ -2914,14 +2914,77 @@ function renewCommit(noConsent){
   save(); ensureRMonth(); toast('갱신했습니다 · '+fmtDate(en)+'까지');
   STACK=[]; go('rlist', true); openRInfo(id);
   sheet('<h2 class="cc">갱신을 저장했어요</h2><div class="box g mt cc"><p style="font-weight:700">'+fmtDate(st)+' ~ '+fmtDate(en)+' · 월 '+won(rent)+'원</p></div>'+
-    '<button class="btn" style="margin-top:14px" onclick="closeSheet();contractOpen(\''+id+'\')">📄 갱신계약서 만들기</button>'+
+    '<p class="sub cc" id="rn-attach" style="margin-top:12px;font-weight:700;color:var(--ink3)">갱신계약서를 만들어 첨부하는 중…</p>'+
+    '<button class="btn" id="rn-open" style="margin-top:8px" disabled onclick="closeSheet();contractOpen(\''+id+'\')">📄 계약서 보기 · 인쇄</button>'+
+    '<button class="btn outline" id="rn-send" disabled onclick="closeSheet();contractSend(\''+id+'\')">📨 세입자에게 계약서 보내기</button>'+
     '<button class="btn outline" onclick="closeSheet();docPick(\'lease\')">📷 서명한 계약서 사진 붙이기</button>'+
     '<button class="btn gray" onclick="closeSheet()">나중에</button>');
+  contractAttach(id).then(function(path){
+    var t=document.getElementById('rn-attach'); if(t) t.innerHTML = path ? '✓ 갱신계약서가 첨부 자료에 들어갔어요' : '<span style="color:var(--danger)">계약서를 첨부하지 못했어요. 인터넷을 확인하고 한눈에 보기에서 다시 만들 수 있어요.</span>';
+    ['rn-open','rn-send'].forEach(function(k){ var b=document.getElementById(k); if(b) b.disabled=false; });
+    if(path && CUR==='rinfo' && roomId===id){ var sc=document.getElementById('s-rinfo'); var y=sc?sc.scrollTop:0; openRInfo(id); if(sc) sc.scrollTop=y; }
+  });
+}
+/* 계약서 스냅샷(HTML 한 장)을 만들어 첨부 자료에 넣는다. 서명 전 초안이라 이름에 표시 */
+function contractPayload(r){
+  var R=catRule(r)||{form:'blank',short:'',law:''}, H=(r.hist||[]), prev=H.length?H[H.length-1]:null;
+  return { form:R.form, cat:R.cat||'', catName:R.short, law:R.law, bname:r.bname||'', ho:r.ho||'', addr:r.addr||'',
+    tname:r.tname||'', ttel:r.ttel||'', lessor:S.owner.name||'', ltel:S.phone||'', bank:S.owner.bank||'',
+    deposit:r.deposit||0, rent:r.rent||0, vat:(r.use==='biz'&&r.vat!=='incl')?1:0, day:r.day||0, start:r.start||'', end:r.end||'',
+    prevStart:prev?prev.start:'', prevEnd:prev?prev.end:'', prevRent:prev?prev.rent:0, renew:!!prev,
+    raise:(r.raise&&r.raise.to===r.rent)?r.raise:null, extra:String(r.special||'').split('\n').map(function(x){ return x.trim(); }).filter(Boolean).slice(0,8), bizno:(r.biz&&r.biz.no)?bizFmt(r.biz.no):'', bizname:(r.biz&&r.biz.name)||'' };
+}
+function contractAttach(id){
+  var r=findRoom(id); if(!r||!FAC) return Promise.resolve(null);
+  var p=contractPayload(r);
+  return fetch(FAC.site+'contract.html?x='+Date.now(),{cache:'no-store'}).then(function(x){ return x.text(); }).then(function(tpl){
+    var html=tpl.replace('<script>', '<script>window.__P='+JSON.stringify(p).replace(/<\/script/gi,'<\\/script')+';<\/script><script>');
+    var data='data:text/html;base64,'+btoa(unescape(encodeURIComponent(html)));
+    var name='갱신계약서 '+fmtDate(r.start)+'~'+fmtDate(r.end)+' (서명 전)';
+    return docSave(id,'lease',data,name);
+  }).catch(function(){ return null; });
+}
+function contractLatest(r){
+  var L=((r&&r.docs)||[]).filter(function(d){ return /\.html$/i.test(d.path); });
+  return L.length ? L[L.length-1] : null;
+}
+/* 세입자에게 계약서 링크 보내기 : 30일짜리 링크, 세입자는 열어 보고 '확인했습니다' */
+function contractSend(id){
+  var r=findRoom(id); if(!r||!FAC) return;
+  var d=contractLatest(r);
+  if(!d){ toast('먼저 계약서를 만들어 주세요'); return; }
+  toast('링크를 만드는 중…');
+  var payload={ room:roomLabel(r), owner:S.owner.name||'임대인', tname:r.tname||'', start:r.start||'', end:r.end||'', rent:r.rent||0, deposit:r.deposit||0, vat:(r.use==='biz'&&r.vat!=='incl')?1:0, label:d.name||'갱신계약서', path:d.path };
+  docPost({action:'consentNew', kind:'contract', room:id, payload:payload}).then(function(j){
+    if(!j.ok){ toast(j.error||'링크를 만들지 못했어요'); return; }
+    var url=FAC.site+'agree.html?t='+j.token;
+    var t='안녕하세요'+(r.tname?' '+r.tname+'님':'')+', '+(S.owner.name||'임대인')+'입니다.\n['+roomLabel(r)+'] 갱신 계약서('+fmtDate(r.start)+'~'+fmtDate(r.end)+', 월 '+won(r.rent)+'원'+(payload.vat?' 부가세 별도':'')+')를 보내드립니다.\n아래 링크에서 내용을 확인하시고 \'확인했습니다\'를 눌러 주세요. 서명은 만나서 하거나 서명본을 사진으로 보내주시면 됩니다.\n'+url+'\n감사합니다.';
+    r.contractSent=todayStr(); save();
+    var tel=telOf({tel:r.ttel});
+    if(tel) facOpen(smsUrl([tel], t)); else copyText(t, '전화번호가 없어 내용을 복사했어요. 카톡에 붙여넣으세요');
+    if(CUR==='rinfo') contractStatus(id);
+  }).catch(function(){ toast('인터넷 연결을 확인해 주세요'); });
+}
+function contractStatus(id){
+  var b=document.getElementById('ri-contract-st'); if(!b||!FAC) return;
+  docPost({action:'consentList', kind:'contract', room:id}).then(function(j){
+    if(!j.ok||!(j.items||[]).length){ b.innerHTML=''; return; }
+    var c=j.items[0], when=(c.answered_at||c.created_at||'').slice(0,10);
+    b.innerHTML = c.status==='agreed' ? '<p class="sub" style="margin-top:8px;font-weight:700;color:#1F6B45">✓ '+when+' 세입자 '+esc((c.answer&&c.answer.name)||'')+'님이 계약서 내용을 확인했어요</p>'
+      : c.status==='declined' ? '<p class="sub" style="margin-top:8px;font-weight:700;color:var(--danger)">✕ '+when+' 세입자가 수정을 요청했어요'+((c.answer&&c.answer.memo)?': '+esc(c.answer.memo):'')+'</p>'
+      : '<p class="sub" style="margin-top:8px;font-weight:700;color:#92400E">⏳ '+when+' 계약서 링크를 보냈어요 · 아직 확인 전</p>';
+  }).catch(function(){});
 }
 function openDocsLaw(){ facOpen(FAC.site+'docs.html#law'); }
 /* ----- 갱신계약서 만들기 : contract.html 에 내용을 실어 연다 (서버 없음) ----- */
 function b64u(s){ return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
 function contractOpen(id){
+  var r=findRoom(id); if(!r) return;
+  var d=contractLatest(r);
+  if(d && FAC){ docUrlOf(d.path).then(function(u){ if(u) facOpen(u); else contractOpenNow(id); }); return; }
+  contractOpenNow(id);
+}
+function contractOpenNow(id){
   var r=findRoom(id); if(!r) return;
   var R=catRule(r)||{form:'blank',short:'',law:''}, H=(r.hist||[]), prev=H.length?H[H.length-1]:null;
   var p={ form:R.form, cat:R.cat||'', catName:R.short, law:R.law, bname:r.bname||'', ho:r.ho||'', addr:r.addr||'',
@@ -3053,7 +3116,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1008-2';
+var APP_BUILD='1008-3';
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
 /* ----- 운영자 화면용 : 앱 판 번호 보고 · 앱 오류 기록 (건물주 본인 접속일 때만 판 번호) ----- */
@@ -3118,13 +3181,13 @@ function renderDocs(r){
   var L=(r&&r.docs)||[];
   if(!L.length){ box.innerHTML='<p class="sub" style="font-weight:600;color:var(--ink3);margin:4px 0 8px">아직 첨부한 자료가 없어요. 아래 단추로 계약서·등록증 사진을 올려 주세요. 사진으로 읽어 넣은 서류는 자동으로 남아요.</p>'; return; }
   box.innerHTML=L.slice().reverse().map(function(d,i){
-    var idx=L.length-1-i, pdf=/\.pdf$/i.test(d.path);
+    var idx=L.length-1-i, pdf=/\.(pdf|html?)$/i.test(d.path);
     return '<div class="card" style="padding:10px 12px;margin-bottom:8px;cursor:pointer" onclick="docOpen('+idx+')">'+
       '<div id="doc-th-'+idx+'" style="width:56px;height:56px;border-radius:10px;background:#EEF1F5;display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;flex-shrink:0">'+(pdf?'📄':'🖼')+'</div>'+
       '<div style="flex:1;min-width:0"><div class="ho" style="font-size:var(--fs-body)">'+(DOC_NAME[d.kind]||'자료')+'</div><div class="nn">'+esc(d.at||'')+(d.name?' · '+esc(d.name):'')+'</div></div>'+
       '<button class="linkbtn" style="width:auto;color:var(--danger);padding:6px" onclick="event.stopPropagation();docDel('+idx+')">지우기</button></div>';
   }).join('');
-  L.forEach(function(d,idx){ if(/\.pdf$/i.test(d.path)) return; docUrlOf(d.path).then(function(u){ var th=document.getElementById('doc-th-'+idx); if(th&&u) th.innerHTML='<img src="'+u+'" style="width:100%;height:100%;object-fit:cover">'; }); });
+  L.forEach(function(d,idx){ if(/\.(pdf|html?)$/i.test(d.path)) return; docUrlOf(d.path).then(function(u){ var th=document.getElementById('doc-th-'+idx); if(th&&u) th.innerHTML='<img src="'+u+'" style="width:100%;height:100%;object-fit:cover">'; }); });
 }
 function docUrlOf(path){
   if(DOC_URL[path] && DOC_URL[path].exp>Date.now()) return Promise.resolve(DOC_URL[path].url);
