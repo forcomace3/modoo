@@ -233,7 +233,7 @@ body{flex-direction:column;justify-content:flex-start}
   <button class="btn" id="lg-go" onclick="ownerLogin()">들어가기</button>
   <button class="btn outline" onclick="go('join')">처음이에요 · 가입하기</button>
   <button class="linkbtn" style="color:var(--help)" onclick="callHelp()">☎ 비밀번호를 잊었어요 · 02-423-7723</button>
-  <button class="linkbtn" style="margin-top:2px" onclick="facOpen(FAC_SITE+'owners.html')">포컴 운영자 화면</button>
+  <button class="linkbtn" style="margin-top:2px;color:var(--ink3);font-size:var(--fs-small);font-weight:700;letter-spacing:.5px" onclick="openAdmin()">Admin</button>
 </section>
 
 <!-- ================= 가입하기 ================= -->
@@ -442,6 +442,7 @@ body{flex-direction:column;justify-content:flex-start}
   <div id="rh-soon"></div>
   <div id="rh-biz"></div>
   <div class="grow"></div>
+  <div style="text-align:center;margin-top:18px"><button class="linkbtn" style="margin-top:2px;color:var(--ink3);font-size:var(--fs-small);font-weight:700;letter-spacing:.5px" onclick="openAdmin()">Admin</button></div>
 </section>
 
 <!-- ================= 호실 임대 돈 확인 ================= -->
@@ -3052,7 +3053,9 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1008-1';
+var APP_BUILD='1008-2';
+/* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
+function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
 /* ----- 운영자 화면용 : 앱 판 번호 보고 · 앱 오류 기록 (건물주 본인 접속일 때만 판 번호) ----- */
 (function(){
   function post(b){ try{ if(typeof FAC_API!=='string'||!window.FAC||!FAC.tk) return; fetch(FAC_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({tk:FAC.tk},FAC.view?{owner:FAC.owner}:{},b))}).catch(function(){}); }catch(e){} }
