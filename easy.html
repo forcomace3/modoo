@@ -187,6 +187,7 @@ body{flex-direction:column;justify-content:flex-start}
 #facBar button,#facBar span{white-space:nowrap}
 #app{flex:1 1 auto;min-height:0;height:auto;max-height:none}
 @media(min-width:520px){body{justify-content:center}#facBar{border-radius:20px 20px 0 0}#app{flex:none;height:calc(88vh - 46px);max-height:870px;border-radius:0 0 26px 26px}}
+.rchip{display:inline-block;border:1.5px solid #CFD6E0;background:#fff;border-radius:999px;padding:8px 12px;margin:0 6px 6px 0;font-weight:700;font-size:14px;color:#3B4A5A;cursor:pointer}.rchip.on{background:#E4F2EA;border-color:#1F6B45;color:#1F6B45}
 </style>
 </head>
 <body>
@@ -2815,12 +2816,12 @@ function openRenew(id){
   /* 새 계약 */
   h+='<div class="box mb" style="padding:12px 14px"><p style="font-weight:800">🆕 새 계약</p>'+
     (late?'<p class="sub" style="font-weight:700;color:#92400E;margin-top:4px">끝난 지 오래된 계약이라 가장 최근 돌아온 날짜로 맞췄어요. 다르면 고쳐 주세요.</p>':'')+
-    '<div class="label" style="margin-top:10px">시작하는 날</div><input class="inp" id="rn-start" type="date" value="'+ns+'" onchange="renewCalc()">'+
+    '<div class="label" style="margin-top:10px">시작하는 날</div><input class="inp" id="rn-start" type="date" value="'+ns+'" onchange="renewCalc();renewApplyOpts();msgBuild()">'+
     '<div class="label" style="margin-top:10px">얼마 동안 하나요?</div>'+
     '<select class="inp" id="rn-mon" onchange="renewCalc()" style="appearance:auto;-webkit-appearance:menulist"><option value="12" selected>1년 (보통)</option><option value="24">2년</option>'+
     (prevM!==12&&prevM!==24?'<option value="'+prevM+'">지난 계약과 같게 ('+(prevM%12===0?(prevM/12)+'년':prevM+'개월')+')</option>':'')+'</select>'+
     '<div class="label" style="margin-top:10px">끝나는 날</div><input class="inp" id="rn-end" type="date" value="'+addDays(addMonthsStr(ns,12),-1)+'">'+
-    '<div class="label" style="margin-top:10px">보증금</div><input class="inp num" id="rn-dep" type="tel" inputmode="numeric" value="'+(r.deposit||'')+'"></div>';
+    '<div class="label" style="margin-top:10px">보증금</div><input class="inp num" id="rn-dep" type="tel" inputmode="numeric" value="'+(r.deposit||'')+'" oninput="msgBuild()"></div>';
   /* 월세 조정 */
   h+='<div class="box '+(canRaise?'g':'')+' mb" style="padding:12px 14px"><p style="font-weight:800">💰 월세 조정</p>';
   if(R.cap){
@@ -2830,13 +2831,27 @@ function openRenew(id){
     h+='<p class="sub" style="margin-top:4px;font-weight:600">'+esc(R.note)+'</p>';
   }
   h+='<div class="label" style="margin-top:10px">올려 받으시겠어요?</div>'+
-    '<select class="inp" id="rn-pct" onchange="renewPct()" style="appearance:auto;-webkit-appearance:menulist"'+(canRaise?'':' disabled')+'><option value="0">유지 (지금 금액 그대로)</option>'+
+    '<select class="inp" id="rn-pct" onchange="renewPct()" style="appearance:auto;-webkit-appearance:menulist"'+(canRaise?'':' disabled')+'><option value="0">유지 (지금 금액 그대로)</option><option value="m" disabled>직접 정한 금액 (아래 칸)</option>'+
     [1,2,3,4,5].map(function(p){ return '<option value="'+p+'">'+p+'% 올리기 → 월 '+won(round1000((r.rent||0)*(1+p/100)))+'원</option>'; }).join('')+'</select>'+
     '<div class="label" style="margin-top:10px">새 월세 <span style="font-weight:600;color:var(--ink3)">(직접 고쳐도 됩니다)</span></div><input class="inp num" id="rn-rent" type="tel" inputmode="numeric" value="'+(r.rent||'')+'" oninput="renewPct(true)">'+
+    (vatOf(r)?'<div class="label" style="margin-top:10px">매달 받는 돈 <span style="font-weight:600;color:var(--ink3)">(부가세 포함 합계 · 이걸로 정해도 돼요)</span></div><input class="inp num" id="rn-total" type="tel" inputmode="numeric" value="'+dueAmtRent(r,r.rent||0)+'" oninput="renewTotal()">'+
+      '<p class="sub" style="margin-top:6px;font-weight:600;color:var(--ink3)">합계를 80만 원처럼 딱 떨어지게 넣으면 월세와 부가세는 자동으로 나눠요.</p>':'')+
     '<p class="sub" id="rn-calc" style="margin-top:8px;font-weight:700;color:#1D4ED8"></p>'+
     '<p class="sub" style="margin-top:8px;font-weight:600;color:var(--ink3)">올리려면 세입자와 합의가 필요합니다. 여기서 고른 금액은 <b>제안</b>이고, 세입자가 동의하고 계약서에 서명해야 효력이 생깁니다.</p></div>';
   /* 세입자 동의 */
-  h+='<div class="box mb hidden" id="rn-consent" style="padding:12px 14px"><p style="font-weight:800">📨 세입자 안내·동의</p><div id="rn-consent-b"></div></div>';
+  var WHY=['금융 비용 상승','물가 상승','관리·수선 비용 상승','주변 시세 반영'], WS=(S.owner&&S.owner.renewWhy)||['금융 비용 상승','물가 상승'];
+  h+='<div class="box mb hidden" id="rn-consent" style="padding:12px 14px"><p style="font-weight:800">📨 세입자 안내·동의</p>'+
+    '<div class="label" style="margin-top:10px">올린 월세는 언제부터 받나요?</div><select class="inp" id="rn-apply" onchange="renewApply()" style="appearance:auto;-webkit-appearance:menulist"></select>'+
+    '<p class="sub" id="rn-apply-s" style="margin-top:6px;font-weight:600;color:var(--ink3)"></p>'+
+    '<div class="label" style="margin-top:10px">인상 이유 <span style="font-weight:600;color:var(--ink3)">(고르면 문자에 들어가요)</span></div><div id="rn-why">'+
+      WHY.map(function(w){ return '<span class="rchip'+(WS.indexOf(w)>=0?' on':'')+'" data-w="'+esc(w)+'" onclick="this.classList.toggle(\'on\');msgBuild()">'+esc(w)+'</span>'; }).join('')+'</div>'+
+    '<input class="inp" id="rn-why-etc" placeholder="직접 적기 (예: 관리비 인상)" oninput="msgBuild()" value="'+esc((S.owner&&S.owner.renewWhyEtc)||'')+'">'+
+    '<div style="margin-top:10px"><span class="rchip" id="rn-thanks" onclick="this.classList.toggle(\'on\');msgBuild()">🙏 감사 인사 한 줄 넣기</span></div>'+
+    (vatOf(r)?'<div class="label" style="margin-top:6px">금액은 어떻게 보여줄까요?</div><select class="inp" id="rn-amtmode" onchange="msgBuild()" style="appearance:auto;-webkit-appearance:menulist"><option value="total" selected>합계 한 숫자로 (부가세 포함)</option><option value="split">월세 + 부가세 나눠서</option></select>':'')+
+    '<div class="label" style="margin-top:10px">보낼 문자 <span style="font-weight:600;color:var(--ink3)">(직접 고쳐도 돼요 · 맨 아래 동의 링크는 자동으로 붙어요)</span></div>'+
+    '<textarea class="inp" id="rn-msg" rows="14" style="min-height:280px;line-height:1.55;font-size:15px;font-family:inherit;font-weight:500" oninput="RN.msgEdited=true;msgNote()"></textarea>'+
+    '<p class="sub" id="rn-msg-note" style="margin-top:6px;font-weight:600;color:var(--ink3)"></p>'+
+    '<div id="rn-consent-b"></div></div>';
   h+='<div class="box mb" style="padding:12px 14px"><p style="font-weight:800">📝 계약서에 넣을 특약 <span class="sub" style="font-weight:600;color:var(--ink3)">(선택 · 한 줄에 하나)</span></p>'+
      '<p class="sub" style="margin-top:4px;font-weight:600">기본 특약(원상회복·정산·개인정보 등)은 자동으로 들어가요. 더 넣을 조건만 적으세요. 월세를 올리면 조정 특약도 자동으로 붙습니다.</p>'+
      '<textarea class="inp" id="rn-sp" rows="3" style="margin-top:8px;min-height:80px;line-height:1.5" placeholder="예) 주차 1대 무료\n예) 반려동물 금지">'+esc(r.special||'')+'</textarea></div>';
@@ -2851,16 +2866,97 @@ function renewPct(manual){
   if(!RN) return; var r=findRoom(RN.id); if(!r) return;
   var sel=document.getElementById('rn-pct'), inp=document.getElementById('rn-rent'), out=document.getElementById('rn-calc');
   var old=RN.oldRent, nv;
-  if(manual){ nv=parseInt(String(inp.value).replace(/[^0-9]/g,''))||0; var p=old?Math.round((nv-old)/old*1000)/10:0; sel.value = (p>0 && Number.isInteger(p) && p<=5) ? String(p) : '0'; if(nv>old && sel.value==='0') sel.value='0'; }
+  if(manual){ nv=parseInt(String(inp.value).replace(/[^0-9]/g,''))||0; var p=old?Math.round((nv-old)/old*1000)/10:0; sel.value = (p>0 && Number.isInteger(p) && p<=5 && round1000(old*(1+p/100))===nv) ? String(p) : (nv===old ? '0' : 'm'); }
   else { var pct=Number(sel.value)||0; nv = pct ? round1000(old*(1+pct/100)) : old; inp.value = nv||''; }
+  var tot=document.getElementById('rn-total'); if(tot && manual!=='total') tot.value = nv ? dueAmtRent(r,nv) : '';
   var diff=nv-old, R=RN.rule, pctNow = old ? (diff/old*100) : 0;
   var t='';
-  if(diff>0){ t='월 '+won(old)+'원 → '+won(nv)+'원 (+'+won(diff)+'원, '+(Math.round(pctNow*10)/10)+'%)'+(r.use==='biz'&&r.vat!=='incl'?' · 부가세 별도 '+won(Math.round(nv*0.1))+'원':''); if(R.cap && pctNow>R.cap+0.05) t+='<br><b style="color:var(--danger)">'+R.cap+'% 상한을 넘습니다. 세입자가 거부할 수 있고 초과분은 돌려줘야 할 수 있어요.</b>'; }
+  if(diff>0){ t='월 '+won(old)+'원 → '+won(nv)+'원 (+'+won(diff)+'원, '+(Math.round(pctNow*10)/10)+'%)'+(vatOf(r)?'<br>부가세 포함 합계 '+won(dueAmtRent(r,old))+'원 → '+won(dueAmtRent(r,nv))+'원 (+'+won(dueAmtRent(r,nv)-dueAmtRent(r,old))+'원) · 부가세 '+won(Math.round(nv*0.1))+'원':''); if(R.cap && pctNow>R.cap+0.05) t+='<br><b style="color:var(--danger)">'+R.cap+'% 상한을 넘습니다. 세입자가 거부할 수 있고 초과분은 돌려줘야 할 수 있어요.</b>'; }
   else if(diff<0) t='월 '+won(old)+'원 → '+won(nv)+'원 (내림)';
   else t='지금 금액 그대로';
   out.innerHTML=t;
   document.getElementById('rn-consent').classList.toggle('hidden', !(diff>0));
-  if(diff>0) consentRender();
+  if(diff>0){ if(!RN.applyInit){ RN.applyInit=true; renewApplyOpts(true); } consentRender(); msgBuild(); }
+}
+/* ----- 합계(부가세 포함)로 정하기 : 월세 = 합계 ÷ 1.1, 부가세 = 합계 − 월세 ----- */
+function dueAmtRent(r, n){ return (n||0) + ((r.use==='biz'&&r.vat!=='incl') ? Math.round((n||0)*0.1) : 0); }
+function supplyOf(r, T){
+  if(!(r.use==='biz'&&r.vat!=='incl')) return T;
+  var s=Math.round(T/1.1);
+  for(var k=-2;k<=2;k++){ if(dueAmtRent(r,s+k)===T) return s+k; }
+  return s;
+}
+function renewTotal(){
+  if(!RN) return; var r=findRoom(RN.id); if(!r) return;
+  var T=parseInt(String(document.getElementById('rn-total').value).replace(/[^0-9]/g,''))||0;
+  document.getElementById('rn-rent').value = T ? supplyOf(r,T) : '';
+  renewPct('total');
+}
+/* ----- 올린 월세 적용일 : 앞으로 돌아오는 월세 받는 날 중에서 고른다 ----- */
+function payOn(ym, day){ var p=ym.split('-').map(Number), last=new Date(p[0],p[1],0).getDate(); return ym+'-'+String(Math.min(day,last)).padStart(2,'0'); }
+function payDays(r, n){
+  var day=Number(r.day)||parseInt(String(r.start||'').slice(8),10)||1, today=todayStr(), ym=today.slice(0,7), L=[];
+  for(var k=0;k<14 && L.length<n;k++){ var c=payOn(addMonthsStr(ym+'-01',k).slice(0,7), day); if(c>today) L.push(c); }
+  return L;
+}
+function daysTo(x){ return Math.round((new Date(x+'T00:00:00')-new Date(todayStr()+'T00:00:00'))/86400000); }
+function fmtK(x){ var p=String(x||'').split('-'); return p.length===3 ? p[0]+'년 '+parseInt(p[1],10)+'월 '+parseInt(p[2],10)+'일' : ''; }
+function renewApplyOpts(init){
+  if(!RN) return; var r=findRoom(RN.id); if(!r) return;
+  var sel=document.getElementById('rn-apply'); if(!sel) return;
+  var st=document.getElementById('rn-start').value, cur=sel.value, L=payDays(r,5);
+  var lab=function(d){ var n=daysTo(d); return fmtK(d)+' 입금분부터 ('+(n<60?Math.round(n/7)+'주 뒤':Math.round(n/30)+'달 뒤')+')'; };
+  var opts=L.map(function(d){ return '<option value="'+d+'">'+lab(d)+'</option>'; }).join('');
+  if(st && L.indexOf(st)<0) opts='<option value="start">새 계약 시작일 '+fmtDate(st)+'부터'+(st<=todayStr()?' (이미 지난 날짜)':'')+'</option>'+opts;
+  sel.innerHTML=opts;
+  if(init){
+    var def = (st && daysTo(st)>=14) ? (L.indexOf(st)>=0?st:'start') : (L.filter(function(d){ return daysTo(d)>=45; })[0]||L[0]);
+    sel.value=def; if(def!=='start') applySet(def);
+  } else if(cur && sel.querySelector('option[value="'+cur+'"]')) sel.value=cur;
+  else if(st && L.indexOf(st)>=0) sel.value=st;
+  applyNote();
+}
+function applySet(d){ document.getElementById('rn-start').value=d; renewCalc(); }
+function renewApply(){ var v=document.getElementById('rn-apply').value; if(v && v!=='start') applySet(v); renewApplyOpts(); msgBuild(); }
+function applyDate(){ var v=(document.getElementById('rn-apply')||{}).value; return (!v||v==='start') ? document.getElementById('rn-start').value : v; }
+function applyNote(){
+  var e=document.getElementById('rn-apply-s'); if(!e) return; var d=applyDate();
+  e.innerHTML = d ? '새 계약은 이 날 시작해요: <b>'+fmtDate(document.getElementById('rn-start').value)+' ~ '+fmtDate(document.getElementById('rn-end').value)+'</b>. 그 전까지는 지금 월세 그대로 받아요.' : '';
+}
+/* ----- 안내 문자 만들기 ----- */
+function msgNote(){ var e=document.getElementById('rn-msg-note'); if(e) e.innerHTML = RN&&RN.msgEdited ? '직접 고친 문자예요. <a href="javascript:msgBuild(true)" style="color:#1D4ED8">↻ 위에서 고른 대로 다시 만들기</a>' : ''; }
+function msgBuild(force){
+  if(!RN) return; var r=findRoom(RN.id), ta=document.getElementById('rn-msg'); if(!r||!ta) return;
+  applyNote();
+  if(RN.msgEdited && !force){ msgNote(); return; }
+  if(force) RN.msgEdited=false;
+  var old=RN.oldRent, nv=parseInt(String(document.getElementById('rn-rent').value).replace(/[^0-9]/g,''))||0;
+  var vatRoom=!!vatOf(r), mode=(document.getElementById('rn-amtmode')||{}).value||'total';
+  var oT=dueAmtRent(r,old), nT=dueAmtRent(r,nv), dT=nT-oT;
+  var why=[].slice.call(document.querySelectorAll('#rn-why .rchip.on')).map(function(x){ return x.getAttribute('data-w'); });
+  var etc=(document.getElementById('rn-why-etc').value||'').trim(); if(etc) why.push(etc);
+  var thanks=document.getElementById('rn-thanks').classList.contains('on');
+  var ap=applyDate(), prev=ap ? payOn(addMonthsStr(ap.slice(0,7)+'-01',-1).slice(0,7), Number(ap.slice(8))) : '';
+  var depNew=numOf('rn-dep'), depOld=r.deposit||0, today=todayStr();
+  var c=catOf(r), verb=(c==='shop'||c==='etc')?'이용하고 계시는데요':'살고 계시는데요';
+  var L=[];
+  L.push('안녕하세요'+(r.tname?' '+r.tname+'님':'')+', '+roomLabel(r)+' 임대인 '+(S.owner.name||'')+'입니다.');
+  if(thanks) L.push('늘 월세 제때 보내 주셔서 감사합니다.');
+  L.push('');
+  L.push(((r.end&&r.end<today)?'계약 기간이 지나':'계약 만료를 앞두고')+' 월세 조정을 미리 안내드리려고 연락드렸습니다. 현재 월 '+won(oT)+'원'+(vatRoom?'(부가세 포함)':'')+'에 '+verb+', '+(why.length?why.join(', ')+' 등으로 ':'')+'약간의 인상이 필요할 것 같습니다. 아래와 같이 조정하고자 합니다.');
+  L.push('');
+  if(vatRoom && mode==='split') L.push('- 조정 후: 월 '+won(nv)+'원 + 부가세 '+won(nT-nv)+'원 (합계 '+won(nT)+'원, '+won(dT)+'원 인상)');
+  else L.push('- 조정 후: 월 '+won(nT)+'원 ('+(vatRoom?'부가세 포함이며 ':'')+won(dT)+'원이 인상됩니다.)');
+  var isPay = ap && payDays(r,14).indexOf(ap)>=0;
+  if(ap && !isPay) L.push('- 적용: '+fmtK(ap)+'부터');
+  else if(ap) L.push('- 적용: '+fmtK(ap)+' 입금분부터'+(prev && prev>today ? ' ('+parseInt(prev.slice(5,7),10)+'월 '+parseInt(prev.slice(8),10)+'일분까지는 지금 금액 그대로)' : ''));
+  if(depNew!==depOld){ L.push('- 보증금: '+won(depOld)+'원 → '+won(depNew)+'원'); L.push('- 나머지 조건은 그대로입니다.'); }
+  else L.push('- 보증금 '+won(depOld)+'원과 나머지 조건은 그대로입니다.');
+  if(vatRoom && mode==='split') { L.push(''); L.push('세금계산서는 지금처럼 매달 발행해 드립니다.'); }
+  L.push('');
+  L.push((ap && daysTo(ap)>=30 ? '한 달 넘게 여유를 두고 말씀드리니, ' : '')+'궁금하신 점이나 의견이 있으시면 편하게 연락 주세요. 동의해 주시면 새 계약서를 준비해 보내드리겠습니다.');
+  L.push('감사합니다.');
+  ta.value=L.join('\n'); msgNote();
 }
 /* ----- 세입자 안내 보내기 · 동의 확인 ----- */
 function consentLoad(){
@@ -2894,7 +2990,11 @@ function consentSend(){
   docPost({action:'consentNew', room:RN.id, payload:payload}).then(function(j){
     if(!j.ok){ toast(j.error||'안내를 만들지 못했어요'); return; }
     var url=FAC.site+'agree.html?t='+j.token;
-    var t='안녕하세요'+(r.tname?' '+r.tname+'님':'')+', '+(S.owner.name||'임대인')+'입니다.\n['+roomLabel(r)+'] '+fmtDate(st)+'부터 월세를 '+won(old)+'원에서 '+won(nv)+'원('+pct+'%)으로 조정하고자 안내드립니다.\n아래 링크에서 내용과 근거를 확인하시고 동의 여부를 알려주세요.\n'+url+'\n감사합니다.';
+    var mine=((document.getElementById('rn-msg')||{}).value||'').trim();
+    var t = mine ? mine+'\n\n아래 링크에서 내용을 확인하시고 동의 여부를 눌러 주세요.\n'+url
+      : '안녕하세요'+(r.tname?' '+r.tname+'님':'')+', '+(S.owner.name||'임대인')+'입니다.\n['+roomLabel(r)+'] '+fmtDate(st)+'부터 월세를 '+won(old)+'원에서 '+won(nv)+'원('+pct+'%)으로 조정하고자 안내드립니다.\n아래 링크에서 내용과 근거를 확인하시고 동의 여부를 알려주세요.\n'+url+'\n감사합니다.';
+    var wsel=[].slice.call(document.querySelectorAll('#rn-why .rchip.on')).map(function(x){ return x.getAttribute('data-w'); });
+    S.owner.renewWhy=wsel; S.owner.renewWhyEtc=((document.getElementById('rn-why-etc')||{}).value||'').trim();
     r.consentSent=todayStr(); save(); consentLoad();
     var tel=telOf({tel:r.ttel});
     if(tel) facOpen(smsUrl([tel], t)); else copyText(t, '전화번호가 없어 내용을 복사했어요. 카톡에 붙여넣으세요');
@@ -3245,7 +3345,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1008-7';
+var APP_BUILD='1012-1';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
