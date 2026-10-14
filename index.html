@@ -346,6 +346,7 @@
 </style>
 </head>
 <body>
+<style>.adbar{display:none;background:#141D4A;color:#fff;font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:13px;padding:0 8px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}.adbar.on{display:flex;align-items:center;gap:2px}.adbar a{color:#C7CEEA;text-decoration:none;font-weight:700;padding:9px 10px;border-bottom:3px solid transparent;flex-shrink:0}.adbar a.cur{color:#fff;border-bottom-color:#7CF2A9}.adbar a:hover{color:#fff}.adbar .sp{flex:1}.adbar .who{color:#9AA3C7;font-size:12px;padding:0 8px;flex-shrink:0}body.on-login .adbar{display:none!important}</style><div class="adbar" id="adbar" data-cur="emp"><a href="admin.html" data-k="home">🏠 관리자 홈</a><a href="pro.html" data-k="pro">💰 수납·계약</a><a href="index.html" data-k="emp">🛠️ 현장·직원</a><a href="owners.html" data-k="own">🏘️ 간편 관리 운영</a><span class="sp"></span><span class="who" id="adbarWho"></span></div><script>function adbarShow(s){var b=document.getElementById("adbar");if(!b)return;if(!s){try{s=JSON.parse(localStorage.getItem("fc_sess")||"null");}catch(e){}}if(!(s&&s.tk&&(s.role==="admin"||s.role==="manager"))){b.classList.remove("on");return;}b.classList.add("on");var cur=b.getAttribute("data-cur");[].slice.call(b.querySelectorAll("a")).forEach(function(a){a.classList.toggle("cur",a.getAttribute("data-k")===cur);if(a.getAttribute("data-k")==="own")a.style.display=s.role==="admin"?"":"none";});var w=document.getElementById("adbarWho");if(w)w.textContent=(s.role==="admin"?"관리자":"소장 "+(s.name||""))+(s.site?" · "+s.site:"");}adbarShow();</script>
 <div class="app">
   <!-- v9 로그인 -->
   <div id="v-login" class="login hide">
@@ -716,7 +717,7 @@
   if(!cfg.fixedItems)cfg.fixedItems=[{id:"fx1",name:"전기요금",amount:0},{id:"fx2",name:"수도요금",amount:0},{id:"fx3",name:"임대료",amount:0},{id:"fx4",name:"통신비",amount:0}];
   function saveCfg(){try{localStorage.setItem("cfg_shared",JSON.stringify(cfg));}catch(e){}}
   var API="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/api";var SERVED=API;var SITE=location.href.replace(/[?#].*$/,"").replace(/[^\/]*$/,"");
-  var BOOT=(function(){var q=new URLSearchParams(location.search),a={};try{a=JSON.parse(localStorage.getItem("fc_auth")||"{}");}catch(e){}var b={ok:false,auth:true,adminSet:a.adminSet!==false,testMode:!!a.testMode};if(q.get("home")){b.home=true;try{history.replaceState(null,"",location.pathname);}catch(e){}}return b;})();
+  var BOOT=(function(){var q=new URLSearchParams(location.search),a={};try{a=JSON.parse(localStorage.getItem("fc_auth")||"{}");}catch(e){}var b={ok:false,auth:true,adminSet:a.adminSet!==false,testMode:!!a.testMode};if(q.get("home")){b.home=true;b.menu=q.get("menu")||"";try{history.replaceState(null,"",location.pathname);}catch(e){}}return b;})();
   try{var __lg=document.querySelector(".lg-logo");document.querySelectorAll("img[data-logo]").forEach(function(i){i.src=__lg.src;});}catch(e){}
   // v9 로그인 세션 (이 기기에만 저장)
   var SESS=null;try{SESS=JSON.parse(localStorage.getItem("fc_sess")||"null");}catch(e){SESS=null;}
@@ -2050,7 +2051,7 @@
   });
 
   // ==================== v9 역할 화면 · 로그인 ====================
-  function applyRoleUI(){
+  function applyRoleUI(){try{adbarShow(SESS);var hb=document.getElementById("homeBtn");if(hb)hb.textContent=(SESS&&(SESS.role==="admin"||SESS.role==="manager"))?"⌂ 관리자 홈":"⌂ 처음으로";}catch(e){}
     var r=role();
     var show={admin:["capture","list","settlement","docs","field","emp","settings"],manager:["capture","list","docs","field","notice"],staff:[]}[r]||[];
     document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.toggle("hide",show.indexOf(b.getAttribute("data-v"))<0);});
@@ -2116,6 +2117,7 @@
   ["lgPin","lgPin2","lgBirth"].forEach(function(id){$(id).addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});});
   $("lgGo").addEventListener("click",doLogin);
   $("homeBtn").addEventListener("click",function(){
+    if(SESS&&(SESS.role==="admin"||SESS.role==="manager")){location.href=SITE+"admin.html";return;}
     if(!testMode&&!confirm("처음 화면으로 나갈까요?\n다시 들어올 때 로그인이 필요합니다."))return;
     logoutLocal(false);try{window.scrollTo(0,0);}catch(e){}
   });
@@ -2142,6 +2144,7 @@
       SESS={tk:r.tk,role:r.role,name:r.name,site:r.site||""};saveSess();
       if(window.__pendFac){var pf=window.__pendFac;window.__pendFac=null;if(r.role==="admin"||r.role==="manager"){try{if(APP&&APP.setSession)APP.setSession(r.tk);}catch(e){}var fu=SITE+(pf==="facpro"?"pro.html":"easy.html")+"?tk="+encodeURIComponent(r.tk);try{window.open(fu,"_top");}catch(e){location.href=fu;}return;}}
       try{if(APP&&APP.setSession)APP.setSession(r.tk);}catch(e){}
+      if(r.role==="admin"||r.role==="manager"){location.href=SITE+"admin.html";return;}
       $("lgPin").value="";$("lgPin2").value="";$("lgBirth").value="";
       try{await cloudPull();}catch(e){}
       applyRoleUI();renderSiteInfo();renderDocCard();
@@ -2635,7 +2638,7 @@
     }
     applyRoleUI();renderSiteInfo();renderDocCard();
     try{$("lgTest").classList.toggle("hide",!testMode);}catch(e){}
-    setView(isStaff()?"home":(role()?"capture":"login"));
+    setView(isStaff()?"home":(role()?"capture":"login"));try{if(BOOT&&BOOT.menu==="pro"){setView("login");var hp=document.getElementById("hubPro");if(hp)hp.click();}}catch(e){}
     if(APP){try{APP.ready();}catch(e){}}
     if(bgPull){
       busyPill(true);

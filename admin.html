@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#212D64">
+<meta name="robots" content="noindex">
+<title>관리자 홈 · 모두의관리</title>
+<link rel="icon" type="image/png" href="logo.png">
+<style>
+:root{--brand:#10893E;--brand-dark:#0B6B30;--brand-light:#E6F4EA;--navy:#212D64;--danger:#DC2626;--danger-light:#FEE9E9;
+  --warn:#B45309;--warn-light:#FEF3E2;--ink:#0F172A;--ink2:#475569;--ink3:#94A3B8;--line:#D8DEE6;--bg:#F5F7FA}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:16px 16px 60px}
+h1{font-size:22px;margin:6px 0 2px}
+.sub{color:var(--ink2);font-size:14px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 16px 14px;display:flex;flex-direction:column;min-height:200px}
+.card h2{font-size:16px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.card h2 .tag{margin-left:auto;font-size:12px;font-weight:700;color:var(--ink3)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #EEF1F5;font-size:14px}
+.kv:last-of-type{border-bottom:none}
+.kv b{font-size:15px}
+.kv .r{color:var(--danger)}.kv .g{color:var(--brand-dark)}.kv .y{color:var(--warn)}
+.big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:2px 0 6px}
+.big small{font-size:13px;font-weight:700;color:var(--ink3);margin-left:6px}
+.list{margin:8px 0 0;padding:0;list-style:none;font-size:13.5px;color:var(--ink2)}
+.list li{padding:5px 0;border-top:1px dashed #E6EAF0;display:flex;justify-content:space-between;gap:8px}
+.list li b{color:var(--ink)}
+.btns{display:flex;gap:8px;margin-top:auto;padding-top:12px}
+.btn{flex:1;border:none;border-radius:12px;padding:12px 10px;font-size:14.5px;font-weight:800;cursor:pointer;background:var(--navy);color:#fff;font-family:inherit;text-align:center;text-decoration:none}
+.btn.o{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
+.btn.g{background:var(--brand);color:#fff}
+.note{font-size:13px;color:var(--ink3);margin-top:6px}
+.err{background:var(--danger-light);color:#991B1B;border-radius:10px;padding:10px 12px;font-size:13.5px;font-weight:700}
+.hide{display:none!important}
+.lg{max-width:380px;margin:40px auto;background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
+.lg h2{margin:0 0 4px;font-size:19px}
+.lg p{margin:0 0 14px;color:var(--ink2);font-size:14px}
+.inp{width:100%;font-size:20px;text-align:center;letter-spacing:6px;padding:12px;border:1.5px solid var(--line);border-radius:12px;margin-bottom:10px;font-family:inherit}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:24px;font-size:13px;color:var(--ink3)}
+.lnk{background:none;border:none;color:var(--danger);font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}
+.sk{color:var(--ink3);font-size:13.5px}
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1C2A27;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;opacity:0;transition:.2s;pointer-events:none;z-index:99}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<style>.adbar{display:none;background:#141D4A;color:#fff;font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:13px;padding:0 8px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}.adbar.on{display:flex;align-items:center;gap:2px}.adbar a{color:#C7CEEA;text-decoration:none;font-weight:700;padding:9px 10px;border-bottom:3px solid transparent;flex-shrink:0}.adbar a.cur{color:#fff;border-bottom-color:#7CF2A9}.adbar a:hover{color:#fff}.adbar .sp{flex:1}.adbar .who{color:#9AA3C7;font-size:12px;padding:0 8px;flex-shrink:0}body.on-login .adbar{display:none!important}</style><div class="adbar" id="adbar" data-cur="home"><a href="admin.html" data-k="home">🏠 관리자 홈</a><a href="pro.html" data-k="pro">💰 수납·계약</a><a href="index.html" data-k="emp">🛠️ 현장·직원</a><a href="owners.html" data-k="own">🏘️ 간편 관리 운영</a><span class="sp"></span><span class="who" id="adbarWho"></span></div><script>function adbarShow(s){var b=document.getElementById("adbar");if(!b)return;if(!s){try{s=JSON.parse(localStorage.getItem("fc_sess")||"null");}catch(e){}}if(!(s&&s.tk&&(s.role==="admin"||s.role==="manager"))){b.classList.remove("on");return;}b.classList.add("on");var cur=b.getAttribute("data-cur");[].slice.call(b.querySelectorAll("a")).forEach(function(a){a.classList.toggle("cur",a.getAttribute("data-k")===cur);if(a.getAttribute("data-k")==="own")a.style.display=s.role==="admin"?"":"none";});var w=document.getElementById("adbarWho");if(w)w.textContent=(s.role==="admin"?"관리자":"소장 "+(s.name||""))+(s.site?" · "+s.site:"");}adbarShow();</script>
+<div class="wrap">
+  <div id="vLogin" class="hide">
+    <div class="lg">
+      <h2>관리자 홈</h2>
+      <p>관리자 또는 관리소장 비밀번호 4자리를 넣어 주세요.</p>
+      <input class="inp" id="loPin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter')adminLogin()">
+      <div class="err hide" id="loErr" style="margin-bottom:10px"></div>
+      <button class="btn" id="loGo" style="width:100%" onclick="adminLogin()">들어가기</button>
+      <div class="foot"><a href="index.html?home=1" style="color:var(--ink3)">‹ 처음 화면</a><span id="loTest"></span></div>
+    </div>
+  </div>
+
+  <div id="vHome" class="hide">
+    <h1 id="hName">관리자 홈</h1>
+    <p class="sub" id="hSub">한 곳에서 보고, 필요한 화면으로 바로 들어갑니다.</p>
+    <div class="grid">
+      <div class="card" id="cPro">
+        <h2>💰 수납·계약 관리 <span class="tag" id="proYm"></span></h2>
+        <div id="proBody" class="sk">불러오는 중…</div>
+        <div class="btns"><a class="btn" href="pro.html">열기 ›</a></div>
+      </div>
+      <div class="card" id="cEmp">
+        <h2>🛠️ 현장·직원 관리 <span class="tag" id="empTag"></span></h2>
+        <div id="empBody" class="sk">불러오는 중…</div>
+        <div class="btns"><a class="btn" href="index.html">열기 ›</a></div>
+      </div>
+      <div class="card" id="cOwn">
+        <h2>🏘️ 간편 관리 운영 <span class="tag">포컴 운영자</span></h2>
+        <div id="ownBody" class="sk">불러오는 중…</div>
+        <div class="btns"><a class="btn g" href="owners.html">회원 관리 열기 ›</a></div>
+      </div>
+    </div>
+    <div class="foot">
+      <span id="hWho"></span>
+      <span><button class="lnk" onclick="location.reload()" style="color:var(--navy)">↻ 새로 고침</button> · <button class="lnk" onclick="logout()">로그아웃</button></span>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<script>
+var MAIN="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/api", EASY="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/easy";
+var $=function(id){ return document.getElementById(id); };
+var SESS=null;
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function won(n){ return (Math.round(n)||0).toLocaleString('ko-KR'); }
+function thisYm(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function ymL(y){ var p=y.split('-'); return p[0]+'년 '+parseInt(p[1],10)+'월'; }
+function toast(m){ var t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(function(){ t.classList.remove('on'); },2400); }
+function post(url, body){ return fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){ return r.json(); }); }
+function get(url){ return fetch(url).then(function(r){ return r.json(); }); }
+function kv(k,v,cls){ return '<div class="kv"><span>'+k+'</span><b class="'+(cls||'')+'">'+v+'</b></div>'; }
+function show(v){ $('vLogin').classList.toggle('hide', v!=='login'); $('vHome').classList.toggle('hide', v!=='home'); }
+
+/* ---------- 로그인 (현장·직원 관리와 같은 fc_sess 를 씀 : 한 번만 로그인) ---------- */
+function loadSess(){ try{ var s=JSON.parse(localStorage.getItem('fc_sess')||'null'); if(s&&s.tk&&(s.role==='admin'||s.role==='manager')) return s; }catch(e){} return null; }
+function saveSess(s){ try{ localStorage.setItem('fc_sess', JSON.stringify(s)); }catch(e){} }
+window.logout=function(){
+  if(!confirm('로그아웃할까요?')) return;
+  try{ localStorage.removeItem('fc_sess'); localStorage.removeItem('fc_data'); sessionStorage.removeItem('fc_op'); sessionStorage.removeItem('fc_view'); }catch(e){}
+  location.href='index.html?home=1';
+};
+window.adminLogin=function(){
+  var pin=$('loPin').value.replace(/[^0-9]/g,''), b=$('loGo'); $('loErr').classList.add('hide');
+  if(!TEST && pin.length!==4){ $('loErr').textContent='숫자 4자리를 넣어 주세요.'; $('loErr').classList.remove('hide'); return; }
+  b.disabled=true; b.textContent='확인 중…';
+  var done=function(j){ b.disabled=false; b.textContent='들어가기'; if(j&&j.ok){ SESS={tk:j.tk,role:j.role,name:j.name||'',site:j.site||''}; saveSess(SESS); $('loPin').value=''; boot(); return true; } return false; };
+  post(MAIN,{action:'login',mode:'admin',pin:TEST?'':pin}).then(function(j){
+    if(done(j)) return;
+    return post(MAIN,{action:'login',mode:'manager',pin:TEST?'':pin}).then(function(j2){
+      if(done(j2)) return;
+      $('loErr').textContent=(j2&&j2.error)||(j&&j.error)||'들어가지 못했습니다'; $('loErr').classList.remove('hide');
+    });
+  }).catch(function(){ b.disabled=false; b.textContent='들어가기'; $('loErr').textContent='인터넷 연결을 확인해 주세요.'; $('loErr').classList.remove('hide'); });
+};
+var TEST=false;
+function authInfo(){ return get(MAIN+'?api=auth').then(function(j){ TEST=!!j.testMode; $('loTest').textContent=TEST?'🧪 테스트 모드 · 비밀번호 없이 들어갑니다':''; }).catch(function(){}); }
+
+/* ---------- 시작 ---------- */
+function boot(){
+  SESS=loadSess();
+  if(!SESS){ show('login'); authInfo(); return; }
+  show('home');
+  $('hName').textContent=(SESS.role==='admin'?'관리자':'관리소장')+' 홈';
+  $('hWho').textContent=(SESS.name||(SESS.role==='admin'?'관리자':''))+(SESS.site?' · '+SESS.site:'');
+  $('cOwn').classList.toggle('hide', SESS.role!=='admin');
+  try{ adbarShow(SESS); }catch(e){}
+  loadPro(); loadEmp(); if(SESS.role==='admin') loadOwn();
+}
+function authFail(){ try{ localStorage.removeItem('fc_sess'); }catch(e){} SESS=null; show('login'); authInfo(); toast('다시 로그인해 주세요'); }
+
+/* ---------- 수납·계약 : 건물별 이번 달 부과·수납·미납 ---------- */
+function loadPro(){
+  var ym=thisYm(); $('proYm').textContent=ymL(ym);
+  get(MAIN+'?api=fac&tk='+encodeURIComponent(SESS.tk)).then(function(j){
+    if(!j.ok){ if(j.auth) return authFail(); $('proBody').innerHTML='<div class="err">'+esc(j.error||'불러오지 못했어요')+'</div>'; return; }
+    var S={}; try{ S=JSON.parse(j.state||'{}')||{}; }catch(e){}
+    var L=(S.pro&&S.pro.bldgs)||[];
+    if(!L.length){ $('proBody').innerHTML='<p class="note">아직 등록된 건물이 없어요. 열어서 건물과 세대를 넣어 주세요.</p>'; return; }
+    var units=0, vacant=0, billed=0, paid=0, unpaidN=0, notYet=[], unpaidB=[];
+    L.forEach(function(b){
+      var U=b.units||[]; units+=U.length; vacant+=U.filter(function(u){ return u.vacant; }).length;
+      var m=(b.months||{})[ym];
+      if(!m||!m.confirmed){ notYet.push(b.name); return; }
+      var rows=m.rows||[], bi=0, pa=0, un=0;
+      rows.forEach(function(r,i){ bi+=r.total||0; if(m.paid&&m.paid[i]) pa+=r.total||0; else if(!r.vacant) un++; });
+      billed+=bi; paid+=pa; unpaidN+=un; if(bi-pa>0) unpaidB.push({name:b.name, amt:bi-pa, n:un});
+    });
+    var h='<div class="big">'+L.length+'<small>건물 · '+units+'세대 (공실 '+vacant+')</small></div>';
+    h+=kv('이번 달 부과', billed?won(billed)+'원':'-');
+    h+=kv('들어온 돈', paid?won(paid)+'원':'-', 'g');
+    h+=kv('미납', (billed-paid)>0 ? won(billed-paid)+'원 · '+unpaidN+'세대' : (billed?'없음':'-'), (billed-paid)>0?'r':'g');
+    if(unpaidB.length) h+='<ul class="list">'+unpaidB.slice(0,4).map(function(x){ return '<li><b>'+esc(x.name)+'</b><span class="r" style="color:var(--danger)">'+won(x.amt)+'원 · '+x.n+'세대</span></li>'; }).join('')+'</ul>';
+    if(notYet.length) h+='<p class="note">아직 부과 전: '+esc(notYet.slice(0,3).join(', '))+(notYet.length>3?' 외 '+(notYet.length-3)+'곳':'')+'</p>';
+    $('proBody').innerHTML=h;
+  }).catch(function(){ $('proBody').innerHTML='<div class="err">인터넷 연결을 확인해 주세요.</div>'; });
+}
+
+/* ---------- 현장·직원 : 결재 대기 · 직원 · 이번 달 지출 · 공지 ---------- */
+function loadEmp(){
+  var ym=thisYm();
+  Promise.all([get(MAIN+'?api=notify&tk='+encodeURIComponent(SESS.tk)), get(MAIN+'?api=data&tk='+encodeURIComponent(SESS.tk))]).then(function(R){
+    var n=R[0], d=R[1];
+    if(!d.ok){ if(d.auth) return authFail(); $('empBody').innerHTML='<div class="err">'+esc(d.error||'불러오지 못했어요')+'</div>'; return; }
+    var wait=(n.ok&&n.items)||[];
+    var exps=(d.expenses||[]).filter(function(x){ return String(x.date||'').slice(0,7)===ym; });
+    var sum=exps.reduce(function(a,x){ return a+(Number(x.amount)||0); },0);
+    var emps=(d.employees||[]).filter(function(e){ return !e.status || /재직|근무/.test(String(e.status)); });
+    var notices=d.notices||[];
+    $('empTag').textContent=SESS.role==='admin'?'본사':(SESS.site||'');
+    var h='<div class="big">'+wait.length+'<small>결재 대기</small></div>';
+    if(wait.length) h+='<ul class="list">'+wait.slice(-5).reverse().map(function(x){ return '<li><b>'+esc(x.title)+'</b><span>'+esc(String(x.body||'').slice(0,22))+'</span></li>'; }).join('')+'</ul>';
+    h+=kv(ymL(ym)+' 지출', exps.length?exps.length+'건 · '+won(sum)+'원':'없음');
+    if(SESS.role==='admin') h+=kv('직원', emps.length+'명');
+    h+=kv('공지', notices.length?notices.length+'건'+(notices[0]&&notices[0].title?' · 최근: '+esc(String(notices[0].title).slice(0,16)):''):'없음');
+    $('empBody').innerHTML=h;
+  }).catch(function(){ $('empBody').innerHTML='<div class="err">인터넷 연결을 확인해 주세요.</div>'; });
+}
+
+/* ---------- 간편 관리 운영 : 가입 건물주 · 확인 필요 · 이번 주 사용 ---------- */
+function loadOwn(){
+  get(EASY+'?api=owners&tk='+encodeURIComponent(SESS.tk)).then(function(j){
+    if(!j.ok){ $('ownBody').innerHTML='<div class="err">'+esc(j.error||'불러오지 못했어요')+'</div>'; return; }
+    var L=j.owners||[], week=Date.now()-7*86400000;
+    var active=L.filter(function(o){ return o.appSeen && new Date(o.appSeen).getTime()>week; }).length;
+    var warn=L.filter(function(o){ return !o.disabled && (o.unpaidN||o.errs7||o.consentWait||!o.setupDone); });
+    var units=L.reduce(function(a,o){ return a+(Number(o.units)||0); },0);
+    var h='<div class="big">'+L.length+'<small>건물주 · '+units+'세대</small></div>';
+    h+=kv('이번 주 앱 사용', active+'명');
+    h+=kv('확인 필요', warn.length?warn.length+'명':'없음', warn.length?'y':'g');
+    if(warn.length) h+='<ul class="list">'+warn.slice(0,4).map(function(o){ var w=[]; if(o.unpaidN) w.push('미납 '+o.unpaidN); if(o.errs7) w.push('오류 '+o.errs7); if(o.consentWait) w.push('동의 대기'); if(!o.setupDone) w.push('설정 중'); return '<li><b>'+esc(o.name||o.phone||'')+'</b><span>'+esc(w.join(' · '))+'</span></li>'; }).join('')+'</ul>';
+    $('ownBody').innerHTML=h;
+  }).catch(function(){ $('ownBody').innerHTML='<div class="err">인터넷 연결을 확인해 주세요.</div>'; });
+}
+boot();
+</script>
+</body></html>
