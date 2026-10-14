@@ -166,7 +166,7 @@ td input.num{text-align:right}
 </head>
 <body>
 <div id="facBar" style="position:relative;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:8px;background:#212D64;color:#fff;padding:7px 12px;font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif">
-  <button onclick="facHome()" style="border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-weight:800;font-size:13px;border-radius:999px;padding:6px 12px;cursor:pointer;font-family:inherit">‹ 건물 종합 관리</button>
+  <button onclick="facHome()" style="border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-weight:800;font-size:13px;border-radius:999px;padding:6px 12px;cursor:pointer;font-family:inherit">⌂ 처음으로</button>
   <span style="font-size:12.5px;font-weight:800;opacity:.9">모두의관리 · 건물 종합 관리</span>
   <span id="facSync" style="font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px;background:#E4F2EA;color:#1F6B45">☁ 저장됨</span>
 </div>
@@ -210,7 +210,7 @@ td input.num{text-align:right}
     <button data-p="bldg"><span class="ic">🏢</span> 건물·사업자</button>
     <button data-p="etc"><span class="ic">⚙</span> 자료·백업</button>
   </nav>
-  <div class="sidefoot"><a href="#" onclick="facHome();return false;">← 건물 종합 관리 메뉴</a></div>
+  <div class="sidefoot"><a href="#" onclick="facHome();return false;">로그아웃 · 처음 화면으로</a></div>
 </aside>
 
 <div class="main">
@@ -442,7 +442,7 @@ try{window.__Q=new URLSearchParams(location.search);}catch(e){}var FAC=(function
 var __facRev = FAC ? FAC.rev : 0, __facTimer = null, __facPending = null, __facBusy = false;
 function facUrl(page){ return (FAC ? FAC.site : '') + (page==='facpro'?'pro.html':'easy.html'); }
 function facGo(page){ var u = facUrl(page); try{ window.open(u, '_top'); }catch(e){ location.href = u; } }
-function facHome(){ var u = (FAC ? FAC.site : '') + 'index.html?home=1&menu=pro'; try{ window.open(u, '_top'); }catch(e){ location.href = u; } }
+function facHome(){ if(!confirm('처음 화면으로 나갈까요?\n다시 들어올 때 로그인이 필요합니다.')) return; var u = (FAC ? FAC.site : '') + 'index.html?home=1'; try{ window.open(u, '_top'); }catch(e){ location.href = u; } }
 function facOpen(u){ try{ window.open(u, '_top'); }catch(e){ location.href = u; } }
 function facBadge(t, ok){ var b = document.getElementById('facSync'); if(!b) return; b.textContent = t; b.style.background = ok ? '#E4F2EA' : '#FFF3D6'; b.style.color = ok ? '#1F6B45' : '#8A5A00'; }
 function facPush(raw){
