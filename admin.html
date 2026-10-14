@@ -47,7 +47,9 @@ h1{font-size:22px;margin:6px 0 2px}
 </style>
 </head>
 <body>
-<style>.adbar{display:none;background:#141D4A;color:#fff;font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:13px;padding:0 8px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}.adbar.on{display:flex;align-items:center;gap:2px}.adbar a{color:#C7CEEA;text-decoration:none;font-weight:700;padding:9px 10px;border-bottom:3px solid transparent;flex-shrink:0}.adbar a.cur{color:#fff;border-bottom-color:#7CF2A9}.adbar a:hover{color:#fff}.adbar .sp{flex:1}.adbar .who{color:#9AA3C7;font-size:12px;padding:0 8px;flex-shrink:0}body.on-login .adbar{display:none!important}</style><div class="adbar" id="adbar" data-cur="home"><a href="admin.html" data-k="home">🏠 관리자 홈</a><a href="pro.html" data-k="pro">💰 수납·계약</a><a href="index.html" data-k="emp">🛠️ 현장·직원</a><a href="owners.html" data-k="own">🏘️ 간편 관리 운영</a><span class="sp"></span><span class="who" id="adbarWho"></span></div><script>function adbarShow(s){var b=document.getElementById("adbar");if(!b)return;if(!s){try{s=JSON.parse(localStorage.getItem("fc_sess")||"null");}catch(e){}}if(!(s&&s.tk&&(s.role==="admin"||s.role==="manager"))){b.classList.remove("on");return;}b.classList.add("on");var cur=b.getAttribute("data-cur");[].slice.call(b.querySelectorAll("a")).forEach(function(a){a.classList.toggle("cur",a.getAttribute("data-k")===cur);if(a.getAttribute("data-k")==="own")a.style.display=s.role==="admin"?"":"none";});var w=document.getElementById("adbarWho");if(w)w.textContent=(s.role==="admin"?"관리자":"소장 "+(s.name||""))+(s.site?" · "+s.site:"");}adbarShow();</script>
+<style>body.embed .adbar,body.embed h1,body.embed .sub{display:none!important}body.embed .wrap{padding-top:6px}</style>
+<script>try{if(/[?&]embed=1/.test(location.search))document.body.classList.add("embed");}catch(e){}</script>
+<style>.adbar{display:none;background:#141D4A;color:#fff;font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:13px;padding:0 8px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}.adbar.on{display:flex;align-items:center;gap:2px}.adbar a{color:#C7CEEA;text-decoration:none;font-weight:700;padding:9px 10px;border-bottom:3px solid transparent;flex-shrink:0}.adbar a.cur{color:#fff;border-bottom-color:#7CF2A9}.adbar a:hover{color:#fff}.adbar .sp{flex:1}.adbar .who{color:#9AA3C7;font-size:12px;padding:0 8px;flex-shrink:0}body.on-login .adbar{display:none!important}</style><div class="adbar" id="adbar" data-cur="home"><a href="pro.html?mode=home" data-k="home">🏠 관리자 홈</a><a href="pro.html" data-k="pro">💰 수납·계약</a><a href="pro.html?mode=emp" data-k="emp">🛠️ 현장·직원</a><a href="pro.html?mode=own" data-k="own">🏘️ 간편 관리 운영</a><span class="sp"></span><span class="who" id="adbarWho"></span></div><script>function adbarShow(s){var b=document.getElementById("adbar");if(!b)return;try{if(/[?&]embed=1/.test(location.search)||window.top!==window){b.classList.remove("on");return;}}catch(e){}if(!s){try{s=JSON.parse(localStorage.getItem("fc_sess")||"null");}catch(e){}}if(!(s&&s.tk&&(s.role==="admin"||s.role==="manager"))){b.classList.remove("on");return;}b.classList.add("on");var cur=b.getAttribute("data-cur");[].slice.call(b.querySelectorAll("a")).forEach(function(a){a.classList.toggle("cur",a.getAttribute("data-k")===cur);if(a.getAttribute("data-k")==="own")a.style.display=s.role==="admin"?"":"none";});var w=document.getElementById("adbarWho");if(w)w.textContent=(s.role==="admin"?"관리자":"소장 "+(s.name||""))+(s.site?" · "+s.site:"");}adbarShow();</script>
 <div class="wrap">
   <div id="vLogin" class="hide">
     <div class="lg">
@@ -56,7 +58,7 @@ h1{font-size:22px;margin:6px 0 2px}
       <input class="inp" id="loPin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter')adminLogin()">
       <div class="err hide" id="loErr" style="margin-bottom:10px"></div>
       <button class="btn" id="loGo" style="width:100%" onclick="adminLogin()">들어가기</button>
-      <div class="foot"><a href="index.html?home=1" style="color:var(--ink3)">‹ 처음 화면</a><span id="loTest"></span></div>
+      <div class="foot"><a href="index.html?home=1" target="_top" style="color:var(--ink3)">‹ 처음 화면</a><span id="loTest"></span></div>
     </div>
   </div>
 
@@ -67,17 +69,17 @@ h1{font-size:22px;margin:6px 0 2px}
       <div class="card" id="cPro">
         <h2>💰 수납·계약 관리 <span class="tag" id="proYm"></span></h2>
         <div id="proBody" class="sk">불러오는 중…</div>
-        <div class="btns"><a class="btn" href="pro.html">열기 ›</a></div>
+        <div class="btns"><a class="btn" href="pro.html" target="_top">열기 ›</a></div>
       </div>
       <div class="card" id="cEmp">
         <h2>🛠️ 현장·직원 관리 <span class="tag" id="empTag"></span></h2>
         <div id="empBody" class="sk">불러오는 중…</div>
-        <div class="btns"><a class="btn" href="index.html">열기 ›</a></div>
+        <div class="btns"><a class="btn" href="pro.html?mode=emp" target="_top">열기 ›</a></div>
       </div>
       <div class="card" id="cOwn">
         <h2>🏘️ 간편 관리 운영 <span class="tag">포컴 운영자</span></h2>
         <div id="ownBody" class="sk">불러오는 중…</div>
-        <div class="btns"><a class="btn g" href="owners.html">회원 관리 열기 ›</a></div>
+        <div class="btns"><a class="btn g" href="pro.html?mode=own" target="_top">회원 관리 열기 ›</a></div>
       </div>
     </div>
     <div class="foot">
@@ -107,7 +109,7 @@ function saveSess(s){ try{ localStorage.setItem('fc_sess', JSON.stringify(s)); }
 window.logout=function(){
   if(!confirm('로그아웃할까요?')) return;
   try{ localStorage.removeItem('fc_sess'); localStorage.removeItem('fc_data'); sessionStorage.removeItem('fc_op'); sessionStorage.removeItem('fc_view'); }catch(e){}
-  location.href='index.html?home=1';
+  try{ window.top.location.href='index.html?home=1'; }catch(e){ location.href='index.html?home=1'; }
 };
 window.adminLogin=function(){
   var pin=$('loPin').value.replace(/[^0-9]/g,''), b=$('loGo'); $('loErr').classList.add('hide');
