@@ -583,18 +583,24 @@ function setMode(m, v){
   document.getElementById('content').classList.toggle('hide', MODE!=='pro');
   document.getElementById('emb').classList.toggle('on', MODE==='emp');
   var own=sessRole()==='admin'; document.getElementById('btn-own').classList.toggle('hide', !own); document.getElementById('lbl-own').classList.toggle('hide', !own);
+  /* (10/27) 관리소장: 공지 메뉴 없음 · 공지 내용은 '관리소장 홈'에 모두 */
+  document.querySelectorAll('#mnav-emp [data-e="own"]').forEach(function(b){ b.classList.toggle('hide', !own); });
+  var mgr=sessRole()==='manager'; document.querySelectorAll('[data-e="notice"]').forEach(function(b){ b.classList.toggle('hide', mgr); });
+  document.querySelectorAll('#nav-emp [data-e="home"],#mnav-emp [data-e="home"]').forEach(function(b){ var ic=b.querySelector('.ic'); b.innerHTML=(ic?ic.outerHTML:'')+(b.closest('#nav-emp')?' ':'')+(mgr?'관리소장 홈':'관리자 홈'); });
   if(MODE==='pro'){ go(curPage()); return; }
   goE(v || EMB_V || 'home');
 }
 function goE(v){
+  var mgrH=sessRole()==='manager'; if(mgrH && v==='notice') v='home';
   EMB_V=v;
   document.querySelectorAll('#nav-emp button,#mnav-emp button').forEach(function(b){ b.classList.toggle('on', b.dataset.e===v); });
-  var t=EMP_T[v]||['',''];
+  var t=(mgrH&&v==='home')?['한눈에','관리소장 홈']:(EMP_T[v]||['','']);
   document.getElementById('crumb').textContent=t[0]; document.getElementById('ttl').textContent=t[1];
   var f=document.getElementById('embf'), base=(FAC&&FAC.site)||'';
-  var want = v==='home' ? base+'admin.html?embed=1' : v==='own' ? base+'owners.html?embed=1' : base+'index.html?embed=1&v='+v;
+  var want = (mgrH&&v==='home') ? base+'index.html?embed=1&v=notice' : v==='home' ? base+'admin.html?embed=1' : v==='own' ? base+'owners.html?embed=1' : base+'index.html?embed=1&v='+v;
   var curSrc=f.getAttribute('data-src')||'';
-  if(v!=='home' && v!=='own' && /index\.html\?embed=1/.test(curSrc) && f.contentWindow){ try{ f.contentWindow.postMessage({modooView:v}, '*'); return; }catch(e){} }
+  var vv=(mgrH&&v==='home')?'notice':v;
+  if((vv!=='home') && v!=='own' && /index\.html\?embed=1/.test(curSrc) && f.contentWindow){ try{ f.contentWindow.postMessage({modooView:vv}, '*'); window.scrollTo({top:0}); return; }catch(e){} }
   f.setAttribute('data-src', want); f.src=want;
   window.scrollTo({top:0});
 }
