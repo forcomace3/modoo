@@ -81,6 +81,10 @@ h1{font-size:22px;margin:6px 0 2px}
         <div id="ownBody" class="sk">불러오는 중…</div>
         <div class="btns"><a class="btn g" href="pro.html?mode=own" target="_top">회원 관리 열기 ›</a></div>
       </div>
+      <div class="card" id="cSys">
+        <h2>⚙️ 서버 설정 <span class="tag">관리자만</span></h2>
+        <div id="sysBody" class="sk">불러오는 중…</div>
+      </div>
     </div>
     <div class="foot">
       <span id="hWho"></span>
@@ -134,9 +138,9 @@ function boot(){
   show('home');
   $('hName').textContent=(SESS.role==='admin'?'관리자':'관리소장')+' 홈';
   $('hWho').textContent=(SESS.name||(SESS.role==='admin'?'관리자':''))+(SESS.site?' · '+SESS.site:'');
-  $('cOwn').classList.toggle('hide', SESS.role!=='admin');
+  $('cOwn').classList.toggle('hide', SESS.role!=='admin'); $('cSys').classList.toggle('hide', SESS.role!=='admin');
   try{ adbarShow(SESS); }catch(e){}
-  loadPro(); loadEmp(); if(SESS.role==='admin') loadOwn();
+  loadPro(); loadEmp(); if(SESS.role==='admin'){ loadOwn(); loadSys(); }
 }
 function authFail(){ try{ localStorage.removeItem('fc_sess'); }catch(e){} SESS=null; show('login'); authInfo(); toast('다시 로그인해 주세요'); }
 
@@ -187,6 +191,49 @@ function loadEmp(){
     $('empBody').innerHTML=h;
   }).catch(function(){ $('empBody').innerHTML='<div class="err">인터넷 연결을 확인해 주세요.</div>'; });
 }
+
+/* ---------- 서버 설정 : 테스트 모드 켜기/끄기 (관리자만) ---------- */
+var SYS={test:true, adminSet:true};
+function loadSys(){
+  get(MAIN+'?api=auth').then(function(j){ SYS.test=!!j.testMode; SYS.adminSet=j.adminSet!==false; renderSys(); }).catch(function(){ $('sysBody').innerHTML='<div class="err">인터넷 연결을 확인해 주세요.</div>'; });
+}
+function renderSys(){
+  var h='';
+  if(SYS.test){
+    h+='<div class="big" style="color:var(--warn)">🧪 테스트 모드<small>비밀번호 없이 들어가요</small></div>';
+    h+='<p class="note">직원은 이름만, 소장·관리자는 비밀번호 없이 들어갑니다. 실제로 쓰기 전에 꺼 주세요.</p>';
+    h+='<p class="note" style="margin-top:4px">끄면: 직원은 이름+생년월일, 소장은 건물 비밀번호, 관리자는 관리자 비밀번호가 필요해요. 간편 관리 회원 관리(Admin)도 관리자 비밀번호로 들어가요.</p>';
+    if(!SYS.adminSet){
+      h+='<p class="note" style="margin-top:8px;color:var(--danger);font-weight:700">관리자 비밀번호가 아직 없어요. 먼저 정해야 끌 수 있어요.</p>';
+      h+='<div style="display:flex;gap:8px;margin-top:8px"><input class="inp" id="apPin" type="password" inputmode="numeric" maxlength="4" placeholder="새 비밀번호 4자리" style="margin:0;letter-spacing:4px;font-size:17px"><input class="inp" id="apPin2" type="password" inputmode="numeric" maxlength="4" placeholder="한 번 더" style="margin:0;letter-spacing:4px;font-size:17px"></div>';
+      h+='<div class="btns"><button class="btn" onclick="sysSetupThenOff()">비밀번호 정하고 테스트 모드 끄기</button></div>';
+    } else {
+      h+='<div class="btns"><button class="btn" onclick="sysToggle(false)">테스트 모드 끄기</button></div>';
+    }
+  } else {
+    h+='<div class="big" style="color:var(--brand-dark)">🔒 운영 모드<small>비밀번호로 들어가요</small></div>';
+    h+='<p class="note">직원은 이름+생년월일, 소장은 건물 비밀번호, 관리자는 관리자 비밀번호가 필요해요.</p>';
+    h+='<div class="btns"><button class="btn o" onclick="sysToggle(true)">테스트 모드 켜기</button></div>';
+  }
+  $('sysBody').innerHTML=h;
+}
+window.sysToggle=function(on){
+  if(!confirm(on ? '테스트 모드를 켤까요?\n누구나 비밀번호 없이 들어갈 수 있게 됩니다.' : '테스트 모드를 끌까요?\n이제부터 직원·소장·관리자 모두 비밀번호(직원은 생년월일)가 있어야 들어갑니다.')) return;
+  post(MAIN,{action:'setTestMode', on:on, tk:SESS.tk}).then(function(j){
+    if(!j.ok){ if(j.auth) return authFail(); toast(j.error||'바꾸지 못했어요'); return; }
+    SYS.test=!!j.testMode; renderSys(); toast(SYS.test?'테스트 모드를 켰어요':'운영 모드로 바꿨어요');
+  }).catch(function(){ toast('인터넷 연결을 확인해 주세요'); });
+};
+window.sysSetupThenOff=function(){
+  var a=($('apPin').value||'').replace(/[^0-9]/g,''), b=($('apPin2').value||'').replace(/[^0-9]/g,'');
+  if(a.length!==4){ toast('숫자 4자리로 정해 주세요'); return; }
+  if(a!==b){ toast('두 번 넣은 번호가 달라요'); return; }
+  post(MAIN,{action:'adminSetup', pin:a}).then(function(j){
+    if(!j.ok){ toast(j.error||'정하지 못했어요'); return; }
+    SYS.adminSet=true; $('apPin').value=''; $('apPin2').value=''; toast('관리자 비밀번호를 정했어요');
+    sysToggle(false);
+  }).catch(function(){ toast('인터넷 연결을 확인해 주세요'); });
+};
 
 /* ---------- 간편 관리 운영 : 가입 건물주 · 확인 필요 · 이번 주 사용 ---------- */
 function loadOwn(){
