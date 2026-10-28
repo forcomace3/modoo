@@ -387,7 +387,7 @@
   </div>
   <input id="resignFileInput" type="file" accept="image/*,application/pdf" multiple style="display:none" />
   <input id="sigPhotoInput" type="file" accept="image/*" capture="environment" style="display:none" />
-  <input id="payXlsInput" type="file" accept=".xlsx,.xls" style="display:none" />
+  <input id="payXlsInput" type="file" accept=".xlsx,.xls" style="display:none" /><input id="payPdfInput" type="file" accept=".pdf,application/pdf" multiple style="display:none" />
   <input id="draftFileInput" type="file" accept="image/*,application/pdf" multiple style="display:none" />
   <div class="hdr">
     <div class="row">
@@ -2473,6 +2473,14 @@
   // ---- 급여명세서 보기 (포컴 가족) ----
   function openPayslip(p){
     var s=p.slip||{};
+    if(s.pdf&&s.pdf.url){
+      openSheet('<div class="ps"><div class="ps-t">급여명세서</div><div class="ps-meta"><b>귀속 연월</b><span>'+esc(monthLabel(p.month))+'</span><b>성명</b><span>'+esc(s.name||"")+'</span>'+(s.position?'<b>직책</b><span>'+esc(s.position)+'</span>':'')+(p.openDate?'<b>지급일</b><span>'+esc(fmtK(p.openDate))+'</span>':'')+'</div>'
+        +'<a class="btn primary" href="'+esc(s.pdf.url)+'" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-top:12px">📄 급여명세서 PDF 보기</a>'
+        +'<a class="btn ghost" href="'+esc(s.pdf.url)+'&dl=1" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-top:8px">⬇ 내려받기</a>'
+        +'<div class="ps-foot">귀하의 노고에 감사드립니다.<br><b>주식회사 포컴</b></div></div>'
+        +'<button class="btn ghost" id="psOk" style="width:100%;margin-top:12px">닫기</button>');
+      $("psOk").addEventListener("click",closeSheet);return;
+    }
     var rows=function(list){return (list||[]).map(function(x){return '<tr><td>'+esc(x[0])+'</td><td class="r">'+won(x[1])+'</td></tr>';}).join("");};
     openSheet('<div class="ps"><div class="ps-t">급여명세서</div>'
       +'<div class="ps-meta"><b>귀속 연월</b><span>'+esc(monthLabel(p.month))+'</span><b>성명</b><span>'+esc(s.name||"")+'</span><b>직책</b><span>'+esc(s.position||"")+'</span>'+(s.joinDate?'<b>입사일</b><span>'+esc(fmtK(s.joinDate))+'</span>':'')+(p.openDate?'<b>지급일</b><span>'+esc(fmtK(p.openDate))+'</span>':'')+'</div>'
@@ -2484,7 +2492,7 @@
     $("psOk").addEventListener("click",closeSheet);
   }
   function openPayHistory(){
-    openSheet('<h3>📂 지난 급여명세서</h3>'+(payslips.length?payslips.map(function(p,i){return '<div class="hm-row" data-psi="'+i+'"><span>'+esc(monthLabel(p.month))+'</span><span class="hm-d">'+won((p.slip||{}).net)+'원 ›</span></div>';}).join(""):'<div class="hm-empty">아직 받은 급여명세서가 없습니다.</div>')
+    openSheet('<h3>📂 지난 급여명세서</h3>'+(payslips.length?payslips.map(function(p,i){return '<div class="hm-row" data-psi="'+i+'"><span>'+esc(monthLabel(p.month))+'</span><span class="hm-d">'+((p.slip||{}).pdf?'📄 PDF':won((p.slip||{}).net)+'원')+' ›</span></div>';}).join(""):'<div class="hm-empty">아직 받은 급여명세서가 없습니다.</div>')
       +'<button class="btn ghost" id="phClose" style="width:100%;margin-top:12px">닫기</button>');
     document.querySelectorAll("[data-psi]").forEach(function(el){el.addEventListener("click",function(){openPayslip(payslips[Number(el.getAttribute("data-psi"))]);});});
     $("phClose").addEventListener("click",closeSheet);
@@ -2492,7 +2500,7 @@
   function renderHomeV11(){
     var p=payslips[0];
     $("hmPay").innerHTML='<div class="hm-h">💰 내 급여명세서</div>'
-      +(p?'<div class="hm-big" id="psLatest"><div><div class="m">'+esc(monthLabel(p.month))+' 실지급액</div><div class="v">'+won((p.slip||{}).net)+'원</div></div><span class="fbtn up">보기 ›</span></div>':'<div class="hm-empty">매월 10일, 이곳에 급여명세서가 올라옵니다.</div>')
+      +(p?'<div class="hm-big" id="psLatest"><div><div class="m">'+esc(monthLabel(p.month))+((p.slip||{}).pdf?' 급여명세서':' 실지급액')+'</div><div class="v">'+((p.slip||{}).pdf?'📄 PDF 도착':won((p.slip||{}).net)+'원')+'</div></div><span class="fbtn up">보기 ›</span></div>':'<div class="hm-empty">매월 10일, 이곳에 급여명세서가 올라옵니다.</div>')
       +'<button class="mini" id="psHist">📂 지난 급여명세서'+(payslips.length>1?' ('+(payslips.length-1)+')':'')+'</button>';
     if(p)$("psLatest").addEventListener("click",function(){openPayslip(p);});
     $("psHist").addEventListener("click",openPayHistory);
@@ -2555,9 +2563,9 @@
   function nextMonth10(m){var y=Number(m.slice(0,4)),mo=Number(m.slice(5,7))+1;if(mo>12){mo=1;y++;}return y+"-"+(mo<10?"0":"")+mo+"-10";}
   function renderPayAdmin(){
     var el=$("payAdmin");if(!el)return;if(!isAdmin()){el.classList.add("hide");return;}el.classList.remove("hide");
-    el.innerHTML='<div class="hm-h" style="justify-content:space-between">💰 급여명세서 보내기<button class="fbtn up" id="payUp">＋ 급여대장 엑셀 올리기</button></div>'
-      +(paySummary.length?paySummary.map(function(s){return '<div class="hm-row" style="cursor:default"><span>'+esc(monthLabel(s.month))+' · '+s.count+'명</span><span class="hm-d">공개 '+esc(s.openDate?fmtK(s.openDate):"바로")+' <button class="fbtn warn" data-pdel="'+esc(s.month)+'">삭제</button></span></div>';}).join(""):'<div class="hm-empty">매달 만드는 급여대장 엑셀(사람별 명세서 시트 포함)을 그대로 올리면, 직원별로 나뉘어 각자 앱에 급여명세서가 올라갑니다.</div>');
-    $("payUp").addEventListener("click",function(){$("payXlsInput").click();});
+    el.innerHTML='<div class="hm-h" style="justify-content:space-between">💰 급여명세서 보내기<span style="display:flex;gap:6px;flex-wrap:wrap"><button class="fbtn up" id="payPdfUp">＋ PDF 명세서 올리기</button><button class="fbtn up" id="payUp">＋ 급여대장 엑셀 올리기</button></span></div>'
+      +(paySummary.length?paySummary.map(function(s){return '<div class="hm-row" style="cursor:default"><span>'+esc(monthLabel(s.month))+' · '+s.count+'명</span><span class="hm-d">공개 '+esc(s.openDate?fmtK(s.openDate):"바로")+' <button class="fbtn warn" data-pdel="'+esc(s.month)+'">삭제</button></span></div>';}).join(""):'<div class="hm-empty">매달 만드는 직원별 PDF 명세서(파일 이름 맨 앞에 직원 이름, 예: 홍길동 경비원 9월 급여명세서.pdf)를 한꺼번에 올리거나, 급여대장 엑셀을 올리면 각자 앱에 자기 급여명세서만 올라갑니다.</div>');
+    $("payUp").addEventListener("click",function(){$("payXlsInput").click();});$("payPdfUp").addEventListener("click",function(){$("payPdfInput").click();});
     el.querySelectorAll("[data-pdel]").forEach(function(b){b.addEventListener("click",async function(){var m=b.getAttribute("data-pdel");if(!confirm(monthLabel(m)+" 급여명세서를 모두 삭제할까요?"))return;try{await cloudPost({action:"payslipDelete",month:m});await cloudPull();renderPayAdmin();toast("삭제했습니다");}catch(e){toast("실패: "+e.message);}});});
   }
   function parsePayWorkbook(wb){
@@ -2599,6 +2607,53 @@
         closeSheet();toast(r.saved+"명에게 급여명세서를 보냈습니다"+(r.unmatched&&r.unmatched.length?" (이름 불일치 "+r.unmatched.length+"명)":""));
         try{await cloudPull();}catch(e){}renderPayAdmin();}
       catch(er){toast("실패: "+er.message);b.disabled=false;b.textContent="보내기";}
+    });
+  });
+
+  // ---------- (10/28) 관리자: 직원별 PDF 급여명세서 올리기 ----------
+  function normNm(x){return String(x||"").replace(/\s/g,"");}
+  function pdfGuess(fname){
+    var base=String(fname||"").replace(/\.pdf$/i,""),act=employees.filter(function(x){return String(x.status)!=="퇴사";});
+    var first=normNm(base.split(/[\s_\-]+/)[0]),hit=act.filter(function(x){return normNm(x.name)===first;});
+    if(hit.length!==1){var nb=normNm(base);hit=act.filter(function(x){return x.name&&nb.indexOf(normNm(x.name))>=0;}).sort(function(a,b){return String(b.name).length-String(a.name).length;});}
+    var mm=base.match(/(\d{1,2})\s*월/),ym="";
+    if(mm){var d=new Date(),y=d.getFullYear(),mo=Number(mm[1]);if(mo>=1&&mo<=12){if(mo>d.getMonth()+2)y--;ym=y+"-"+(mo<10?"0":"")+mo;}}
+    return {emp:hit.length?hit[0]:null,month:ym};
+  }
+  $("payPdfInput").addEventListener("change",async function(e){
+    var fs=[].slice.call(e.target.files||[]);e.target.value="";if(!fs.length)return;
+    var bad=fs.filter(function(f){return !/\.pdf$/i.test(f.name)&&f.type!=="application/pdf";});if(bad.length){toast("PDF 파일만 올릴 수 있어요");return;}
+    var big=fs.filter(function(f){return f.size>10*1024*1024;});if(big.length){toast("10MB가 넘는 파일이 있어요: "+big[0].name);return;}
+    var G=fs.map(function(f){var g=pdfGuess(f.name);return {f:f,emp:g.emp,month:g.month};});
+    var m=(G.filter(function(x){return x.month;})[0]||{}).month||monthOf(todayISO());
+    var act=employees.filter(function(x){return String(x.status)!=="퇴사";}).sort(function(a,b){return String(a.name)<String(b.name)?-1:1;});
+    var opts=function(sel){return '<option value="">— 보내지 않음 —</option>'+act.map(function(x){return '<option value="'+esc(x.id)+'"'+(sel&&String(sel.id)===String(x.id)?' selected':'')+'>'+esc(x.name)+(x.role?' · '+esc(x.role):'')+(x.site?' · '+esc(x.site):'')+'</option>';}).join("");};
+    openSheet('<h3>💰 PDF 급여명세서 보내기</h3><div class="field"><label>귀속 연월</label><input type="month" id="ppMonth" value="'+esc(m)+'"></div>'
+      +'<div class="field"><label>직원 앱에 보이는 날 (지급일)</label><input type="date" id="ppOpen" value="'+esc(nextMonth10(m))+'"></div>'
+      +'<div style="font-size:13px;margin:4px 0 8px"><b>'+G.length+'개</b> 파일 · 받는 사람을 확인해 주세요. 각 직원은 자기 명세서만 볼 수 있어요.</div>'
+      +G.map(function(x,i){return '<div style="border:1px solid #E4E6E9;border-radius:10px;padding:8px 10px;margin-bottom:6px"><div style="font-size:12px;color:#52575D;word-break:break-all">📄 '+esc(x.f.name)+'</div>'
+        +'<select data-ppi="'+i+'" style="margin-top:6px;width:100%;padding:9px 10px;border-radius:8px;border:1.5px solid '+(x.emp?'#CFD8D6':'#D14343')+';font-size:14px;background:#fff;font-family:inherit">'+opts(x.emp)+'</select>'+(x.emp?'':'<div style="font-size:12px;color:#D14343;margin-top:4px">이름을 못 찾았어요. 받는 사람을 골라 주세요.</div>')+'</div>';}).join("")
+      +(testMode?'<div class="err" style="margin-top:10px;background:#FFF3D6;color:#8A5A00;border-color:#F0D493">지금은 테스트 모드(비밀번호 없음)라 이름만 알면 남의 명세서도 볼 수 있습니다. 실제 급여는 테스트 모드를 끈 뒤 올리는 것을 권합니다.</div>':'')
+      +'<div class="err hide" id="ppErr" style="margin-top:10px"></div>'
+      +'<div class="btns" style="margin-top:12px"><button class="btn ghost" id="ppCancel">취소</button><button class="btn primary" id="ppGo">보내기</button></div>');
+    $("ppMonth").addEventListener("change",function(){var v=$("ppMonth").value;if(v)$("ppOpen").value=nextMonth10(v);});
+    $("ppCancel").addEventListener("click",closeSheet);
+    $("ppGo").addEventListener("click",async function(){
+      var mon=$("ppMonth").value,er=$("ppErr");if(!/^\d{4}-\d{2}$/.test(mon)){er.textContent="귀속 연월을 골라 주세요.";er.classList.remove("hide");return;}
+      var pick=G.map(function(x,i){var v=document.querySelector('[data-ppi="'+i+'"]').value;return {f:x.f,id:v};}).filter(function(x){return x.id;});
+      var seen={},dup=pick.filter(function(x){if(seen[x.id])return true;seen[x.id]=1;return false;});
+      if(!pick.length){er.textContent="보낼 사람이 없습니다.";er.classList.remove("hide");return;}
+      if(dup.length){er.textContent="같은 직원이 두 번 골라졌어요. 받는 사람을 다시 확인해 주세요.";er.classList.remove("hide");return;}
+      var b=$("ppGo");b.disabled=true;var ok=0,fail=[];
+      for(var k=0;k<pick.length;k++){
+        b.textContent="보내는 중… ("+(k+1)+"/"+pick.length+")";
+        try{var rf=await readFile(pick[k].f);var b64=String(rf.dataUrl).split(",")[1]||"";
+          await cloudPost({action:"payslipPdf",month:mon,openDate:$("ppOpen").value,empId:pick[k].id,b64:b64});ok++;}
+        catch(x){fail.push(pick[k].f.name+" ("+x.message+")");}
+      }
+      if(fail.length){er.innerHTML="보내지 못한 파일:<br>"+fail.map(esc).join("<br>");er.classList.remove("hide");b.disabled=false;b.textContent="다시 보내기";toast(ok+"명에게 보냈습니다 · 실패 "+fail.length+"건");}
+      else{closeSheet();toast(ok+"명에게 급여명세서를 보냈습니다");}
+      try{await cloudPull();}catch(x){}renderPayAdmin();
     });
   });
 
