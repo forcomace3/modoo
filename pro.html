@@ -347,6 +347,7 @@ td input.num{text-align:right}
         <div class="ch"><h3>건물 정보</h3></div>
         <div class="cb">
           <div class="fld"><label>건물 이름</label><input id="b-name" oninput="setB('name',this.value)"></div>
+          <div class="fld"><label>담당 관리소장 현장 <span style="color:var(--ink3);font-weight:600">(직원 명부의 근무 현장 이름 · 비우면 건물 이름과 같은 현장)</span></label><input id="b-site" placeholder="예) 신흥빌딩" oninput="setB('site',this.value.trim())"></div>
           <div class="fld"><label>주소</label><input id="b-addr" oninput="setB('addr',this.value)"></div>
           <div class="frow">
             <div class="fld"><label>건물 종류</label>
@@ -404,6 +405,10 @@ td input.num{text-align:right}
           나중에 서버를 붙이면 이 걱정이 없어집니다.
         </div>
       </div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>변경 기록</h3><p>누가 언제 무엇을 고쳤는지 (최근 80건)</p></div>
+      <div class="cb"><button class="btn o sm" onclick="loadLog()">↻ 불러오기</button><div id="lg-body" class="tw" style="margin-top:10px"></div></div>
     </div>
     <div class="card">
       <div class="ch"><h3>초기화</h3></div>
@@ -502,6 +507,7 @@ function load(){
   S = o;
   if(!S.pro) S.pro = {bldgs:[], cur:0};
   if(!S.pro.bldgs) S.pro.bldgs=[];
+  if(MGR && !S.pro.bldgs.length){ NOB=true; S.pro.bldgs.push(newBldg('담당 건물 없음')); S.pro.cur=0; return; }
   if(!S.pro.bldgs.length){
     var b=newBldg(S.bldg && S.bldg.name ? S.bldg.name : '삼성빌라');
     if(S.bldg){ b.addr=S.bldg.addr||''; b.type=S.bldg.type||'villa'; }
@@ -517,8 +523,22 @@ function load(){
   }
   if(S.pro.cur >= S.pro.bldgs.length) S.pro.cur = 0;
 }
-function save(){ var r=JSON.stringify(S); MEM=r; try{ localStorage.setItem(KEY,r); }catch(e){} facPush(r); }
+function save(){ var r=JSON.stringify(S); MEM=r; if(NOB) return; if(!MGR){ try{ localStorage.setItem(KEY,r); }catch(e){} } facPush(r); }
 function B(){ return S.pro.bldgs[S.pro.cur]; }
+/* (10/28) 역할 나누기 : 관리소장 = 담당 건물만 · 세대/부과안/수납 · 확정은 본사에 요청 / 본사 = 전체 · 확정 · 세금계산서·공개·설정 (서버도 같은 규칙으로 막음) */
+var ROLE=(FAC&&FAC.role)||sessRole(), MGR=ROLE==='manager', NOB=false, MGR_HIDE=['tax','report','items','bldg','etc'];
+function meName(){ try{ var s=JSON.parse(localStorage.getItem('fc_sess')||'null'); return (s&&s.name)||''; }catch(e){ return ''; } }
+function meSite(){ try{ var s=JSON.parse(localStorage.getItem('fc_sess')||'null'); return (s&&s.site)||''; }catch(e){ return ''; } }
+function reqConfirm(){ var m=M(); if(m.confirmed){ toast('본사가 이미 확정했습니다'); return; } if(!m.rows.length){ toast('먼저 계산하세요'); return; }
+  m.req={by:meName()||'관리소장', at:new Date().toISOString().slice(0,10)}; save(); toast('본사에 확정을 요청했습니다'); render('charge'); }
+function loadLog(){ var el=document.getElementById('lg-body'); if(!el||!FAC) return; el.innerHTML='불러오는 중…';
+  fetch(FAC.url+'?api=faclog&tk='+encodeURIComponent(FAC.tk)).then(function(r){ return r.json(); }).then(function(j){
+    if(!j.ok){ el.innerHTML='<div class="empty">'+esc(j.error||'불러오지 못했습니다')+'</div>'; return; }
+    var L=j.log||[]; if(!L.length){ el.innerHTML='<div class="empty">아직 기록이 없습니다.</div>'; return; }
+    el.innerHTML='<table><thead><tr><th>언제</th><th>누가</th><th>무엇을</th></tr></thead><tbody>'+L.slice(0,80).map(function(x){ var d=new Date(x.at);
+      var t=(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+      return '<tr><td style="white-space:nowrap">'+t+'</td><td>'+esc(x.who)+'</td><td>'+(x.items||[]).map(function(it){ return '<b>'+esc(it.b)+'</b> '+esc((it.ch||[]).join(', ')); }).join('<br>')+'</td></tr>'; }).join('')+'</tbody></table>';
+  }).catch(function(){ el.innerHTML='<div class="empty">인터넷 연결을 확인해 주세요.</div>'; }); }
 function M(){ var b=B(); if(!b.months[S.ym]) b.months[S.ym]={totals:{},rows:[],usage:{},confirmed:false,paid:[]}; return b.months[S.ym]; }
 
 /* ---------- 유틸 ---------- */
@@ -540,13 +560,14 @@ function dl(name, text, type){
 function csvRow(a){ return a.map(function(v){ v=(v==null?'':''+v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(','); }
 
 var TYPE={villa:'빌라·다세대',dagagu:'다가구·원룸',officetel:'오피스텔',store:'상가·사무실'};
-var MODE={each:'세대 정액',total:'총액 균등',area:'총액 면적별',use:'총액 사용량별'};
+var MODEL={each:'세대 정액',total:'총액 균등',area:'총액 면적별',use:'총액 사용량별'};   /* (10/28) 이름 바꿈: 화면 전환용 MODE 와 겹쳐 (undefined) 로 보이던 것 */
 
 /* ---------- 화면 ---------- */
 var TITLES={dash:['한눈에','현황'],charge:['매달','관리비 부과'],collect:['매달','수납 관리'],
   tax:['매달','세금계산서'],report:['매달','관리비 공개'],units:['설정','세대 관리'],
   items:['설정','부과 항목'],bldg:['설정','건물·사업자'],etc:['설정','자료·백업']};
 function go(p){
+  if(MGR && MGR_HIDE.indexOf(p)>=0) p='dash';
   document.querySelectorAll('.page').forEach(function(e){e.classList.remove('on');});
   var el=document.getElementById('p-'+p); if(!el) return;
   el.classList.add('on');
@@ -566,6 +587,7 @@ function render(p){
   if(p==='units') rUnits();
   if(p==='items') rItems();
   if(p==='bldg') rBldg();
+  if(p==='etc') loadLog();
 }
 function curPage(){ var e=document.querySelector('.page.on'); return e?e.id.slice(2):'dash'; }
 /* ---------- 한 화면에서 둘 다 : 수납·계약(이 파일) / 현장·직원(index.html 을 안에 띄움) ---------- */
@@ -657,6 +679,9 @@ function rDash(){
   else if(!m.confirmed) al='<div class="note y" style="margin-bottom:16px"><b>'+ymL(S.ym)+'분이 아직 부과 전입니다.</b> <b>관리비 부과</b>에서 총액을 넣고 계산하세요.</div>';
   else if(billed-paid>0) al='<div class="note r" style="margin-bottom:16px">미납 <b>'+won(billed-paid)+'원</b>이 남아 있습니다.</div>';
   else al='<div class="note g" style="margin-bottom:16px">이번 달 수납이 모두 끝났습니다.</div>';
+  if(NOB) al='<div class="note r" style="margin-bottom:16px"><b>담당 건물이 아직 연결되지 않았습니다.</b> 본사 관리자에게 <b>건물·사업자 → 담당 관리소장 현장</b>에 <b>'+esc(meSite()||'우리 현장')+'</b>을(를) 넣어 달라고 요청해 주세요.</div>';
+  if(!MGR){ var rq=S.pro.bldgs.filter(function(x){ var q=x.months&&x.months[S.ym]; return q&&q.req&&!q.confirmed; });
+    if(rq.length) al='<div class="note y" style="margin-bottom:16px">📤 <b>확정 요청</b> : '+rq.map(function(x){ return esc(x.name)+' ('+esc(x.months[S.ym].req.by||'관리소장')+')'; }).join(', ')+' — 건물을 열고 <b>관리비 부과</b>에서 확인 후 확정해 주세요.</div>'+al; }
   document.getElementById('d-alert').innerHTML=al;
 
   document.getElementById('d-stats').innerHTML=
@@ -670,7 +695,7 @@ function rDash(){
     var bi=rr.reduce(function(a,r){return a+r.total;},0);
     var pa=rr.reduce(function(a,r,k){ return a+((mm.paid&&mm.paid[k])?r.total:0); },0);
     var hasVat=x.items.some(function(it){return it.tax;});
-    return '<tr><td><b>'+esc(x.name)+'</b><div style="font-size:11px;color:var(--ink3)">'+esc(x.addr||'-')+'</div></td>'+
+    return '<tr><td><b>'+esc(x.name)+'</b>'+(mm&&mm.req&&!mm.confirmed?' <span class="tag t-w">확정 요청</span>':'')+'<div style="font-size:11px;color:var(--ink3)">'+esc(x.addr||'-')+(x.site&&x.site!==x.name?' · 담당 '+esc(x.site):'')+'</div></td>'+
       '<td>'+TYPE[x.type]+'</td><td class="num">'+x.units.length+'</td><td class="num">'+(x.units.length-o)+'</td>'+
       '<td class="num">'+(bi?won(bi):'-')+'</td><td class="num" style="color:var(--g)">'+(pa?won(pa):'-')+'</td>'+
       '<td class="num" style="color:var(--r)">'+((bi-pa)?won(bi-pa):'-')+'</td>'+
@@ -683,10 +708,12 @@ function st(l,v,s){ return '<div class="stat"><div class="l">'+l+'</div><div cla
 /* ---------- 부과 ---------- */
 function rCharge(){
   var b=B(), m=M();
+  var fx=document.getElementById('c-fix'); if(fx){ if(MGR){ fx.textContent=m.confirmed?'✓ 본사 확정됨':(m.req?'⏳ 본사 확인 대기 (다시 요청)':'📤 본사에 확정 요청'); fx.setAttribute('onclick','reqConfirm()'); fx.disabled=!!m.confirmed||!m.rows.length; }
+    else { fx.textContent=(m.req&&!m.confirmed)?'✓ 부과 확정 (소장 요청 확인)':'✓ 부과 확정'; if(m.rows.length&&!m.confirmed) fx.disabled=false; } }
   var varItems = b.items.map(function(it,i){return {it:it,i:i};}).filter(function(x){ return x.it.mode!=='each'; });
   document.getElementById('c-inputs').innerHTML = varItems.length
     ? '<div class="grid g3">'+varItems.map(function(x){
-        return '<div class="fld"><label>'+esc(x.it.n)+' <span style="color:var(--ink3);font-weight:600">('+MODE[x.it.mode]+')</span></label>'+
+        return '<div class="fld"><label>'+esc(x.it.n)+' <span style="color:var(--ink3);font-weight:600">('+MODEL[x.it.mode]+')</span></label>'+
         '<input class="num" type="tel" value="'+(m.totals[x.i]||'')+'" placeholder="고지서 총액" '+
         'oninput="M().totals['+x.i+']=nOf(this.value);save()"></div>'; }).join('')+'</div>'
     : '<div class="empty">매달 넣을 항목이 없습니다. 모두 세대 정액입니다.</div>';
@@ -709,16 +736,17 @@ function rCharge(){
 function setUse(ii,ui,v){ var m=M(); if(!m.usage[ii]) m.usage[ii]=[]; m.usage[ii][ui]=nOf(v); save(); }
 function calcNow(){
   var b=B(), m=M();
+  if(MGR && m.confirmed){ toast('본사가 확정한 달은 고칠 수 없어요. 고칠 게 있으면 본사에 말해 주세요'); return; }
   if(!b.units.length){ toast('세대를 먼저 넣어주세요'); return; }
   m.rows = calcRows(b,m); save();
   drawCharge(m.rows);
-  document.getElementById('c-fix').disabled=false;
+  document.getElementById('c-fix').disabled=false; render('charge');
   toast(b.units.length+'세대 계산했습니다');
 }
 function drawCharge(rows){
   var b=B(), m=M();
   var tot=rows.reduce(function(a,r){return a+r.total;},0);
-  document.getElementById('c-info').innerHTML = ymL(S.ym)+'분 · 합계 <b>'+won(tot)+'원</b>'+(m.confirmed?' · <span class="tag t-ok">확정됨</span>':' · <span class="tag t-w">미확정</span>');
+  document.getElementById('c-info').innerHTML = ymL(S.ym)+'분 · 합계 <b>'+won(tot)+'원</b>'+(m.confirmed?' · <span class="tag t-ok">확정됨'+(m.confirmedAt?' '+esc(m.confirmedAt):'')+'</span>':' · <span class="tag t-w">미확정</span>')+(m.req&&!m.confirmed?' · <span class="tag t-w">확정 요청 · '+esc(m.req.by||'')+' '+esc(m.req.at||'')+'</span>':'');
   document.getElementById('c-tbl').innerHTML='<table><thead><tr><th>호실</th><th>임차인</th>'+
     b.items.map(function(it){ return '<th class="num">'+esc(it.n)+(it.tax?' <span class="tag t-i">과세</span>':'')+'</th>'; }).join('')+
     '<th class="num">공급가액</th><th class="num">부가세</th><th class="num">청구액</th></tr></thead><tbody>'+
@@ -741,7 +769,8 @@ function drawCharge(rows){
 function confirmCharge(){
   var m=M(), b=B();
   if(!m.rows.length){ toast('먼저 계산하세요'); return; }
-  m.confirmed=true;
+  if(MGR){ reqConfirm(); return; }
+  m.confirmed=true; m.confirmedBy='본사'; m.confirmedAt=new Date().toISOString().slice(0,10); delete m.req;
   if(!m.paid || m.paid.length!==b.units.length) m.paid=b.units.map(function(){return false;});
   save(); toast(ymL(S.ym)+'분을 확정했습니다'); render('charge');
 }
@@ -874,7 +903,7 @@ function rReport(){
     '납부 기한 : 매월 '+(b.due||25)+'일</div>'+
     '<table><thead><tr><th>항목</th><th>나누는 방법</th><th>과세</th><th class="num">총액</th><th class="num">세대 평균</th></tr></thead><tbody>'+
     b.items.map(function(it,ii){
-      return '<tr><td><b>'+esc(it.n)+'</b></td><td>'+MODE[it.mode]+'</td>'+
+      return '<tr><td><b>'+esc(it.n)+'</b></td><td>'+MODEL[it.mode]+'</td>'+
         '<td>'+(it.tax?'<span class="tag t-i">과세</span>':'<span class="tag t-x">면세</span>')+'</td>'+
         '<td class="num">'+won(sums[ii])+'</td><td class="num">'+won(occ?sums[ii]/occ:0)+'</td></tr>'; }).join('')+
     '<tr><td colspan="3"><b>부가세</b></td><td class="num">'+won(vat)+'</td><td class="num">'+won(occ?vat/occ:0)+'</td></tr>'+
@@ -890,7 +919,7 @@ function exportReport(){
   var lines=[csvRow([b.name+' '+ymL(S.ym)+' 관리비 내역']),csvRow([]),csvRow(['항목','나누는 방법','과세','총액','세대 평균'])];
   b.items.forEach(function(it,ii){
     var s=m.rows.reduce(function(a,r){return a+(r.cells[ii]||0);},0);
-    lines.push(csvRow([it.n, MODE[it.mode], it.tax?'과세':'면세', s, Math.round(occ?s/occ:0)]));
+    lines.push(csvRow([it.n, MODEL[it.mode], it.tax?'과세':'면세', s, Math.round(occ?s/occ:0)]));
   });
   dl(b.name+'_'+S.ym+'_관리비공개.csv', lines.join('\n'));
 }
@@ -985,7 +1014,7 @@ function rItems(){
     b.items.map(function(it,i){
       return '<tr><td><input value="'+esc(it.n)+'" oninput="setI('+i+',\'n\',this.value)"></td>'+
         '<td><select onchange="setI('+i+',\'mode\',this.value)">'+
-          Object.keys(MODE).map(function(k){ return '<option value="'+k+'"'+(it.mode===k?' selected':'')+'>'+MODE[k]+'</option>'; }).join('')+
+          Object.keys(MODEL).map(function(k){ return '<option value="'+k+'"'+(it.mode===k?' selected':'')+'>'+MODEL[k]+'</option>'; }).join('')+
         '</select></td>'+
         '<td>'+(it.mode==='each'
           ? '<input class="num" value="'+(it.val||0)+'" oninput="setI('+i+',\'val\',this.value)">'
@@ -1001,7 +1030,7 @@ function addItem(){ B().items.push({n:'',mode:'each',val:0,tax:false}); save(); 
 /* ---------- 건물 ---------- */
 function rBldg(){
   var b=B(), s=b.supplier;
-  ['name','addr','type','bank','due','late'].forEach(function(k){ var e=document.getElementById('b-'+k); if(e) e.value=b[k]==null?'':b[k]; });
+  ['name','site','addr','type','bank','due','late'].forEach(function(k){ var e=document.getElementById('b-'+k); if(e) e.value=b[k]==null?'':b[k]; });
   ['regno','corp','ceo','email','addr','biz','item'].forEach(function(k){ var e=document.getElementById('s-'+k); if(e) e.value=s[k]||''; });
   var pro = (b.type==='officetel'||b.type==='store') || b.units.length>=50;
   document.getElementById('b-judge').innerHTML = pro
@@ -1074,6 +1103,8 @@ document.getElementById('mnav').innerHTML = ['dash','charge','collect','tax','un
     ({dash:'◈',charge:'▤',collect:'◐',tax:'🧾',units:'⌂',items:'▦'})[p]+'</span>'+TITLES[p][1]+'</button>'; }).join('');
 document.querySelectorAll('.mnav button').forEach(function(b){ b.onclick=function(){ go(b.dataset.p); }; });
 document.getElementById('ymsel').onchange=function(){ S.ym=this.value; save(); go(curPage()); };
+if(MGR){ MGR_HIDE.forEach(function(p){ document.querySelectorAll('#nav-pro [data-p="'+p+'"],#mnav [data-p="'+p+'"]').forEach(function(b){ b.classList.add('hide'); }); });
+  document.querySelectorAll('[onclick="newB()"]').forEach(function(b){ b.classList.add('hide'); }); }
 rSel(); go('dash');
 (function(){ try{ doorUI(); }catch(e){} var q=window.__Q; var m=q&&q.get('mode'); if(DOOR==='emp' && !(m==='emp'||m==='home'||m==='own')){ setMode('emp', 'home'); } else if(m==='emp'||m==='home'||m==='own'){ setMode('emp', m==='emp' ? (q.get('v')||'capture') : m); } })();
 </script>
