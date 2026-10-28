@@ -2089,7 +2089,7 @@
   document.querySelectorAll("[data-lg]").forEach(function(b){b.addEventListener("click",function(){openLogin(b.getAttribute("data-lg"));});});
   $("lgBack").addEventListener("click",function(){$("lgForm").classList.add("hide");$("lgPick").classList.remove("hide");});
   function showHub(){["lgForm","lgPick","lgFac"].forEach(function(id){$(id).classList.add("hide");});$("lgHub").classList.remove("hide");try{window.scrollTo(0,0);}catch(e){}}
-  function showPick(){$("lgHub").classList.add("hide");$("lgFac").classList.add("hide");$("lgForm").classList.add("hide");$("lgPick").classList.remove("hide");}
+  function showPick(){$("lgHub").classList.add("hide");$("lgFac").classList.add("hide");$("lgForm").classList.add("hide");$("lgPick").classList.remove("hide");try{var fac=window.__pendFac==="facpro",sec=document.querySelector("#lgPick .lg-sec"),st=document.querySelector('#lgPick .lg-card[data-lg="staff"]');if(sec)sec.textContent=fac?"🏢 시설 종합 관리 · 누구로 들어오세요?":"👷 직원 관리 · 누구로 들어오세요?";if(st)st.classList.toggle("hide",fac);}catch(e){}}
   async function openFacPage(page){
     if(!haveUrl()){toast("서버 주소가 없습니다.");return;}
     try{await authReady;}catch(e){}
@@ -2098,7 +2098,7 @@
     try{
       if(SESS&&SESS.tk&&(SESS.role==="admin"||SESS.role==="manager")){go(SESS.tk);return;}
       if(testMode){var r=await cloudPost({action:"login",mode:"admin",pin:""});SESS={tk:r.tk,role:r.role,name:r.name,site:r.site||""};saveSess();try{if(APP&&APP.setSession)APP.setSession(r.tk);}catch(e){}go(r.tk);return;}
-      window.__pendFac=page;showPick();toast("관리소장 또는 관리자로 로그인해 주세요");
+      window.__pendFac=page;showPick();toast("관리소장 또는 본사 관리자로 로그인해 주세요");
     }catch(e){toast("열지 못했습니다: "+((e&&e.message)||e));}
     finally{setTimeout(function(){bs.forEach(function(b){b.disabled=false;});},2500);}
   }
