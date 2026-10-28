@@ -2190,19 +2190,8 @@
       +tile("📢","안 읽은 공지",unread+"건",unread?"아래 공지사항에서 확인":"모두 읽음",unread?"#B7791F":"#0F766E","")
       +tile("🧾","이번 달 지출",ex.length+"건",won(exSum)+"원"+(exWait?" · 결재 전 "+exWait+"건":""),"","list")
       +tile("👥","우리 현장 직원",(roster||[]).length+"명","비상연락망은 아래에","","")
-      +'</div><div class="ms-pro" id="msPro">💰 수납·계약 불러오는 중…</div>';
+      +'</div>';
     el.querySelectorAll("[data-msgo]").forEach(function(t){t.addEventListener("click",function(){setView(t.getAttribute("data-msgo"));try{window.scrollTo(0,0);}catch(e){}});});
-    if(!haveUrl()||!(SESS&&SESS.tk))return;
-    fetch(cfg.url.trim()+"?api=fac&tk="+encodeURIComponent(SESS.tk)).then(function(r){return r.json();}).then(function(j){
-      var box=$("msPro");if(!box)return;if(!j.ok){box.textContent="";return;}
-      var S={};try{S=JSON.parse(j.state||"{}")||{};}catch(e){}
-      var L=(S.pro&&S.pro.bldgs)||[],billed=0,paid=0,un=0,notYet=0;
-      L.forEach(function(b){var m=(b.months||{})[ym];if(!m||!m.confirmed){notYet++;return;}(m.rows||[]).forEach(function(r,i){billed+=r.total||0;if(m.paid&&m.paid[i])paid+=r.total||0;else if(!r.vacant)un++;});});
-      var go='<a href="'+SITE+'pro.html" target="_top" style="color:#0F766E;font-weight:800;text-decoration:none;display:block;margin-top:6px">🏢 시설 종합 관리 열기 ›</a>';
-      if(!L.length){box.innerHTML='💰 수납·계약 : 등록된 건물이 없어요'+go;return;}
-      box.innerHTML='💰 <b>'+mo+'월 수납</b> · 부과 '+(billed?won(billed)+"원":"-")+' · 들어온 돈 <b style="color:#0F766E">'+(paid?won(paid)+"원":"-")+'</b>'
-        +' · 미납 <b style="color:'+((billed-paid)>0?"#D14343":"#0F766E")+'">'+((billed-paid)>0?won(billed-paid)+"원 ("+un+"세대)":(billed?"없음":"-"))+'</b>'+(notYet?' <span style="color:#868C94">· 부과 전 '+notYet+'곳</span>':'')+go;
-    }).catch(function(){var box=$("msPro");if(box)box.textContent="";});
   }
   function renderNotices(){
     try{renderMgrV11();}catch(e){}try{renderMgrSum();}catch(e){}

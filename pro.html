@@ -167,7 +167,7 @@ td input.num{text-align:right}
 <body>
 <div id="facBar" style="position:relative;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:8px;background:#212D64;color:#fff;padding:7px 12px;font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif">
   <button onclick="facHome()" style="border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-weight:800;font-size:13px;border-radius:999px;padding:6px 12px;cursor:pointer;font-family:inherit">⌂ 처음으로</button>
-  <span style="font-size:12.5px;font-weight:800;opacity:.9">모두의관리 · 건물 종합 관리</span>
+  <span id="topTitle" style="font-size:12.5px;font-weight:800;opacity:.9">모두의관리 · 건물 종합 관리</span>
   <span id="facSync" style="font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px;background:#E4F2EA;color:#1F6B45">☁ 저장됨</span>
 </div>
 
@@ -176,7 +176,7 @@ td input.num{text-align:right}
 <aside class="side">
   <div class="logo">
     <img class="m" src="data:image/png;base64,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" alt="모두의관리" style="background:none">
-    <div><b>모두의관리</b><span>건물 종합 관리 · (주)포컴</span></div>
+    <div><b>모두의관리</b><span id="sideTitle">건물 종합 관리 · (주)포컴</span></div>
   </div>
   <div class="modes" id="modes"><button class="on" data-m="pro" onclick="setMode('pro')">💰 수납·계약</button><button data-m="emp" onclick="setMode('emp')">🛠️ 현장·직원</button></div>
   <div class="bsel" id="bselbox"><select id="bsel" onchange="switchB(this.value)"></select></div>
@@ -571,7 +571,18 @@ function curPage(){ var e=document.querySelector('.page.on'); return e?e.id.slic
 /* ---------- 한 화면에서 둘 다 : 수납·계약(이 파일) / 현장·직원(index.html 을 안에 띄움) ---------- */
 var MODE='pro', EMB_V='', EMP_T={home:['한눈에','관리자 홈'],capture:['현장·직원','지출 입력'],list:['현장·직원','지출 내역'],settlement:['현장·직원','결산'],docs:['현장·직원','문서·결재'],field:['현장·직원','현장 관리'],emp:['현장·직원','직원'],notice:['현장·직원','공지'],settings:['현장·직원','설정'],own:['운영','간편 관리 운영']};
 function sessRole(){ try{ var s=JSON.parse(localStorage.getItem('fc_sess')||'null'); return (s&&s.role)||''; }catch(e){ return ''; } }
+/* (10/28) 들어온 문에 따라 한쪽만 : 직원 관리(본사 관리자·관리소장) = 현장·직원만 / 시설 종합 관리 = 수납·계약만 */
+var DOOR=(function(){ var q=window.__Q, m=q&&q.get('mode'), d='';
+  if(m==='emp'||m==='home'||m==='own') d='emp'; else if(q&&(q.get('door')==='fac'||q.get('tk'))) d='fac';
+  try{ if(d) sessionStorage.setItem('modoo_door', d); else d=sessionStorage.getItem('modoo_door')||'fac'; }catch(e){ d=d||'fac'; }
+  return d; })();
+function doorUI(){ var nm = DOOR==='emp' ? '직원 관리' : '시설 종합 관리';
+  ['modes','modes-m'].forEach(function(id){ var e=document.getElementById(id); if(e) e.style.display='none'; });
+  var t=document.getElementById('topTitle'); if(t) t.textContent='모두의관리 · '+nm;
+  var s=document.getElementById('sideTitle'); if(s) s.textContent=nm+' · (주)포컴';
+  try{ document.title='모두의관리 · '+nm; }catch(e){} }
 function setMode(m, v){
+  m = DOOR==='emp' ? 'emp' : 'pro';
   MODE = m==='emp' ? 'emp' : 'pro';
   document.querySelectorAll('#modes button,#modes-m button').forEach(function(b){ b.classList.toggle('on', b.dataset.m===MODE); });
   document.getElementById('nav-pro').classList.toggle('hide', MODE!=='pro');
@@ -1064,7 +1075,7 @@ document.getElementById('mnav').innerHTML = ['dash','charge','collect','tax','un
 document.querySelectorAll('.mnav button').forEach(function(b){ b.onclick=function(){ go(b.dataset.p); }; });
 document.getElementById('ymsel').onchange=function(){ S.ym=this.value; save(); go(curPage()); };
 rSel(); go('dash');
-(function(){ var q=window.__Q; var m=q&&q.get('mode'); if(m==='emp'||m==='home'||m==='own'){ setMode('emp', m==='emp' ? (q.get('v')||'capture') : m); } })();
+(function(){ try{ doorUI(); }catch(e){} var q=window.__Q; var m=q&&q.get('mode'); if(DOOR==='emp' && !(m==='emp'||m==='home'||m==='own')){ setMode('emp', 'home'); } else if(m==='emp'||m==='home'||m==='own'){ setMode('emp', m==='emp' ? (q.get('v')||'capture') : m); } })();
 </script>
 </body>
 </html>
