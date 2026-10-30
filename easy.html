@@ -368,6 +368,10 @@ body{flex-direction:column;justify-content:flex-start}
   <input class="inp mb" id="rf-taddr" placeholder="세입자의 주소">
   <div class="label">세입자 주민등록번호 <span style="font-weight:600;color:var(--ink3)">(계약서에만 쓰여요 · 사업자면 비워 두세요)</span></div>
   <input class="inp mb" id="rf-trrn" type="tel" inputmode="numeric" maxlength="14" placeholder="000000-0000000" oninput="rrnFmt(this)">
+  <div class="label">중개 부동산 <span style="font-weight:600;color:var(--ink3)">(계약서 맨 아래 개업공인중개사 칸 · 분쟁 때 연락)</span></div>
+  <input class="inp mb" id="rf-aname" placeholder="부동산 이름 (예: 센터엠공인중개사사무소)">
+  <input class="inp mb" id="rf-arep" placeholder="중개인 이름 (대표자)">
+  <input class="inp mb" id="rf-atel" type="tel" inputmode="numeric" placeholder="부동산 연락처">
   <div class="label">월세</div>
   <input class="inp num mb" id="rf-rent" type="tel" inputmode="numeric" placeholder="예) 500000" oninput="vatNote()">
   <div id="rf-vatbox" class="hidden">
@@ -2659,6 +2663,12 @@ function parseLease(text){
     if(trd.length===13 && /^[1-8]$/.test(trd[6])) F.trrn=trd.slice(0,6)+'-'+trd.slice(6);
     var tbn=lineVal(TB,'사업자등록번호|사업자번호'); var tbd=tbn.replace(/[^0-9]/g,''); if(tbd.length===10) F.tbizno=tbd;
   }
+  var AB=partyBlock(t,'개업공인중개사')||partyBlock(t,'공인중개사')||partyBlock(t,'중개사');
+  if(AB){
+    var an=lineVal(AB,'사무소 명칭|사무소명칭|사무소명|상호|명칭'); if(an) F.aname=an;
+    var ar=lineVal(AB,'대표자|대표|성명|이름'); if(ar) F.arep=ar;
+    var at=lineVal(AB,'전화번호|전화|연락처'); if(at) F.atel=at;
+  }
   var LB=partyBlock(t,'임대인');
   if(LB){
     var la=lineVal(LB,'주소|주 소'); if(la) F.laddr=la;
@@ -2671,6 +2681,9 @@ var CT_ROWS=[
   {k:'trrn',   n:'임차인 주민번호', show:function(v){ return rrnMask(v); }},
   {k:'ttel',   n:'임차인 전화'},
   {k:'taddr',  n:'임차인 주소'},
+  {k:'aname',  n:'중개 부동산'},
+  {k:'arep',   n:'중개인'},
+  {k:'atel',   n:'부동산 연락처'},
   {k:'addr',   n:'부동산 주소'},
   {k:'ho',     n:'호실'},
   {k:'deposit',n:'보증금', show:function(v){ return won(v)+'원'; }},
@@ -2688,6 +2701,7 @@ var CT_ROWS=[
 ];
 function ctCur(r, k){
   if(k==='laddr') return S.owner.addr||''; if(k==='lrrn') return S.owner.rrn||''; if(k==='bank') return S.owner.bank||'';
+  if(k==='aname') return (r.agent&&r.agent.name)||''; if(k==='arep') return (r.agent&&r.agent.rep)||''; if(k==='atel') return (r.agent&&r.agent.tel)||'';
   if(k==='trrn') return r.trrn||''; return r[k]==null?'':r[k];
 }
 var CT={id:null, F:null, text:''};
@@ -2732,6 +2746,7 @@ function ctextApply(){
     if(!c.checked) return; var k=c.getAttribute('data-ck'), v=F[k]; n++;
     if(k==='laddr') S.owner.addr=v; else if(k==='lrrn') S.owner.rrn=v; else if(k==='bank') S.owner.bank=v;
     else if(k==='tbizno'){ r.tbiz=r.tbiz||{}; r.tbiz.no=v; }
+    else if(k==='aname'||k==='arep'||k==='atel'){ r.agent=r.agent||{}; r.agent[{aname:'name',arep:'rep',atel:'tel'}[k]]=v; }
     else r[k]=v;
   });
   if(F.vat && r.vat && r.use!=='biz' && F.vat) { /* 부가세가 있는 계약인데 주거용으로 되어 있으면 알려 줌 */ toast('부가세가 있는 계약이에요. 호실 용도를 사무실·상가로 확인해 주세요'); }
@@ -2754,6 +2769,9 @@ function roomCardHtml(r, multi){
     row('임차인', esc(r.tname||'이름 없음'))+
     idLine+
     row('전화번호', r.ttel?esc(r.ttel):none)+
+    row('부동산', (r.agent&&r.agent.name)?esc(r.agent.name):none)+
+    row('중개인', (r.agent&&r.agent.rep)?esc(r.agent.rep):none)+
+    row('부동산 연락처', (r.agent&&r.agent.tel)?'<a href="tel:'+esc(telOf({tel:r.agent.tel}))+'" style="color:var(--brand-dark)">📞 '+esc(r.agent.tel)+'</a>':none)+
     row('계약기간', (r.start?esc(fmtDate(r.start)):'?')+' ~ '+(r.end?esc(fmtDate(r.end)):'?'))+
     row('계약상태', L ? '<b style="color:'+(L.warn?'var(--warn-text)':(L.implied?'var(--info)':'var(--brand-dark)'))+'">'+L.label+'</b>' : none)+
     row('계약종료', L ? esc(fmtDate(L.end))+' · <b style="color:'+(L.warn?'var(--danger)':'inherit')+'">D-'+L.d+'일</b>'+(L.implied?' <span class="sub" style="color:var(--ink3)">(갱신된 기간)</span>':'') : none)+
@@ -2783,6 +2801,7 @@ function openRoom(id){
   document.getElementById('rf-use').value = id ? catOf(r) : '';
   document.getElementById('rf-vat').value = r.vat || 'sep'; useChanged();
   var TB=r.tbiz||{}; document.getElementById('tb-no').value=TB.no?bizFmt(TB.no):''; document.getElementById('tb-name').value=TB.name||''; document.getElementById('tb-rep').value=TB.rep||''; document.getElementById('tb-email').value=TB.email||''; document.getElementById('tb-addr').value=TB.addr||'';
+  var AG=r.agent||{}; document.getElementById('rf-aname').value=AG.name||''; document.getElementById('rf-arep').value=AG.rep||''; document.getElementById('rf-atel').value=AG.tel||'';
   document.getElementById('rf-taddr').value=r.taddr||''; document.getElementById('rf-trrn').value=r.trrn||'';
   document.getElementById('i-bizno').value=bizFmt(RBIZ.no||'');
   document.getElementById('i-bizname').value=RBIZ.name||'';
@@ -3060,6 +3079,7 @@ function openRInfo(id){
   /* 세입자 */
   h+=riBox('👤 세입자', r.vacant ? riRow('상태','빈 방 · 월세를 받지 않아요','var(--ink3)') :
     riRow('이름', esc(r.tname||'이름 없음')) + riRow('전화', r.ttel ? '<a href="tel:'+esc(r.ttel)+'" style="color:var(--brand-dark)">📞 '+esc(r.ttel)+'</a>' : '<span style="color:var(--ink3)">없음</span>') + (r.taddr?riRow('주소', esc(r.taddr)):'') + ((r.tbiz&&r.tbiz.no) ? riRow('사업자', esc(r.tbiz.name||'')+' <span class="sub" style="color:var(--ink3)">'+esc(bizFmt(r.tbiz.no))+'</span>'+(r.tbiz.email?'<br><span class="sub" style="color:var(--ink3)">'+esc(r.tbiz.email)+'</span>':'')) : ''));
+  if(!r.vacant && r.agent && (r.agent.name||r.agent.rep||r.agent.tel)) h+=riBox('🏢 중개 부동산', riRow('부동산', esc(r.agent.name||'-'))+riRow('중개인', esc(r.agent.rep||'-'))+riRow('연락처', r.agent.tel?'<a href="tel:'+esc(telOf({tel:r.agent.tel}))+'" style="color:var(--brand-dark)">📞 '+esc(r.agent.tel)+'</a>':'-'));
   /* 돈 */
   var vat=vatOf(r), due=dueAmt(r);
   h+=riBox('💰 월세·보증금',
@@ -3707,7 +3727,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1030-9';
+var APP_BUILD='1030-10';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
@@ -3831,7 +3851,7 @@ var UTIL_NAME = { tenant:'세입자가 직접 냄', owner:'내가 받아서 냄'
 function saveRoom(){
   var g=function(k){ return document.getElementById(k).value.trim(); };
   var vac=document.getElementById('rf-vac').classList.contains('on');
-  var o={ bname:g('rf-bname'), ho:g('rf-ho'), addr:g('rf-addr'), tname:g('rf-tname'), ttel:g('rf-ttel'), taddr:g('rf-taddr'), trrn:g('rf-trrn'),
+  var o={ bname:g('rf-bname'), ho:g('rf-ho'), addr:g('rf-addr'), tname:g('rf-tname'), ttel:g('rf-ttel'), taddr:g('rf-taddr'), trrn:g('rf-trrn'), agent:{name:g('rf-aname'), rep:g('rf-arep'), tel:g('rf-atel')},
     deposit:numOf('rf-dep'), rent:numOf('rf-rent'), util:g('rf-util')||'tenant', cat:g('rf-use'), use:catUse(g('rf-use')||'house'), vat:(catUse(g('rf-use')||'house')==='biz' ? (g('rf-vat')||'sep') : ''), fee:0, day:numOf('rf-day'), start:g('rf-start'), end:g('rf-end'), vacant:vac };
   if(o.util==='owner'){ o.fee=numOf('rf-fee'); if(o.fee<=0 && !vac){ toast('매달 받는 관리비를 넣어주세요'); return; } }
   if(!o.cat){ toast('어떤 용도로 세를 주는지 골라 주세요'); document.getElementById('rf-use').focus(); return; }
