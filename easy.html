@@ -35,7 +35,7 @@
 .grp .ghead{padding:10px 4px 8px;border-bottom:1.5px dashed #D7DEE8;margin-bottom:10px}
 .grp .ghead b{font-size:var(--fs-body)}
 .grp .card{background:#fff}
-.grp .gaddr{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--fs-small);color:var(--ink3);font-weight:600;margin-top:2px}
+.grp .gaddr{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;letter-spacing:-0.2px;color:var(--ink3);font-weight:600;margin-top:2px}
 .card.rc{display:block;padding:12px 15px 4px;cursor:default}
 .card.rc .rh{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;padding-bottom:8px}
 .card.rc .rl{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:var(--fs-small)}
@@ -2406,6 +2406,7 @@ function renderRList(){
     return '<div class="grp">' + head + g.items.map(function(r){ return roomCardHtml(r, rg.length>1); }).join('') + '</div>';
   }).join('')
     || '<div class="box cc" style="padding:26px"><p>아직 넣은 호실이 없어요</p></div>';
+  setTimeout(fitAddr, 0);
   document.getElementById('rl-done').classList.toggle('hidden', !!S.setupDone);
   document.getElementById('rl-reset').classList.toggle('hidden', !!S.setupDone);
   document.getElementById('rl-more').classList.toggle('hidden', !S.setupDone);
@@ -2436,6 +2437,13 @@ function rentState(r){
   if(dl<0) return '<b style="color:var(--danger)">❗ '+mo+'월분 미납 · '+(-dl)+'일 지남</b>'+tail;
   return '<span style="color:var(--warn-text)">⏳ '+mo+'월분 '+esc(fmtDate(due))+' 입금 예정</span>'+tail;
 }
+/* 카드의 '세금계산서 발행하기' : 준비가 다 됐으면 이번 달 발행 확인 창, 아니면 무엇이 빠졌는지 알려 주고 호실 화면으로 */
+function roomTaxGo(id){ var r=findRoom(id); if(!r) return; var ok=taxReady(r);
+  if(ok!=='ok'){ toast(ok); openRInfo(id); setTimeout(function(){ var t=document.getElementById('ri-tax'); if(t) t.scrollIntoView({block:'center'}); }, 300); return; }
+  taxIssueAsk(id, thisYm()); }
+/* 주소 한 줄 : 칸에 들어갈 때까지 글씨를 줄임 (최소 10px) */
+function fitAddr(){ document.querySelectorAll('.gaddr').forEach(function(e){ var f=13; e.style.fontSize=f+'px'; while(e.scrollWidth>e.clientWidth+1 && f>10){ f-=0.5; e.style.fontSize=f+'px'; } }); }
+window.addEventListener('resize', function(){ try{ if(CUR==='rlist') fitAddr(); }catch(e){} });
 function roomCardHtml(r, multi){
   var title=esc(r.ho||roomLabel(r));   /* 건물 이름은 묶음 제목에 있으니 호실만 */
   if(r.vacant) return '<div class="card rc"><div class="rh" onclick="openRInfo(\''+r.id+'\')"><span class="ho">'+title+'</span><span class="sub" style="font-weight:700;color:var(--ink3)">빈 방 · 보기 ›</span></div></div>';
@@ -2455,6 +2463,7 @@ function roomCardHtml(r, multi){
     row('보증금', won(r.deposit||0)+'원')+
     row('임대료', '월 '+won(dueAmt(r))+'원'+(vat?' <span class="sub" style="color:var(--ink3)">(부가세 '+won(vat)+'원 포함)</span>':'')+' · 매월 '+(r.day||1)+'일')+
     row('납입상태', rentState(r))+
+    (r.use==='biz' ? '<button class="ra" onclick="roomTaxGo(\''+r.id+'\')">🧾 세금계산서 발행하기</button>' : '')+
     '<button class="ra" onclick="contractOpen(\''+r.id+'\')">📄 임대차계약서 보기</button>'+
     '<button class="ra" onclick="openRenew(\''+r.id+'\')">🔄 임대차계약서 갱신하기</button>'+
     '<button class="ra" onclick="'+(tel?'facOpen(\'sms:'+tel+'\')':'toast(\'전화번호가 없어요\')')+'">💬 임차인 문자 보내기</button>'+
@@ -3400,7 +3409,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1030-2';
+var APP_BUILD='1030-3';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
