@@ -105,6 +105,21 @@ p{font-size:var(--fs-body);color:var(--ink2);line-height:1.6}
 .btn.help{background:var(--help)}.btn.warn{background:var(--warn)}.btn.danger{background:var(--danger)}
 .btn.small{min-height:52px;font-size:calc(var(--fs-btn) - 2px)}
 .btn + .btn{margin-top:10px}
+.rm-cyc{display:flex;align-items:center;gap:8px;margin:4px 0 10px}
+.rm-nav{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:22px;font-weight:800;color:var(--ink2);flex:0 0 auto}
+.rm-nav[disabled]{opacity:.3}
+.rm-cyct{flex:1;text-align:center;line-height:1.3}.rm-cyct b{font-size:var(--fs-body)}.rm-cyct span{display:block;font-size:12px;color:var(--ink3);font-weight:700}
+.rmt{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:var(--fs-small)}
+.rmt th{background:#F3F4F6;color:var(--ink3);font-weight:800;padding:9px 8px;text-align:left;font-size:12.5px}
+.rmt td{padding:10px 8px;border-top:1px solid var(--line);font-weight:700;vertical-align:middle}
+.rmt tr{cursor:pointer}.rmt td:first-child{white-space:nowrap}.rmt td:nth-child(2){color:var(--ink2)}
+.rmt .dash{color:var(--ink3);font-weight:600}
+.rmt td em{display:block;font-style:normal;font-size:10.5px;color:var(--ink3);font-weight:700;line-height:1;margin-bottom:3px}.rmt td i{font-style:normal;font-size:11px;color:var(--info);font-weight:800;margin-left:4px}
+.rmt tr.ok td:last-child b{color:var(--brand-dark)}.rmt tr.no td:last-child b{color:var(--danger)}.rmt tr.wait td:last-child b{color:var(--ink3)}
+.rmt tr.none td{color:var(--ink3);font-weight:600}.rmt tr.none td:last-child b{color:var(--ink3);font-weight:600}
+.rmt tr.cur td{background:var(--brand-light)}.rmt tr.no td{background:var(--danger-light)}
+.rmt td small{display:block;font-size:11px;color:var(--danger);font-weight:700}
+
 #docv .dv-sc.dv-txt{background:#fff;text-align:left;padding:14px 16px 90px}
 #docv .dv-txt pre{white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font-family:inherit;font-size:14px;line-height:1.6;margin:0;color:var(--ink)}
 #docv .dv-foot{position:absolute;left:12px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:2}
@@ -504,10 +519,10 @@ body{flex-direction:column;justify-content:flex-start}
 
 <!-- ================= 호실 임대 돈 확인 ================= -->
 <section class="scr" id="s-rmoney">
-  <h2 id="rm-title">월세</h2>
-  <p class="sub mb" id="rm-sub" style="margin-top:4px"></p>
-  <div id="rm-months" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px"></div>
-  <div class="box b mb" id="rm-tip"><p class="sub" style="font-weight:700;color:var(--info)">통장을 보시고 <b>들어온 호실을 눌러</b> 표시해 주세요</p></div>
+  <h2 id="rm-title">월세 납부 현황</h2>
+  <p class="sub mb" id="rm-sub" style="margin-top:4px;line-height:1.5"></p>
+  <div id="rm-rooms" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px"></div>
+  <div class="rm-cyc" id="rm-cyc"></div>
   <div id="rm-list" style="flex:1"></div>
 </section>
 
@@ -2255,35 +2270,60 @@ function renderRHome(){
 /* ---------- 돈 확인 ---------- */
 var RMV=null;
 function pickRMonth(ym){ RMV=ym; renderRMoney(); }
+/* (10/30) 돈 확인 : 호실마다 계약 주기(12개월) 표 — 납부일 | 실제 납부일 | 상태 */
+var RMROOM=null, RMCYC=0;
+function ymAdd(ym, n){ var p=ym.split('-').map(Number), m=p[1]-1+n, y=p[0]+Math.floor(m/12); m=((m%12)+12)%12; return y+'-'+String(m+1).padStart(2,'0'); }
+function ymLabel(ym){ var p=ym.split('-'); return p[0]+'년 '+parseInt(p[1],10)+'월'; }
+/* 계약 시작 달을 기준으로 지금 달이 들어 있는 12개월 주기의 첫 달 */
+function cycleStart(r){
+  var t=thisYm();
+  if(!r || !r.start) return t.slice(0,4)+'-01';
+  var s=r.start.slice(0,7); if(s>t) return s;
+  var y=Number(t.slice(0,4)), m=s.slice(5), c=y+'-'+m; if(c>t) c=(y-1)+'-'+m;
+  return c;
+}
+function cycleNo(r, c0){ if(!r||!r.start) return 0; var a=r.start.slice(0,7).split('-').map(Number), b=c0.split('-').map(Number); return Math.round(((b[0]-a[0])*12+(b[1]-a[1]))/12)+1; }
+function rmRoomItem(ym, r){
+  if(!S.rmonths) S.rmonths={}; var M=S.rmonths[ym]; if(!M) M=S.rmonths[ym]={items:[]};
+  var it=null; M.items.forEach(function(x){ if(x.id===r.id) it=x; });
+  if(!it){ it={id:r.id, paid:false, at:'', label:roomLabel(r), ho:r.ho||'', use:r.use||'', tname:r.tname||'', ttel:r.ttel||'', amt:dueAmt(r), rent:r.rent||0, fee:r.fee||0, vat:vatOf(r), day:r.day||1}; M.items.push(it); save(); }
+  return it;
+}
+function rmRowTap(ym, id){
+  var r=roomOf(id); if(!r) return;
+  if(ym>thisYm()){ toast('아직 받을 달이 아니에요'); return; }
+  if(!rItem(ym,id)) rmRoomItem(ym, r);
+  openRDue(ym, id);
+}
+function pickRMRoom(id){ RMROOM=id; RMCYC=0; renderRMoney(); }
+function rmCycle(d){ RMCYC+=d; renderRMoney(); }
 function renderRMoney(){
   ensureRMonth();
-  var yms=Object.keys(S.rmonths).sort().reverse();
-  if(!RMV || !S.rmonths[RMV]) RMV=thisYm();
-  var M=S.rmonths[RMV], t=todayStr();
-  document.getElementById('rm-months').innerHTML = yms.length>1 ? yms.slice(0,12).map(function(y){
-    var un=S.rmonths[y].items.filter(function(x){ return !x.paid; }).length, on=(y===RMV);
-    return '<button onclick="pickRMonth(\''+y+'\')" style="padding:8px 13px;border-radius:999px;font-size:var(--fs-small);font-weight:800;'+
-      (on?'background:var(--brand);color:#fff':'background:#EEF1F5;color:var(--ink2)')+'">'+parseInt(y.split('-')[1],10)+'월'+
-      (un?' <span style="color:'+(on?'#FFE2E2':'var(--danger)')+'">'+un+'</span>':'')+'</button>'; }).join('') : '';
-  document.getElementById('rm-title').textContent = RMV.split('-')[0]+'년 '+parseInt(RMV.split('-')[1],10)+'월 월세';
-  var paid=M.items.filter(function(x){ return x.paid; });
-  document.getElementById('rm-sub').innerHTML = M.items.length
-    ? M.items.length+'곳 중 <b style="color:var(--brand)">'+paid.length+'곳</b>이 들어왔어요 · 남은 돈 <b>'+won(sumAmt(M.items)-sumAmt(paid))+'원</b>'
-    : '이 달에 받을 호실이 없어요';
-  document.getElementById('rm-tip').classList.toggle('hidden', !M.items.length);
-  var groups=groupBy(M.items.slice().sort(function(a,b){ return (a.day||1)-(b.day||1); }), function(it){ var r=roomOf(it.id); return (r&&r.bname)||it.label.split(' ')[0]; });
-  document.getElementById('rm-list').innerHTML = groups.map(function(g){
-    var sub = groups.length>1 ? '<div class="label" style="margin-top:10px">'+esc(g.key)+' <span style="color:var(--ink3);font-weight:600">· '+g.items.filter(function(x){return x.paid;}).length+'/'+g.items.length+' 들어옴</span></div>' : '';
-    return sub + g.items.map(function(it){
-      var r=roomOf(it.id), nm=(r&&r.ho)||it.label;
-      var due=dueDate(RMV,it.day), late=(!it.paid && due<t);
-      var cls=it.paid?'ok':(late?'no':''), col=it.paid?'var(--brand)':(late?'var(--danger)':'var(--ink3)');
-      return '<button class="card '+cls+'" onclick="openRDue(\''+RMV+'\',\''+it.id+'\')">'+
-        '<span style="width:12px;height:12px;border-radius:50%;flex:0 0 auto;background:'+col+'"></span>'+
-        '<div style="min-width:0"><div class="ho">'+esc(groups.length>1?nm:it.label)+'</div><div class="nn">'+esc(it.tname||'이름 없음')+' · '+won(it.amt)+'원 · '+parseInt(due.split('-')[2],10)+'일</div></div>'+
-        '<span class="rt" style="color:'+col+'">'+(it.paid?'받았어요':(late?'안 들어옴':'받을 예정'))+'</span></button>';
-    }).join('');
-  }).join('');
+  var rooms=S.rooms.filter(function(r){ return !r.vacant; }), t=thisYm(), today=todayStr();
+  if(!rooms.length){ document.getElementById('rm-title').textContent='월세 납부 현황'; document.getElementById('rm-sub').textContent='월세를 받는 호실이 없어요'; document.getElementById('rm-rooms').innerHTML=''; document.getElementById('rm-cyc').innerHTML=''; document.getElementById('rm-list').innerHTML=''; return; }
+  if(!RMROOM || !rooms.some(function(r){ return r.id===RMROOM; })) RMROOM=rooms[0].id;
+  var r=roomOf(RMROOM);
+  document.getElementById('rm-rooms').innerHTML = rooms.length>1 ? rooms.map(function(x){
+    var on=x.id===RMROOM, un=0; Object.keys(S.rmonths||{}).forEach(function(k){ (S.rmonths[k].items||[]).forEach(function(i){ if(i.id===x.id && !i.paid && dueDate(k,i.day)<today) un++; }); });
+    return '<button onclick="pickRMRoom(\''+x.id+'\')" style="padding:8px 13px;border-radius:999px;font-size:var(--fs-small);font-weight:800;'+(on?'background:var(--brand);color:#fff':'background:#EEF1F5;color:var(--ink2)')+'">'+esc(x.ho||roomLabel(x))+(un?' <span style="color:'+(on?'#FFE2E2':'var(--danger)')+'">'+un+'</span>':'')+'</button>'; }).join('') : '';
+  var c0=ymAdd(cycleStart(r), RMCYC*12), c11=ymAdd(c0,11), no=cycleNo(r,c0);
+  document.getElementById('rm-title').textContent = esc(r.ho||roomLabel(r))+' 월세 납부 현황';
+  document.getElementById('rm-cyc').innerHTML = '<button class="rm-nav" onclick="rmCycle(-1)">‹</button><div class="rm-cyct"><b>'+ymLabel(c0)+' ~ '+ymLabel(c11)+'</b>'+(no>0?'<span>계약 '+no+'년차'+(r.start?' · 시작 '+fmtDate(r.start):'')+'</span>':'')+'</div><button class="rm-nav" onclick="rmCycle(1)"'+(c11>=ymAdd(t,12)?' disabled':'')+'>›</button>';
+  var rows=[], done=0, late=0, lateAmt=0;
+  for(var i=0;i<12;i++){
+    var ym=ymAdd(c0,i), it=rItem(ym, r.id), due=dueDate(ym, (it&&it.day)||r.day||1), st, cls, at='';
+    if(it && it.paid){ st='납부 완료'; cls='ok'; at=it.at?mdLabel(it.at):'(날짜 없음)'; done++; }
+    else if(ym>t){ st='예정'; cls='wait'; }
+    else if(it){ if(due<today){ st='미납부'; cls='no'; late++; lateAmt+=it.amt||0; } else { st='예정'; cls='wait'; } }
+    else if(r.start && ym<r.start.slice(0,7)){ st='계약 전'; cls='none'; }
+    else { st='기록 없음'; cls='none'; }
+    var cur=(ym===t);
+    var yr=(i===0 || ym.slice(0,4)!==ymAdd(c0,i-1).slice(0,4)) ? '<em>'+ym.slice(0,4)+'년</em>' : '';
+    rows.push('<tr class="'+cls+(cur?' cur':'')+'" onclick="rmRowTap(\''+ym+'\',\''+r.id+'\')"><td>'+esc(mdLabel(due))+(cur?' <i>이번 달</i>':'')+'</td><td>'+(at||'<span class="dash">—</span>')+'</td><td><b>'+st+'</b>'+(it&&!it.paid&&cls==='no'?'<small>'+Math.round((new Date(today+'T00:00:00')-new Date(due+'T00:00:00'))/86400000)+'일 지남</small>':'')+'</td></tr>');
+  }
+  document.getElementById('rm-sub').innerHTML = esc(r.tname||'이름 없음')+' · 월 '+won(dueAmt(r))+'원 · 매월 '+(r.day||1)+'일'+(r.pay?' '+esc(r.pay):'')+'<br>이 주기 <b style="color:var(--brand)">납부 완료 '+done+'달</b>'+(late?' · <b style="color:var(--danger)">미납부 '+late+'달 · '+won(lateAmt)+'원</b>':'');
+  document.getElementById('rm-list').innerHTML = '<table class="rmt"><thead><tr><th>납부일</th><th>실제 납부일</th><th>상태</th></tr></thead><tbody>'+rows.join('')+'</tbody></table>'+
+    '<p class="sub" style="margin-top:10px;font-weight:600;color:var(--ink3)">줄을 누르면 받았다고 표시하거나 문자를 보낼 수 있어요. 지난 달인데 기록이 없으면 눌러서 만들 수 있어요.</p>';
 }
 var rdYm='', rdId='';
 function rItem(ym,id){ var r=null; ((S.rmonths[ym]||{}).items||[]).forEach(function(x){ if(x.id===id) r=x; }); return r; }
@@ -3727,7 +3767,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1030-10';
+var APP_BUILD='1030-11';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
