@@ -105,6 +105,11 @@ p{font-size:var(--fs-body);color:var(--ink2);line-height:1.6}
 .btn.help{background:var(--help)}.btn.warn{background:var(--warn)}.btn.danger{background:var(--danger)}
 .btn.small{min-height:52px;font-size:calc(var(--fs-btn) - 2px)}
 .btn + .btn{margin-top:10px}
+/* (10/30) 얇은 단추 : 내 호실 아래 단추들 */
+.btn.slim{min-height:46px;padding:8px 14px;border-radius:12px;font-size:calc(var(--fs-btn) - 2px)}
+.btn.gray.slim{background:#F3F4F6;border:1px solid #E4E6E9}
+#rl-more{margin-top:10px}
+#rl-more .btn + .btn{margin-top:8px}
 .linkbtn{display:block;width:100%;text-align:center;font-size:var(--fs-small);
   color:var(--ink2);font-weight:700;text-decoration:none;margin-top:16px;padding:6px}
 
@@ -437,12 +442,12 @@ body{flex-direction:column;justify-content:flex-start}
   <p class="sub mb" id="rl-sub" style="margin-top:4px"></p>
   <div id="rl-sum"></div>
   <div id="rl-list" style="flex:1"></div>
-  <button class="btn outline" onclick="openRoom(null)">＋ 호실 추가하기</button>
+  <button class="btn outline slim" onclick="openRoom(null)">＋ 호실 추가하기</button>
   <button class="btn" id="rl-done" onclick="finishRooms()">다 넣었어요</button>
   <button class="linkbtn" id="rl-reset" style="color:var(--danger)" onclick="resetAll()">↺ 지우고 처음부터 다시 하기</button>
   <div id="rl-more">
-    <button class="btn gray" onclick="askRemind()">⏰ 문자 보내는 날 정하기</button>
-    <button class="btn gray" onclick="go('me')">내 정보 고치기 (이름·통장·사업자)</button>
+    <button class="btn gray slim" onclick="askRemind()">⏰ 문자 보내는 날 정하기</button>
+    <button class="btn gray slim" onclick="go('me')">내 정보 고치기 (이름·통장·사업자)</button>
   </div>
 </section>
 
@@ -3421,7 +3426,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1030-5';
+var APP_BUILD='1030-6';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
