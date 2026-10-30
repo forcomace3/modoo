@@ -133,20 +133,20 @@ p{font-size:var(--fs-body);color:var(--ink2);line-height:1.6}
 .rd-cal .cl{display:flex;gap:10px;margin-top:6px;font-size:11px;color:var(--ink3);font-weight:700;justify-content:center}
 .rd-cal .cl i{font-style:normal;display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:3px}
 
-.rm-cyc{display:flex;align-items:center;gap:8px;margin:4px 0 10px}
-.rm-nav{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:22px;font-weight:800;color:var(--ink2);flex:0 0 auto}
+.rm-cyc{display:flex;align-items:center;gap:8px;margin:2px 0 6px}
+.rm-nav{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:22px;font-weight:800;color:var(--ink2);flex:0 0 auto}
 .rm-nav[disabled]{opacity:.3}
-.rm-cyct{flex:1;text-align:center;line-height:1.3}.rm-cyct b{font-size:var(--fs-body)}.rm-cyct span{display:block;font-size:12px;color:var(--ink3);font-weight:700}
+.rm-cyct{flex:1;text-align:center;line-height:1.25}.rm-cyct b{font-size:var(--fs-small)}.rm-cyct span{display:block;font-size:12px;color:var(--ink3);font-weight:700}
 .rmt{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:var(--fs-small)}
-.rmt th{background:#F3F4F6;color:var(--ink3);font-weight:800;padding:9px 8px;text-align:left;font-size:12.5px}
-.rmt td{padding:10px 8px;border-top:1px solid var(--line);font-weight:700;vertical-align:middle}
+.rmt th{background:#F3F4F6;color:var(--ink3);font-weight:800;padding:6px 8px;text-align:left;font-size:12px}
+.rmt td{padding:5px 8px;border-top:1px solid var(--line);font-weight:700;vertical-align:middle;line-height:1.3}
 .rmt tr{cursor:pointer}.rmt td:first-child{white-space:nowrap}.rmt td:nth-child(2){color:var(--ink2)}
 .rmt .dash{color:var(--ink3);font-weight:600}
 .rmt td em{display:block;font-style:normal;font-size:10.5px;color:var(--ink3);font-weight:700;line-height:1;margin-bottom:3px}.rmt td i{font-style:normal;font-size:11px;color:var(--info);font-weight:800;margin-left:4px}
 .rmt tr.ok td:last-child b{color:var(--brand-dark)}.rmt tr.no td:last-child b{color:var(--danger)}.rmt tr.wait td:last-child b{color:var(--ink3)}
 .rmt tr.none td{color:var(--ink3);font-weight:600}.rmt tr.none td:last-child b{color:var(--ink3);font-weight:600}
 .rmt tr.cur td{background:var(--brand-light)}.rmt tr.no td{background:var(--danger-light)}
-.rmt td small{display:block;font-size:11px;color:var(--danger);font-weight:700}
+.rmt td small{display:inline;font-size:11px;color:var(--danger);font-weight:700;margin-left:4px}
 
 #docv .dv-sc.dv-txt{background:#fff;text-align:left;padding:14px 16px 90px}
 #docv .dv-txt pre{white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font-family:inherit;font-size:14px;line-height:1.6;margin:0;color:var(--ink)}
@@ -547,9 +547,9 @@ body{flex-direction:column;justify-content:flex-start}
 
 <!-- ================= 호실 임대 돈 확인 ================= -->
 <section class="scr" id="s-rmoney">
-  <h2 id="rm-title">월세 납부 현황</h2>
-  <p class="sub mb" id="rm-sub" style="margin-top:4px;line-height:1.5"></p>
-  <div id="rm-rooms" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px"></div>
+  <h2 id="rm-title" style="font-size:calc(var(--fs-body) + 3px)">월세 납부 현황</h2>
+  <p class="sub" id="rm-sub" style="margin:2px 0 8px;line-height:1.45;font-size:var(--fs-small)"></p>
+  <div id="rm-rooms" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px"></div>
   <div class="rm-cyc" id="rm-cyc"></div>
   <div id="rm-list" style="flex:1"></div>
 </section>
@@ -2351,7 +2351,7 @@ function renderRMoney(){
   }
   document.getElementById('rm-sub').innerHTML = esc(r.tname||'이름 없음')+' · 월 '+won(dueAmt(r))+'원 · 매월 '+(r.day||1)+'일'+(r.pay?' '+esc(r.pay):'')+'<br>이 주기 <b style="color:var(--brand)">납부 완료 '+done+'달</b>'+(late?' · <b style="color:var(--danger)">미납부 '+late+'달 · '+won(lateAmt)+'원</b>':'');
   document.getElementById('rm-list').innerHTML = '<table class="rmt"><thead><tr><th>납부일</th><th>실제 납부일</th><th>상태</th></tr></thead><tbody>'+rows.join('')+'</tbody></table>'+
-    '<p class="sub" style="margin-top:10px;font-weight:600;color:var(--ink3)">줄을 누르면 받았다고 표시하거나 문자를 보낼 수 있어요. 지난 달인데 기록이 없으면 눌러서 만들 수 있어요.</p>';
+    '<p class="sub" style="margin-top:8px;font-size:12px;font-weight:600;color:var(--ink3)">줄을 누르면 받았다고 표시하거나 문자를 보낼 수 있어요. 지난 달인데 기록이 없으면 눌러서 만들 수 있어요.</p>';
 }
 var rdYm='', rdId='';
 function rItem(ym,id){ var r=null; ((S.rmonths[ym]||{}).items||[]).forEach(function(x){ if(x.id===id) r=x; }); return r; }
@@ -2519,7 +2519,7 @@ function rTogglePaid(){
 
 /* ---------- 내 호실 ---------- */
 function renderRList(){
-  ensureRMonth();
+  ensureRMonth(); try{ if(ctextAutoAll()) toast('계약서 글에서 비어 있던 정보를 채웠어요'); }catch(e){}
   document.getElementById('rl-title').textContent = S.setupDone ? '내 호실' : '호실 '+S.rooms.length+'곳을 넣었습니다';
   var rls=document.getElementById('rl-sub'); rls.textContent = S.setupDone ? '' : '더 있으면 추가하시고, 다 넣었으면 아래 단추를 눌러주세요'; rls.style.display = S.setupDone ? 'none' : '';
   var rg=groupBy(S.rooms, function(r){ return r.bname||'건물'; });
@@ -2716,8 +2716,17 @@ function hoNorm(v){
   s=s.replace(/^에이/,'A').replace(/^비(?=\d)/,'B').replace(/^씨/,'C').replace(/^디/,'D').replace(/^이(?=\d)/,'E');
   var m=s.match(/([A-Za-z]?\s?-?\s?\d{2,5}\s*호?)/); return m ? m[1].replace(/\s/g,'').toUpperCase() : '';
 }
+function leaseNorm(text){
+  var t=String(text||'').replace(/\r/g,'');
+  t=t.replace(/[ \t\u00a0]{3,}/g,'\n');                                             /* 띄어쓰기 3칸 이상 = 줄 바꿈 */
+  t=t.replace(/\s*(\[\s*(?:임대인|임차인|개업공인중개사|공인중개사|중개사|특약\s*사항)\s*\])\s*/g,'\n$1\n');
+  t=t.replace(/([^\n])(제\s*\d+\s*조\s*\[)/g,'$1\n$2');
+  t=t.replace(/(부동산의\s*표시|계약\s*내용)\s*(?=\S)/g,'$1\n');
+  t=t.replace(/([^\n가-힣A-Za-z0-9])((?:사무소\s*소재지|사무소\s*명칭|대표자\s*성명|대표자|사업자등록번호|주민등록번호|법인등록번호|등록번호|소속공인중개사|전화번호|생년월일|상호|성명|주소|전화)\s*[:：])/g,'$1\n$2');
+  return t;
+}
 function parseLease(text){
-  var t=String(text||'').replace(/\r/g,''), F={}, warn=[];
+  var t=leaseNorm(text), F={}, warn=[];
   var loc=lineVal(t,'소재지|소 재 지|주소지|부동산 소재지'); if(loc) F.addr=loc;
   var part=lineVal(t,'임대부분|임대할 부분|임대할부분'); var ho=hoNorm(part); if(ho) F.ho=ho;
   var dep=lineVal(t,'보증금|임대보증금|보 증 금'); if(dep){ var dv=moneyIn(dep); if(dv) F.deposit=dv; }
@@ -2725,7 +2734,7 @@ function parseLease(text){
   if(rentL){
     var rv=moneyIn(rentL); if(rv) F.rent=rv;
     if(/(VAT|부가세|부가가치세)\s*\(?\s*별도/i.test(rentL)) F.vat='sep'; else if(/(VAT|부가세|부가가치세)\s*\(?\s*포함/i.test(rentL)) F.vat='incl';
-    var dd=rentL.match(/매\s*월\s*(\d{1,2})\s*일/); if(dd) F.day=Number(dd[1]);
+    var dd=rentL.match(/매\s*월\s*(\d{1,2})\s*일/); if(dd) F.day=Number(dd[1]); else if(/매\s*월\s*말/.test(rentL)) F.day=31;
     if(/후불/.test(rentL)) F.pay='후불'; else if(/선불/.test(rentL)) F.pay='선불';
   }
   /* 기간 : 존속기간 문단의 첫 날짜 = 시작, 끝 날짜 = 끝 */
@@ -2739,8 +2748,8 @@ function parseLease(text){
     var sp=t.slice(si).split('\n').slice(1), out=[];
     for(var i=0;i<sp.length;i++){
       var L=sp[i].trim(); if(!L) continue;
-      if(/^본 계약에 대하여|^\[|^\d{4}\s*년\s*\d{1,2}\s*월\s*\d{1,2}\s*일\s*$/.test(L)) break;
-      if(/(은행|뱅크|농협|신협|새마을|우체국)\s*.*\d{2,}[\-\s]\d{2,}/.test(L)){ F.bank=L.replace(/^[■□●\-\s]+|[■□●\s]+$/g,''); continue; }
+      if(/^본\s*계약(에|을)|^\[|^\d{4}\s*년\s*\d{1,2}\s*월\s*\d{1,2}\s*일\s*\.?\s*$/.test(L)) break;
+      if(/(은행|뱅크|농협|신협|새마을|우체국)\s*.*\d{2,}[\-\s]\d{2,}/.test(L)){ F.bank=L.replace(/^[■□●\-\s(]+|[■□●\s)]+$/g,''); continue; }
       out.push(L.replace(/^\d+\s*[.)]\s*|^[\-•·]\s*/,''));
     }
     if(out.length) F.special=out.join('\n');
@@ -2750,7 +2759,8 @@ function parseLease(text){
   /* 임차인 · 임대인 */
   var TB=partyBlock(t,'임차인');
   if(TB){
-    var tn=lineVal(TB,'성명|성 명|법인명|상호|이름'); if(tn) F.tname=tn;
+    var tn=lineVal(TB,'성명|성 명|법인명|이름')||lineVal(TB,'상호'); if(tn) F.tname=tn;
+    var tbz=lineVal(TB,'상호|법인명'); if(tbz && tbz!==tn) F.tbizname=tbz;
     var tt=lineVal(TB,'전화번호|전화|연락처|휴대폰'); if(tt) F.ttel=tt;
     var ta=lineVal(TB,'주소|주 소'); if(ta) F.taddr=ta;
     var tr=lineVal(TB,'주민등록번호|주민번호|법인등록번호|생년월일'); var trd=tr.replace(/[^0-9]/g,'');
@@ -2760,7 +2770,7 @@ function parseLease(text){
   var AB=partyBlock(t,'개업공인중개사')||partyBlock(t,'공인중개사')||partyBlock(t,'중개사');
   if(AB){
     var an=lineVal(AB,'사무소 명칭|사무소명칭|사무소명|상호|명칭'); if(an) F.aname=an;
-    var ar=lineVal(AB,'대표자|대표|성명|이름'); if(ar) F.arep=ar;
+    var ar=lineVal(AB,'대표자 성명|대표자성명|대표자|대표|성명|이름'); if(ar) F.arep=ar;
     var at=lineVal(AB,'전화번호|전화|연락처'); if(at) F.atel=at;
   }
   var LB=partyBlock(t,'임대인');
@@ -2775,6 +2785,8 @@ var CT_ROWS=[
   {k:'trrn',   n:'임차인 주민번호', show:function(v){ return rrnMask(v); }},
   {k:'ttel',   n:'임차인 전화'},
   {k:'taddr',  n:'임차인 주소'},
+  {k:'tbizno', n:'임차인 사업자번호', show:function(v){ return bizFmt(v); }},
+  {k:'tbizname',n:'임차인 상호'},
   {k:'aname',  n:'중개 부동산'},
   {k:'arep',   n:'중개인'},
   {k:'atel',   n:'부동산 연락처'},
@@ -2795,9 +2807,23 @@ var CT_ROWS=[
 ];
 function ctCur(r, k){
   if(k==='laddr') return S.owner.addr||''; if(k==='lrrn') return S.owner.rrn||''; if(k==='bank') return S.owner.bank||'';
+  if(k==='tbizno') return (r.tbiz&&r.tbiz.no)||''; if(k==='tbizname') return (r.tbiz&&r.tbiz.name)||'';
   if(k==='aname') return (r.agent&&r.agent.name)||''; if(k==='arep') return (r.agent&&r.agent.rep)||''; if(k==='atel') return (r.agent&&r.agent.tel)||'';
   if(k==='trrn') return r.trrn||''; return r[k]==null?'':r[k];
 }
+/* 넣어 둔 계약서 글에서 비어 있는 칸(중개 부동산·임차인 전화·주소·주민번호·사업자·선후불)만 자동으로 채움 */
+function ctextAuto(r){
+  if(!r || !r.ctext || r.ctextAutoV>=2) return false;
+  var F=parseLease(r.ctext), ch=false, A=r.agent||{};
+  if(!A.name && !A.rep && !A.tel && (F.aname||F.arep||F.atel)){ r.agent={name:F.aname||'', rep:F.arep||'', tel:F.atel||''}; ch=true; }
+  if(!r.ttel && F.ttel){ r.ttel=F.ttel; ch=true; }
+  if(!r.taddr && F.taddr){ r.taddr=F.taddr; ch=true; }
+  if(!r.trrn && F.trrn){ r.trrn=F.trrn; ch=true; }
+  if(!(r.tbiz&&r.tbiz.no) && F.tbizno){ r.tbiz=r.tbiz||{}; r.tbiz.no=F.tbizno; if(F.tbizname && !r.tbiz.name) r.tbiz.name=F.tbizname; ch=true; }
+  if(!r.pay && F.pay){ r.pay=F.pay; ch=true; }
+  r.ctextAutoV=2; return ch;
+}
+function ctextAutoAll(){ var n=0; (S.rooms||[]).forEach(function(r){ if(ctextAuto(r)) n++; }); if(n){ save(); } return n; }
 var CT={id:null, F:null, text:''};
 function ctextEdit(id){
   var r=findRoom(id); if(!r) return;
@@ -2840,6 +2866,7 @@ function ctextApply(){
     if(!c.checked) return; var k=c.getAttribute('data-ck'), v=F[k]; n++;
     if(k==='laddr') S.owner.addr=v; else if(k==='lrrn') S.owner.rrn=v; else if(k==='bank') S.owner.bank=v;
     else if(k==='tbizno'){ r.tbiz=r.tbiz||{}; r.tbiz.no=v; }
+    else if(k==='tbizname'){ r.tbiz=r.tbiz||{}; r.tbiz.name=v; }
     else if(k==='aname'||k==='arep'||k==='atel'){ r.agent=r.agent||{}; r.agent[{aname:'name',arep:'rep',atel:'tel'}[k]]=v; }
     else r[k]=v;
   });
@@ -3821,7 +3848,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1030-12';
+var APP_BUILD='1030-14';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
