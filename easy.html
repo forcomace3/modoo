@@ -105,6 +105,34 @@ p{font-size:var(--fs-body);color:var(--ink2);line-height:1.6}
 .btn.help{background:var(--help)}.btn.warn{background:var(--warn)}.btn.danger{background:var(--danger)}
 .btn.small{min-height:52px;font-size:calc(var(--fs-btn) - 2px)}
 .btn + .btn{margin-top:10px}
+/* (10/30) 호실 한 곳의 월세 화면 : 글씨·여백 줄이고 달력으로 실제 입금일 고르기 */
+#s-rdue h2.rd-h{font-size:calc(var(--fs-body) + 2px) !important;line-height:1.3;margin:0 0 2px}
+#s-rdue .rd-h .sub{font-size:var(--fs-small);margin-top:2px}
+#s-rdue .rd-box{padding:10px 14px;margin-top:8px}
+#s-rdue .rd-box p{font-weight:800;font-size:var(--fs-small)}
+#s-rdue .rd-amt{font-size:calc(var(--fs-body) + 8px);font-weight:800;margin-top:2px;line-height:1.2}
+#s-rdue .rd-brk{font-size:12.5px;color:var(--ink3);font-weight:700;margin-top:2px}
+#s-rdue .rd-acts{margin-top:10px}
+#s-rdue .rd-row2{display:flex;gap:8px;margin-top:8px}#s-rdue .rd-row2 .btn{margin:0;flex:1}
+#s-rdue .btn.slim{min-height:44px;font-size:calc(var(--fs-btn) - 3px)}
+#s-rdue .box.mt{padding:10px 12px}#s-rdue .box.mt p{font-size:var(--fs-small)}
+#s-rdue .label{font-size:12.5px}
+.rd-cal{margin-top:10px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:8px 10px 10px}
+.rd-cal .ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.rd-cal .ch b{font-size:var(--fs-small)}.rd-cal .ch span{font-size:12px;color:var(--ink3);font-weight:700}
+.rd-cal .ch button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:16px;font-weight:800;color:var(--ink2)}
+.rd-cal .cg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.rd-cal .cg i{font-style:normal;font-size:11px;color:var(--ink3);font-weight:700;padding:2px 0}
+.rd-cal .cg i:first-child{color:var(--danger)}.rd-cal .cg i:nth-child(7){color:var(--info)}
+.rd-cal .cg button{height:34px;border-radius:8px;border:0;background:none;font-size:13px;font-weight:700;color:var(--ink);position:relative}
+.rd-cal .cg button.o{color:#C4C8CE;font-weight:600}
+.rd-cal .cg button.due{box-shadow:inset 0 0 0 1.5px var(--warn)}
+.rd-cal .cg button.td{color:var(--info)}
+.rd-cal .cg button.sel{background:var(--brand);color:#fff;font-weight:800}
+.rd-cal .cg button.fut{color:#C4C8CE}
+.rd-cal .cl{display:flex;gap:10px;margin-top:6px;font-size:11px;color:var(--ink3);font-weight:700;justify-content:center}
+.rd-cal .cl i{font-style:normal;display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:3px}
+
 .rm-cyc{display:flex;align-items:center;gap:8px;margin:4px 0 10px}
 .rm-nav{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:22px;font-weight:800;color:var(--ink2);flex:0 0 auto}
 .rm-nav[disabled]{opacity:.3}
@@ -528,22 +556,22 @@ body{flex-direction:column;justify-content:flex-start}
 
 <!-- ================= 호실 한 곳의 월세 ================= -->
 <section class="scr" id="s-rdue">
-  <h2 id="rd2-title"></h2>
-  <div class="box cc mt" id="rd2-box" style="padding:18px">
-    <p style="font-weight:700" id="rd2-state"></p>
-    <div style="font-size:calc(var(--fs-giant) - 12px);font-weight:800;margin-top:6px" id="rd2-amt"></div>
-    <div class="sub" style="margin-top:4px;font-weight:700" id="rd2-break"></div>
+  <h2 id="rd2-title" class="rd-h"></h2>
+  <div class="box cc rd-box" id="rd2-box">
+    <p id="rd2-state"></p>
+    <div class="rd-amt" id="rd2-amt"></div>
+    <div class="rd-brk" id="rd2-break"></div>
   </div>
-  <div class="mt2">
-    <button class="btn" id="rd2-pay" onclick="rTogglePaid()">✓ 받았어요</button>
-    <div id="rd2-acts">
-      <button class="btn outline" id="rd2-call">📞 전화 걸기</button>
-      <button class="btn outline" id="rd2-sms">💬 문자 보내기</button>
+  <div id="rd2-cal" class="rd-cal"></div>
+  <div class="rd-acts">
+    <button class="btn slim" id="rd2-pay" onclick="rTogglePaid()">✓ 받았어요</button>
+    <div id="rd2-acts" class="rd-row2">
+      <button class="btn outline slim" id="rd2-call">📞 전화</button>
+      <button class="btn outline slim" id="rd2-sms">💬 안내 문자</button>
     </div>
   </div>
   <div id="rd2-log"></div>
   <div id="rd2-tax"></div>
-  <div class="box mt"><p class="sub" style="font-weight:600;line-height:1.65">문자 내용은 <b>미리 써 뒀어요.</b><br>누르기만 하시면 됩니다.</p></div>
   <div class="grow"></div>
 </section>
 
@@ -2441,26 +2469,52 @@ function openRDue(ym,id){
   rdYm=ym; rdId=id;
   var due=dueDate(ym,it.day), late=(!it.paid && due<todayStr()), tel=telOf({tel:it.ttel});
   document.getElementById('rd2-title').innerHTML = esc(it.label)+'<br>'+esc(it.tname||'')+
-    '<div class="sub" style="font-weight:700;margin-top:4px">'+parseInt(ym.split('-')[1],10)+'월분 · '+mdLabel(due)+'까지</div>';
+    '<div class="sub" style="font-weight:700">'+parseInt(ym.split('-')[1],10)+'월분 · 납부일 '+mdLabel(due)+'</div>';
   var box=document.getElementById('rd2-box');
-  box.className='box cc mt '+(it.paid?'g':(late?'r':''));
-  document.getElementById('rd2-state').textContent = it.paid ? ('받았어요'+(it.at?' · '+mdLabel(it.at):'')) : (late?'아직 안 들어왔어요':'받을 예정이에요');
+  box.className='box cc rd-box '+(it.paid?'g':(late?'r':''));
+  document.getElementById('rd2-state').textContent = it.paid ? ('납부 완료'+(it.at?' · '+mdLabel(it.at)+' 입금':'')) : (late?'미납부 · '+(-daysTo(due))+'일 지남':'예정');
   document.getElementById('rd2-amt').textContent = won(it.amt)+'원';
   document.getElementById('rd2-break').textContent = '월세 '+won(it.rent)+'원'+(it.fee?' + 관리비 '+won(it.fee)+'원':'');
   var pay=document.getElementById('rd2-pay');
-  pay.textContent = it.paid ? '아직 안 받았어요 (되돌리기)' : '✓ 받았어요';
-  pay.className = it.paid ? 'btn gray' : 'btn';
+  pay.textContent = it.paid ? '안 받은 것으로 되돌리기' : '✓ 오늘 받았어요';
+  pay.className = it.paid ? 'btn gray slim' : 'btn slim';
+  RDCAL=''; rdCal();
   document.getElementById('rd2-acts').classList.toggle('hidden', !!it.paid);
   document.getElementById('rd2-call').onclick=function(){ if(tel) facOpen('tel:'+tel); else toast('전화번호가 없어요'); };
-  document.getElementById('rd2-sms').textContent = '💬 월세 안내 문자 보내기';
+  document.getElementById('rd2-sms').textContent = '💬 안내 문자';
   document.getElementById('rd2-sms').onclick=function(){ smsMenu(ym,id); };
   renderRDueLog(it); renderRDueTax(ym,id);
   go('rdue');
 }
+/* (10/30) 실제 입금일 달력 : 누르면 그 날짜로 '받았어요' 표시. 받은 상태에서 다른 날 누르면 날짜만 바꿈 */
+var RDCAL='';
+function rdCal(ym){
+  var it=rItem(rdYm,rdId), box=document.getElementById('rd2-cal'); if(!it||!box) return;
+  RDCAL=ym||RDCAL||(it.paid&&it.at?it.at.slice(0,7):rdYm);
+  var p=RDCAL.split('-').map(Number), first=new Date(p[0],p[1]-1,1), dow=first.getDay(), last=new Date(p[0],p[1],0).getDate();
+  var due=dueDate(rdYm,it.day), today=todayStr(), sel=it.paid?it.at:'';
+  var h='<div class="ch"><button onclick="rdCal(\''+ymAdd(RDCAL,-1)+'\')">‹</button><div style="text-align:center"><b>'+ymLabel(RDCAL)+'</b><br><span>'+(it.paid?'받은 날을 바꾸려면 다른 날을 누르세요':'실제로 들어온 날을 누르세요')+'</span></div><button onclick="rdCal(\''+ymAdd(RDCAL,1)+'\')"'+(RDCAL>=today.slice(0,7)?' disabled style="opacity:.3"':'')+'>›</button></div><div class="cg">'+
+    ['일','월','화','수','목','금','토'].map(function(x){ return '<i>'+x+'</i>'; }).join('');
+  for(var k=0;k<dow;k++) h+='<button class="o" disabled></button>';
+  for(var d=1; d<=last; d++){
+    var ds=RDCAL+'-'+String(d).padStart(2,'0'), cls=[];
+    if(ds===due) cls.push('due'); if(ds===today) cls.push('td'); if(ds===sel) cls.push('sel'); if(ds>today) cls.push('fut');
+    h+='<button class="'+cls.join(' ')+'"'+(ds>today?' disabled':'')+' onclick="rdPaidOn(\''+ds+'\')">'+d+'</button>';
+  }
+  h+='</div><div class="cl"><span><i style="box-shadow:inset 0 0 0 1.5px var(--warn)"></i>납부일 '+mdLabel(due)+'</span><span><i style="background:var(--brand)"></i>받은 날</span><span style="color:var(--info)">오늘</span></div>';
+  box.innerHTML=h;
+}
+function rdPaidOn(ds){
+  var it=rItem(rdYm,rdId); if(!it) return;
+  if(it.paid && it.at===ds){ toast('이미 이 날로 표시돼 있어요'); return; }
+  var was=it.paid; it.paid=true; it.at=ds; save();
+  toast(was ? '받은 날을 '+mdLabel(ds)+'로 바꿨어요' : mdLabel(ds)+'에 받았다고 표시했어요');
+  openRDue(rdYm, rdId);
+}
 function rTogglePaid(){
   var it=rItem(rdYm,rdId); if(!it) return;
   it.paid=!it.paid; it.at = it.paid ? todayStr() : '';
-  save(); toast(it.paid?'받았다고 표시했어요':'아직으로 되돌렸어요'); RMV=rdYm; go('money');
+  save(); toast(it.paid?'오늘 받았다고 표시했어요':'아직 안 받은 것으로 되돌렸어요'); if(it.paid) openRDue(rdYm,rdId); else { RMV=rdYm; go('money'); }
 }
 
 /* ---------- 내 호실 ---------- */
@@ -2809,9 +2863,6 @@ function roomCardHtml(r, multi){
     row('임차인', esc(r.tname||'이름 없음'))+
     idLine+
     row('전화번호', r.ttel?esc(r.ttel):none)+
-    row('부동산', (r.agent&&r.agent.name)?esc(r.agent.name):none)+
-    row('중개인', (r.agent&&r.agent.rep)?esc(r.agent.rep):none)+
-    row('부동산 연락처', (r.agent&&r.agent.tel)?'<a href="tel:'+esc(telOf({tel:r.agent.tel}))+'" style="color:var(--brand-dark)">📞 '+esc(r.agent.tel)+'</a>':none)+
     row('계약기간', (r.start?esc(fmtDate(r.start)):'?')+' ~ '+(r.end?esc(fmtDate(r.end)):'?'))+
     row('계약상태', L ? '<b style="color:'+(L.warn?'var(--warn-text)':(L.implied?'var(--info)':'var(--brand-dark)'))+'">'+L.label+'</b>' : none)+
     row('계약종료', L ? esc(fmtDate(L.end))+' · <b style="color:'+(L.warn?'var(--danger)':'inherit')+'">D-'+L.d+'일</b>'+(L.implied?' <span class="sub" style="color:var(--ink3)">(갱신된 기간)</span>':'') : none)+
@@ -2824,6 +2875,9 @@ function roomCardHtml(r, multi){
     '<button class="ra" onclick="openRenew(\''+r.id+'\')">🔄 임대차계약서 갱신하기</button>'+
     '<button class="ra" onclick="'+(tel?'facOpen(\'sms:'+tel+'\')':'toast(\'전화번호가 없어요\')')+'">💬 임차인 문자 보내기</button>'+
     '<button class="ra" onclick="'+(tel?'facOpen(\'tel:'+tel+'\')':'toast(\'전화번호가 없어요\')')+'">📞 임차인 전화하기</button>'+
+    row('부동산', (r.agent&&r.agent.name)?esc(r.agent.name):none)+
+    row('중개인', (r.agent&&r.agent.rep)?esc(r.agent.rep):none)+
+    row('부동산 연락처', (r.agent&&r.agent.tel)?'<a href="tel:'+esc(telOf({tel:r.agent.tel}))+'" style="color:var(--brand-dark)">📞 '+esc(r.agent.tel)+'</a>':none)+
   '</div>';
   return h;
 }
@@ -3767,7 +3821,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1030-11';
+var APP_BUILD='1030-12';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
