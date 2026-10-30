@@ -105,6 +105,28 @@ p{font-size:var(--fs-body);color:var(--ink2);line-height:1.6}
 .btn.help{background:var(--help)}.btn.warn{background:var(--warn)}.btn.danger{background:var(--danger)}
 .btn.small{min-height:52px;font-size:calc(var(--fs-btn) - 2px)}
 .btn + .btn{margin-top:10px}
+/* (10/30) 할 일(호실 홈) 촘촘하게 */
+#s-rhome .rh-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0 0 8px}
+#s-rhome .rh-top h1{font-size:calc(var(--fs-body) + 5px);margin:0;line-height:1.3}
+#s-rhome .rh-top .sub{font-size:12.5px}
+#s-rhome .rh-sum{padding:10px 14px}
+#s-rhome .rh-sum .m{font-size:12.5px;font-weight:800;color:var(--brand-dark)}
+#s-rhome .rh-sum .t{font-size:calc(var(--fs-body) + 3px);font-weight:800;color:var(--brand-dark);line-height:1.3;margin-top:1px}
+#s-rhome .rh-sum .s{font-size:12.5px;font-weight:700;color:var(--brand-dark);margin-top:2px}
+#s-rhome .rh-sum .btn{min-height:40px;margin-top:8px;font-size:calc(var(--fs-btn) - 4px);border-radius:10px}
+#s-rhome .label{margin-top:10px !important;font-size:12.5px}
+#s-rhome .card{padding:9px 12px;margin-bottom:6px}
+#s-rhome .card .ho{font-size:var(--fs-body)}#s-rhome .card .nn{font-size:12.5px;line-height:1.35}#s-rhome .card .rt{font-size:var(--fs-small)}
+#s-rhome .ck{padding:8px 12px 9px;margin-bottom:6px;border:1.5px solid;border-radius:12px}
+#s-rhome .ck .l1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+#s-rhome .ck .l1 b{font-size:var(--fs-body)}#s-rhome .ck .l1 span{font-size:12px;font-weight:800;white-space:nowrap}
+#s-rhome .ck .l2{font-size:12.5px;color:var(--ink2);font-weight:600;margin-top:1px}
+#s-rhome .ck .bs{display:flex;gap:6px;margin-top:7px}
+#s-rhome .ck .bs button{flex:1;min-height:36px;border-radius:9px;font-size:13px;font-weight:800;padding:0 8px}
+#s-rhome .ck .bs .ok{background:var(--brand);color:#fff;border:0}
+#s-rhome .ck .bs .dn{background:#fff;color:var(--danger);border:1.5px solid var(--danger)}
+#s-rhome .ck .lg{font-size:11.5px;color:var(--ink3);font-weight:700;margin-top:5px;text-align:center}
+
 /* (10/30) 호실 한 곳의 월세 화면 : 글씨·여백 줄이고 달력으로 실제 입금일 고르기 */
 #s-rdue h2.rd-h{font-size:calc(var(--fs-body) + 2px) !important;line-height:1.3;margin:0 0 2px}
 #s-rdue .rd-h .sub{font-size:var(--fs-small);margin-top:2px}
@@ -525,13 +547,12 @@ body{flex-direction:column;justify-content:flex-start}
 
 <!-- ================= 호실 임대 홈 ================= -->
 <section class="scr" id="s-rhome">
-  <p class="sub" id="rh-sub"></p>
-  <h1 style="margin:6px 0 18px">안녕하세요<br><span id="rh-name"></span>님</h1>
-  <div class="box g" style="padding:20px">
-    <p style="font-weight:800;margin-bottom:6px" id="rh-month"></p>
-    <h2 style="color:var(--brand-dark)" id="rh-task"></h2>
-    <p class="sub mt" style="color:var(--brand-dark);font-weight:700" id="rh-task-sub"></p>
-    <button class="btn" style="margin-top:16px" onclick="RMV=null;go('money')">입금 확인하기</button>
+  <div class="rh-top"><h1>안녕하세요, <span id="rh-name"></span>님</h1><p class="sub" id="rh-sub"></p></div>
+  <div class="box g rh-sum">
+    <p class="m" id="rh-month"></p>
+    <div class="t" id="rh-task"></div>
+    <p class="s" id="rh-task-sub"></p>
+    <button class="btn" onclick="RMV=null;go('money')">입금 확인하기 ›</button>
   </div>
   <div id="rh-today"></div>
   <button class="card hidden mt" id="rh-unpaid" style="border-color:var(--danger);background:var(--danger-light)" onclick="RMV=null;go('money')">
@@ -2207,18 +2228,14 @@ function renderCheck(){
   var box=document.getElementById('rh-check'); if(!box) return;
   var L=payChecks();
   if(!L.length){ box.innerHTML=''; return; }
-  var h='<div class="label" style="margin-top:16px">입금 확인 <span style="color:var(--ink3);font-weight:600">· 통장에 들어왔는지 봐주세요</span></div>';
+  var h='<div class="label">입금 확인 <span style="color:var(--ink3);font-weight:600">· 통장에 들어왔는지 봐주세요</span></div>';
   L.forEach(function(x){
     var t0=(x.late===0);
-    h+='<div class="box" style="padding:14px 15px;margin-bottom:10px;border:2px solid '+(t0?'var(--warn)':'var(--danger)')+';background:'+(t0?'var(--warn-light)':'var(--danger-light)')+'">'+
-      '<div style="font-size:calc(var(--fs-body) + 2px);font-weight:800">'+esc(x.it.label)+'</div>'+
-      '<div style="font-size:var(--fs-small);color:var(--ink2);font-weight:600;margin-top:2px">'+esc(x.it.tname||'세입자')+' · '+won(x.it.amt)+'원 · '+
-      (t0?'<b style="color:var(--warn-text)">오늘이 받는 날이에요</b>':'<b style="color:var(--danger)">'+mdLabel(x.due)+' 받을 돈 · '+x.late+'일 지남</b>')+'</div>'+
-      '<div style="display:flex;gap:8px;margin-top:12px">'+
-        '<button class="btn" style="flex:1;margin:0" onclick="payGot(\''+x.ym+'\',\''+x.it.id+'\')">✓ 들어왔어요</button>'+
-        '<button class="btn outline" style="flex:1;margin:0;color:var(--danger);border-color:var(--danger);background:#fff" onclick="payDun(\''+x.ym+'\',\''+x.it.id+'\')">💬 '+Math.min((x.it.dunN||0)+1,3)+'차 독촉 문자</button>'+
-      '</div>'+
-      (function(){ var L=sendLogOf(x.it).filter(function(e){ return e.k!=='notice'; }); if(!L.length) return ''; return '<p class="sub cc" style="margin-top:8px;font-weight:700">'+L.slice(-3).map(function(e){ return (SEND_NAME[e.k]||e.k)+' 보냄 '+mdLabel(e.d); }).join(' · ')+(x.it.dunned===todayStr()?' · <b>오늘 보냈어요</b>':'')+'</p>'; })()+
+    h+='<div class="ck" style="border-color:'+(t0?'var(--warn)':'var(--danger)')+';background:'+(t0?'var(--warn-light)':'var(--danger-light)')+'">'+
+      '<div class="l1"><b>'+esc(x.it.label)+'</b><span style="color:'+(t0?'var(--warn-text)':'var(--danger)')+'">'+(t0?'오늘 받는 날':mdLabel(x.due)+' · '+x.late+'일 지남')+'</span></div>'+
+      '<div class="l2">'+esc(x.it.tname||'세입자')+' · '+won(x.it.amt)+'원</div>'+
+      '<div class="bs"><button class="ok" onclick="payGot(\''+x.ym+'\',\''+x.it.id+'\')">✓ 들어왔어요</button><button class="dn" onclick="payDun(\''+x.ym+'\',\''+x.it.id+'\')">💬 '+Math.min((x.it.dunN||0)+1,3)+'차 독촉 문자</button></div>'+
+      (function(){ var L=sendLogOf(x.it).filter(function(e){ return e.k!=='notice'; }); if(!L.length) return ''; return '<p class="lg">'+L.slice(-3).map(function(e){ return (SEND_NAME[e.k]||e.k)+' '+mdLabel(e.d); }).join(' · ')+(x.it.dunned===todayStr()?' · <b>오늘 보냈어요</b>':'')+'</p>'; })()+
       '</div>';
   });
   box.innerHTML=h;
@@ -2276,8 +2293,8 @@ function renderRHome(){
   document.getElementById('rh-name').textContent=S.owner.name||'사장';
   var paid=M.items.filter(function(x){ return x.paid; });
   document.getElementById('rh-month').textContent=mm+'월 월세';
-  document.getElementById('rh-task').innerHTML = !M.items.length ? '받을 호실이<br>없습니다'
-    : (paid.length===M.items.length ? '모두<br>들어왔습니다' : M.items.length+'곳 중 '+paid.length+'곳<br>들어왔어요');
+  document.getElementById('rh-task').innerHTML = !M.items.length ? '받을 호실이 없습니다'
+    : (paid.length===M.items.length ? '모두 들어왔습니다' : M.items.length+'곳 중 '+paid.length+'곳 들어왔어요');
   document.getElementById('rh-task-sub').textContent = M.items.length
     ? '받을 돈 '+won(sumAmt(M.items))+'원 · 받은 돈 '+won(sumAmt(paid))+'원' : '호실을 넣거나 빈 방 표시를 풀어 주세요';
   var u=rUnpaid(), ub=document.getElementById('rh-unpaid');
@@ -2987,20 +3004,22 @@ function renderHist(r){
 /* 홈·목록에 쓰는 카드 한 줄 */
 function leaseCard(r){
   if(r.start && !r.vacant && r.start>todayStr()) return '<button class="card" style="border-color:var(--warn);background:var(--warn-light)" onclick="openRInfo(\''+r.id+'\')"><div style="min-width:0"><div class="ho">'+esc(roomLabel(r))+'</div><div class="nn" style="color:var(--warn-text)">계약이 '+fmtDate(r.start)+'에 시작해요 · 그때까지는 월세 목록에 안 나와요<br>날짜가 잘못됐다면 눌러서 \'정보 고치기\'로 바로잡아 주세요</div></div><span class="rt" style="color:var(--warn-text)">시작 전</span></button>';
-  var I=leaseInfo(r); if(!needsAction(I)) return '';
-  var over=(I.kind==='over');
-  return '<button class="card" style="'+(over?'border-color:var(--danger);background:var(--danger-light)':'border-color:var(--warn);background:var(--warn-light)')+'" onclick="leaseSheet(\''+r.id+'\')">'+
+  /* (10/30) 묵시적 갱신 중이면 '지났어요'가 아니라 이어진 기간 기준으로, 끝나기 90일 안일 때만 알림 */
+  var L=leaseState(r); if(!L || !L.warn) return '';
+  var col=L.implied?'var(--info)':'var(--warn-text)', bg=L.implied?'var(--info-light)':'var(--warn-light)', bd=L.implied?'var(--info)':'var(--warn)';
+  return '<button class="card" style="border-color:'+bd+';background:'+bg+'" onclick="leaseSheet(\''+r.id+'\')">'+
     '<div style="min-width:0"><div class="ho">'+esc(roomLabel(r))+'</div>'+
-    '<div class="nn" style="color:'+(over?'var(--danger)':'var(--warn-text)')+'">'+(over?'계약 기간이 지났어요 · ':'계약이 곧 끝나요 · ')+mdLabel(r.end)+(r.tname?'<br>'+esc(r.tname):'')+'</div></div>'+
-    '<span class="rt" style="color:'+(over?'var(--danger)':'var(--warn-text)')+'">'+(over?I.span+'<br>지남':(I.kind==='today'?'오늘':I.span+'<br>남음'))+'</span></button>';
+    '<div class="nn" style="color:'+col+'">'+(L.implied?L.label.replace(' · 종료예정','')+' · 이번 기간 '+mdLabel(L.end)+' 끝':'계약이 곧 끝나요 · '+mdLabel(L.end))+(r.tname?' · '+esc(r.tname):'')+'</div></div>'+
+    '<span class="rt" style="color:'+col+'">'+(L.d===0?'오늘':'D-'+L.d)+'</span></button>';
 }
 function leaseSheet(id){
   var r=findRoom(id); if(!r) return;
   var I=leaseInfo(r);
   if(!I){ closeSheet(); openRoom(id); return; }
-  var over=(I.kind==='over');
+  var over=(I.kind==='over'), L=leaseState(r);
+  var head = (L && L.implied) ? ('<b style="color:var(--info)">'+L.label.replace(' · 종료예정','')+'</b><br>같은 조건으로 이어진 기간이 '+fmtDate(L.end)+'에 끝나요'+(L.d>0?' (D-'+L.d+')':'')) : I.head;
   sheet('<h2 class="cc">'+esc(roomLabel(r))+'</h2>'+
-    '<div class="box '+(over?'r':'y')+' mt cc"><p style="font-weight:800">'+I.head+'</p>'+
+    '<div class="box '+((L&&L.implied)?'b':(over?'r':'y'))+' mt cc"><p style="font-weight:800">'+head+'</p>'+
     '<p class="sub" style="margin-top:6px;font-weight:700">'+esc(r.tname||'세입자 이름 없음')+' · '+(r.start?fmtDate(r.start)+' ~ ':'~ ')+fmtDate(r.end)+'</p></div>'+
     '<button class="btn" style="margin-top:14px" onclick="closeSheet();openRenew(\''+id+'\')">🔄 계약 갱신하기</button>'+
     '<button class="btn outline" onclick="renewText(\''+id+'\')">💬 세입자에게 갱신 문자 보내기</button>'+
@@ -3848,7 +3867,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1030-14';
+var APP_BUILD='1030-15';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
