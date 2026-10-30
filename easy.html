@@ -42,7 +42,7 @@
 .card.rc .rl>span:first-child{color:var(--ink3);font-weight:700;flex:0 0 auto}
 .card.rc .rl>span:last-child{font-weight:700;text-align:right;min-width:0;overflow-wrap:anywhere}
 .card.rc .rrb{border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 7px;font:inherit;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer;margin-left:4px}
-.card.rc .rab{display:flex;justify-content:space-between;align-items:center;cursor:default}
+.card.rc .ra.rab{display:flex;justify-content:space-between;align-items:center;cursor:default}
 .card.rc .rab button{border:0;background:none;font:inherit;font-weight:800;color:var(--brand-dark);cursor:pointer;padding:0 2px}
 .card.rc .rab i{font-style:normal;color:var(--ink3);margin:0 6px}
 .card.rc .ra{display:block;width:100%;text-align:left;padding:11px 0;border:0;border-top:1px solid var(--line);background:none;font:inherit;font-size:var(--fs-small);font-weight:800;color:var(--brand-dark);cursor:pointer}
@@ -2392,7 +2392,7 @@ function rTogglePaid(){
 function renderRList(){
   ensureRMonth();
   document.getElementById('rl-title').textContent = S.setupDone ? '내 호실' : '호실 '+S.rooms.length+'곳을 넣었습니다';
-  document.getElementById('rl-sub').textContent = S.setupDone ? '눌러서 고칠 수 있어요' : '더 있으면 추가하시고, 다 넣었으면 아래 단추를 눌러주세요';
+  var rls=document.getElementById('rl-sub'); rls.textContent = S.setupDone ? '' : '더 있으면 추가하시고, 다 넣었으면 아래 단추를 눌러주세요'; rls.style.display = S.setupDone ? 'none' : '';
   var rg=groupBy(S.rooms, function(r){ return r.bname||'건물'; });
   /* 요약 : 보증금·월세 합계 */
   var act=S.rooms.filter(function(r){ return !r.vacant; });
@@ -2400,9 +2400,9 @@ function renderRList(){
   act.forEach(function(r){ dep+=(r.deposit||0); mon+=dueAmt(r); vat+=vatOf(r); });
   var vacCnt=S.rooms.length-act.length;
   document.getElementById('rl-sum').innerHTML = S.rooms.length ?
-    '<div class="box g" style="padding:14px 16px;margin-bottom:14px">'+
-      '<p style="font-weight:800">호실 '+S.rooms.length+'곳'+(rg.length>1?' · 건물 '+rg.length+'곳':'')+(vacCnt?' · 빈 방 '+vacCnt:'')+'</p>'+
-      '<p class="sub" style="margin-top:6px;font-weight:700;line-height:1.7">다달이 받는 돈 <b style="color:var(--brand-dark)">'+won(mon)+'원</b>'+(vat?' (부가세 '+won(vat)+'원 포함)':'')+
+    '<div class="box g" style="padding:9px 14px;margin:10px 0 12px">'+
+      '<p style="font-weight:800;line-height:1.35">호실 '+S.rooms.length+'곳'+(rg.length>1?' · 건물 '+rg.length+'곳':'')+(vacCnt?' · 빈 방 '+vacCnt:'')+'</p>'+
+      '<p class="sub" style="margin-top:2px;font-weight:700;line-height:1.4">다달이 받는 돈 <b style="color:var(--brand-dark)">'+won(mon)+'원</b>'+(vat?' (부가세 '+won(vat)+'원 포함)':'')+
       '<br>보증금 모두 <b>'+won(dep)+'원</b></p></div>' : '';
   document.getElementById('rl-list').innerHTML = rg.map(function(g){
     var head = '<div class="ghead"><b>'+esc(g.key)+'</b> <span class="sub" style="font-weight:600;color:var(--ink3)">· '+g.items.length+'곳</span>'+(g.items[0].addr?'<div class="gaddr">'+esc(g.items[0].addr)+'</div>':'')+'</div>';
@@ -2433,7 +2433,7 @@ function rentState(r){
   var ym=thisYm(), M=(S.rmonths||{})[ym], it=null, mo=parseInt(ym.slice(5),10);
   if(M) (M.items||[]).forEach(function(x){ if(x.id===r.id) it=x; });
   var older=0; Object.keys(S.rmonths||{}).forEach(function(k){ if(k>=ym) return; (S.rmonths[k].items||[]).forEach(function(x){ if(x.id===r.id && !x.paid) older++; }); });
-  var tail = older ? ' · <b style="color:var(--danger)">밀린 달 '+older+'</b>' : '';
+  var tail = older ? ' · <b style="color:var(--danger);white-space:nowrap">밀린 달 '+older+'</b>' : '';
   if(!it) return '<span style="color:var(--ink3)">이번 달 받을 돈 없음</span>'+tail;
   if(it.paid) return '<span style="color:var(--brand-dark)">✅ '+mo+'월분 입금 완료'+(it.at?' ('+esc(fmtDate(String(it.at).slice(0,10)))+')':'')+'</span>'+tail;
   var due=dueDate(ym, it.day||r.day||1), dl=daysTo(due);
@@ -2472,7 +2472,8 @@ function roomCardHtml(r, multi){
     row('계약상태', L ? '<b style="color:'+(L.warn?'var(--warn-text)':(L.implied?'var(--info)':'var(--brand-dark)'))+'">'+L.label+'</b>' : none)+
     row('계약종료', L ? esc(fmtDate(L.end))+' · <b style="color:'+(L.warn?'var(--danger)':'inherit')+'">D-'+L.d+'일</b>'+(L.implied?' <span class="sub" style="color:var(--ink3)">(갱신된 기간)</span>':'') : none)+
     row('보증금', won(r.deposit||0)+'원')+
-    row('임대료', '월 '+won(dueAmt(r))+'원'+(vat?' <span class="sub" style="color:var(--ink3)">(부가세 '+won(vat)+'원 포함)</span>':'')+' · 매월 '+(r.day||1)+'일')+
+    row('임대료', '월 '+won(dueAmt(r))+'원'+(vat?' <span class="sub" style="color:var(--ink3);white-space:nowrap">(부가세 '+won(vat)+'원 포함)</span>':''))+
+    row('임대료 받는 날', '매월 '+(r.day||1)+'일')+
     row('납입상태', rentState(r))+
     (r.use==='biz' ? '<button class="ra" onclick="roomTaxGo(\''+r.id+'\')">🧾 세금계산서 발행하기</button>' : '')+
     '<div class="ra rab"><span>📄 임대차계약서</span><span><button onclick="contractOrigOpen(\''+r.id+'\')">원본 보기</button><i>/</i><button onclick="contractOpen(\''+r.id+'\')">텍스트 보기</button></span></div>'+
@@ -3420,7 +3421,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1030-4';
+var APP_BUILD='1030-5';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
