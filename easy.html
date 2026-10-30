@@ -903,7 +903,7 @@ body{flex-direction:column;justify-content:flex-start}
    - 화면이 열릴 때 서버에 저장된 자료를 받아 쓰고
    - 고칠 때마다 1초 뒤 서버에 자동 저장합니다 (관리자·관리소장 공용)
    ========================================================= */
-var FAC_API="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/easy",FAC_SITE=location.href.replace(/[?#].*$/,"").replace(/[^\/]*$/,"");var FAC=(function(){var tk="",owner="",view=false;try{if(new URLSearchParams(location.search).get("me"))sessionStorage.removeItem("fc_view");}catch(e){}try{var v=JSON.parse(sessionStorage.getItem("fc_view")||"null");if(v&&v.tk&&v.owner){tk=v.tk;owner=v.owner;view=true;}}catch(e){}if(!view){try{var s=JSON.parse(localStorage.getItem("fc_owner")||"null");if(s&&s.tk)tk=s.tk;}catch(e){}}try{history.replaceState(null,"",location.pathname);}catch(e){}if(!tk)return null;var out=null;try{var x=new XMLHttpRequest();x.open("GET",FAC_API+"?api=fac&tk="+encodeURIComponent(tk)+(view?"&owner="+encodeURIComponent(owner):""),false);x.send();var j=JSON.parse(x.responseText);if(j&&j.ok)out={url:FAC_API,site:FAC_SITE,tk:tk,rev:j.rev,state:j.state,role:j.role,page:"fac",owner:j.owner,ownerName:j.ownerName||"",ownerPhone:j.ownerPhone||"",view:view};else if(j&&j.auth){try{if(view)sessionStorage.removeItem("fc_view");else localStorage.removeItem("fc_owner");}catch(e){}}else window.FAC_ERR=(j&&j.error)||"자료를 불러오지 못했습니다.";}catch(e){window.FAC_ERR="인터넷 연결을 확인해 주세요.";}return out;})();
+var FAC_API="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/easy",FAC_SITE=location.href.replace(/[?#].*$/,"").replace(/[^\/]*$/,"");var FAC=(function(){var tk="",owner="",view=false;try{if(new URLSearchParams(location.search).get("me"))sessionStorage.removeItem("fc_view");}catch(e){}try{var v=JSON.parse(sessionStorage.getItem("fc_view")||"null");if(v&&v.tk&&v.owner){tk=v.tk;owner=v.owner;view=true;}}catch(e){}if(!view){try{var at=Number(sessionStorage.getItem("fc_owner_at")||0);if(at&&Date.now()-at<1800000)tk=sessionStorage.getItem("fc_owner_tk")||"";if(!tk){sessionStorage.removeItem("fc_owner_tk");sessionStorage.removeItem("fc_owner_at");}}catch(e){}try{var o0=JSON.parse(localStorage.getItem("fc_owner")||"null");if(o0&&o0.tk){delete o0.tk;localStorage.setItem("fc_owner",JSON.stringify(o0));}}catch(e){}}try{history.replaceState(null,"",location.pathname);}catch(e){}if(!tk)return null;var out=null;try{var x=new XMLHttpRequest();x.open("GET",FAC_API+"?api=fac&tk="+encodeURIComponent(tk)+(view?"&owner="+encodeURIComponent(owner):""),false);x.send();var j=JSON.parse(x.responseText);if(j&&j.ok)out={url:FAC_API,site:FAC_SITE,tk:tk,rev:j.rev,state:j.state,role:j.role,page:"fac",owner:j.owner,ownerName:j.ownerName||"",ownerPhone:j.ownerPhone||"",view:view};else if(j&&j.auth){try{if(view)sessionStorage.removeItem("fc_view");else{sessionStorage.removeItem("fc_owner_tk");sessionStorage.removeItem("fc_owner_at");}}catch(e){}}else window.FAC_ERR=(j&&j.error)||"자료를 불러오지 못했습니다.";}catch(e){window.FAC_ERR="인터넷 연결을 확인해 주세요.";}return out;})();
 var __facRev = FAC ? FAC.rev : 0, __facTimer = null, __facPending = null, __facBusy = false;
 function facUrl(page){ return (FAC ? FAC.site : '') + (page==='facpro'?'pro.html':'easy.html'); }
 function facGo(page){ var u = facUrl(page); try{ window.open(u, '_top'); }catch(e){ location.href = u; } }
@@ -3346,7 +3346,7 @@ function taxIssueGo(id, ym){
 }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1015-1';
+var APP_BUILD='1030-1';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
@@ -3526,7 +3526,7 @@ function ownerPost(body, done){
 }
 function ownerEnter(j){
   try{ sessionStorage.removeItem('fc_view'); }catch(e){}
-  try{ localStorage.setItem('fc_owner', JSON.stringify({tk:j.tk, name:j.name||'', phone:j.phone||''})); }
+  try{ sessionStorage.setItem('fc_owner_tk', j.tk); sessionStorage.setItem('fc_owner_at', String(Date.now())); localStorage.setItem('fc_owner', JSON.stringify({name:j.name||'', phone:j.phone||''})); }
   catch(e){ ownerErr('lg','이 휴대폰에 저장할 수 없습니다. 사생활 보호 모드를 꺼 주세요.'); return; }
   facOpen(FAC_SITE + 'easy.html');
 }
@@ -3557,7 +3557,7 @@ function ownerJoin(){
 function ownerLogout(){
   facFlush(function(){
     /* 로그인 정보는 지우고, 다음에 편하도록 전화번호만 남깁니다 */
-    try{ localStorage.setItem('fc_owner', JSON.stringify({phone:(FAC&&FAC.ownerPhone)||''})); }catch(e){}
+    try{ localStorage.setItem('fc_owner', JSON.stringify({phone:(FAC&&FAC.ownerPhone)||''})); sessionStorage.removeItem('fc_owner_tk'); sessionStorage.removeItem('fc_owner_at'); }catch(e){}
     facOpen(FAC_SITE + 'easy.html');
   });
 }
@@ -3625,6 +3625,13 @@ function doReset(){
   go('splash', true);
 }
 
+/* (10/30) 건물주 로그인은 이 탭에서만 유지 : 30분 동안 아무것도 안 하면 저장하고 로그인 화면으로 */
+var OWNER_IDLE=30*60*1000;
+function ownerTouch(){ try{ if(sessionStorage.getItem('fc_owner_tk')) sessionStorage.setItem('fc_owner_at', String(Date.now())); }catch(e){} }
+function ownerIdleCheck(){ if(!FAC || FAC.view) return; try{ var at=Number(sessionStorage.getItem('fc_owner_at')||0); if(at && Date.now()-at>OWNER_IDLE){ toast('30분 동안 쓰지 않아 안전하게 로그아웃했어요'); setTimeout(ownerLogout, 800); } }catch(e){} }
+['click','keydown','touchstart','input'].forEach(function(ev){ document.addEventListener(ev, ownerTouch, {passive:true, capture:true}); });
+document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible') ownerIdleCheck(); });
+setInterval(ownerIdleCheck, 60000); ownerTouch();
 /* ---------- 시작 ---------- */
 load();
 if(FAC && S.setupDone && S.month.ym && S.month.ym!==thisYm()) rollMonth();
