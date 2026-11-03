@@ -658,12 +658,9 @@
       <div class="btns"><button class="btn ghost" id="apkUpBtn">설치 파일 올리기</button><button class="btn primary" id="apkSendBtn">설치 링크 보내기</button></div>
     </div>
     <div class="setrow">
-      <h3>AI 자동 인식 (선택)</h3>
-      <p>Anthropic API 키를 넣으면 영수증 사진에서 날짜·금액·품목을 자동으로 읽어옵니다. 키는 이 기기에만 저장됩니다. 없어도 직접 입력·첨부는 됩니다.</p>
-      <div class="field"><label>API 키</label><input type="password" id="apiKey" placeholder="sk-ant-..." /></div>
-      <div class="field"><label>모델</label><input type="text" id="model" placeholder="claude-haiku-4-5-20251001" /></div>
-      <div class="btns"><button class="btn primary" id="saveKeyBtn">저장</button></div>
-      <div class="ok hide" id="keySaved" style="margin-top:10px">저장되었습니다.</div>
+      <h3>AI 자동 인식</h3>
+      <p>영수증 사진의 날짜·금액·품목은 서버가 읽어 줍니다. 따로 넣을 키는 없습니다.</p>
+      <div class="hide"><input type="password" id="apiKey" /><input type="text" id="model" /><button id="saveKeyBtn"></button><div id="keySaved"></div></div>
     </div>
   </div>
 
@@ -839,7 +836,7 @@
   function refreshHeader(){$("siteName").textContent=isStaff()?"모두의관리":(isMgr()?curLabel():curLabel()+" ▾");}
   function refreshKeyStatus(){
     var el=$("keyStatus");
-    if(cfg.apiKey){el.innerHTML="AI 자동 인식이 켜져 있습니다.";}
+    if(true){el.innerHTML="📷 영수증 사진을 찍으면 날짜·품목·금액을 자동으로 읽어요.";}
     else{el.innerHTML='AI 자동 인식을 쓰려면 <a class="goSet2">설정에서 API 키</a>를 넣으세요. 없어도 직접 입력·첨부는 됩니다.';var g=el.querySelector(".goSet2");if(g)g.addEventListener("click",function(){setView("settings");});}
   }
 
@@ -959,28 +956,22 @@
     var atts=[];for(var i=0;i<files.length;i++){var a=await readFile(files[i]);if(a)atts.push(a);}
     var d=blankDraft();d.attachments=atts;
     var img=atts.filter(function(a){return a.type.indexOf("image")===0;})[0];
-    if(img&&cfg.apiKey){$("captureIntro").classList.add("hide");$("scanImg").src=img.dataUrl;$("scanBox").classList.remove("hide");await extract(img.dataUrl.split(",")[1],img.type,d);}
-    else{startDraft(d);if(img&&!cfg.apiKey)showErr("API 키가 없어 자동 인식은 건너뛰었습니다. 아래에 직접 입력하세요.");}
+    if(img){$("captureIntro").classList.add("hide");$("scanImg").src=img.dataUrl;$("scanBox").classList.remove("hide");await extract(img.dataUrl.split(",")[1],img.type,d);}
+    else startDraft(d);
   }
   function showErr(m){var el=$("capErr");el.textContent=m;el.classList.remove("hide");}
 
+  /* (11/3) 영수증 읽기는 서버가 함 (AI 키는 서버에만 있음) */
   async function extract(b64,mediaType,d){
-    var prompt="다음 영수증/구매내역 이미지에서 지출 정보를 추출하세요. 반드시 아래 JSON 형식으로만, 설명 없이 JSON 하나만 응답:\n"+
-      '{"date":"YYYY-MM-DD","vendor":"구매처","items":"품목 요약","amount":정수금액,"category":"소모품비|복리후생비|교육훈련비|미화용품비|회식비|수선비|기타","memo":""}\n'+
-      "amount는 총결제금액. date 못 찾으면 빈 문자열. 커피믹스·간식·쌀은 복리후생비, 청소·미화용품은 미화용품비, A4용지·문구는 소모품비.";
     try{
-      var res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":cfg.apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-        body:JSON.stringify({model:getModel(),max_tokens:1000,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:mediaType,data:b64}},{type:"text",text:prompt}]}]})});
-      var data=await res.json();if(data.error)throw new Error(data.error.message||"API 오류");
-      var text=(data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("\n");
-      var s=text.indexOf("{"),e=text.lastIndexOf("}");if(s===-1||e===-1)throw new Error("parse");
-      var p=JSON.parse(text.slice(s,e+1));
-      var amt=(p.amount!=null?nInt(p.amount):0);var sup=amt?Math.round(amt/1.1):"";var v=amt?(amt-sup):"";
+      var p=await cloudPost({action:"receiptRead",image:b64,type:mediaType});
+      var amt=nInt(p.amount)||0,sup=amt?(nInt(p.supply)||Math.round(amt/1.1)):"",v=amt?(amt-(sup||0)):"";
       d.date=p.date||todayISO();d.vendor=p.vendor||"";d.title=p.items||p.vendor||"";
       d.lines=[{name:p.items||"",supply:sup,vat:v,amt:(amt||"")}];
       d.category=CATEGORIES.indexOf(p.category)>=0?p.category:"기타";d.purpose="";d.reference=p.memo||"";
       $("scanBox").classList.add("hide");startDraft(d);
-    }catch(err){$("scanBox").classList.add("hide");startDraft(d);showErr((""+err.message).indexOf("parse")>-1?"자동 인식 실패. 직접 입력해 주세요.":"자동 인식 오류("+err.message+"). 직접 입력하거나 설정을 확인하세요.");}
+      if(!amt)showErr("금액을 읽지 못했어요. 금액을 확인해 넣어 주세요.");
+    }catch(err){$("scanBox").classList.add("hide");startDraft(d);var em=String(err&&err.message||err);showErr("자동 인식 실패: "+em+(em.indexOf("직접 입력")<0?" 직접 입력해 주세요.":""));}
   }
 
   function renderDraftAttach(){
