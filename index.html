@@ -2797,7 +2797,7 @@
       var badge=cp.diffN?'<span class="pr-b warn">⚠ 대조 차이 '+cp.diffN+'명</span>':'<span class="pr-b ok">✓ 앱 계산과 일치</span>';
       return '<div class="pr-card" data-prm="'+esc(mo.month)+'"><div class="pr-top"><b>'+mo.month.replace("-","년 ")+'월</b>'+badge+'</div>'+
         '<div class="pr-grid"><span>인원</span><b>'+t.n+'명</b><span>지급총액</span><b>'+won(t.gross)+'</b><span>공제 합계</span><b>'+won(t.dedSum)+'</b><span>실지급액</span><b>'+won(t.net)+'</b></div>'+
-        '<div class="pr-sub">지급일 '+(mo.payDate?fmtK(mo.payDate):"-")+' · 퇴직충당 '+won(t.sev)+' · 회사부담 4대보험(추정) '+won(t.er)+'</div></div>';}).join("");
+        '<div class="pr-sub">'+((paySummary||[]).some(function(x){return x.month===mo.month;})?'📨 명세서 보냄 · ':'')+'지급일 '+(mo.payDate?fmtK(mo.payDate):"-")+' · 퇴직충당 '+won(t.sev)+' · 회사부담 4대보험(추정) '+won(t.er)+'</div></div>';}).join("");
     el.innerHTML='<div class="card" style="margin-top:0"><div style="font-weight:800;font-size:15px">💰 급여 (부장님 급여대장 기준)</div>'+
       '<p style="font-size:12.5px;color:#6A6A72;line-height:1.6;margin:6px 0 10px">매달 부장님께 받은 급여대장 엑셀을 올리면 그대로 보관합니다. 4대보험은 앱이 2026년 요율로 따로 계산해서 대조하고, 차이가 나면 <b>부장님 값(실지급)</b>을 그대로 씁니다.</p>'+
       '<button class="btn primary" id="prUpBtn" style="width:100%">⬆ 급여대장 엑셀 올리기 (여러 달 한 번에 가능)</button></div>'+
@@ -2821,10 +2821,39 @@
       '<div style="font-size:12.5px;margin:4px 0 6px;font-weight:700;color:'+(cp.diffN?'#9A5B00':'#2E7D4F')+'">'+(cp.diffN?'⚠ 앱 요율 계산과 '+cp.diffN+'명 차이 · 부장님 값으로 처리했습니다':'✓ 4대보험 근로자분이 앱 요율 계산과 모두 일치합니다')+'</div>'+
       '<div style="overflow-x:auto"><table class="grid pr-tbl"><thead><tr><th>이름</th><th>지급총액</th><th>4대보험</th><th>세금</th><th>실지급</th><th>대조 (앱 / 부장님)</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
       '<p style="font-size:11.5px;color:#8A8A92;line-height:1.55;margin:8px 0">앱 계산: 건강 3.595% · 요양 = 건강보험료×13.14% · 연금 4.75%(60세 이상 제외, 상·하한 적용) · 고용 0.9%(65세 이후 채용자 면제) · 10원 미만 절사 · 월중 입사·퇴사 달은 건강·요양·연금 없음. 회사부담은 근로자분과 같은 금액 + 고용안정 0.25%로 추정(산재 제외).<br>올린 파일: '+esc(mo.fileName||"-")+' · '+(mo.savedAt?fmtK(String(mo.savedAt).slice(0,10)):"")+'</p>'+
+      '<button class="btn primary" id="prSlip" style="width:100%;margin-bottom:8px">📨 직원 앱으로 급여명세서 보내기</button>'+
       '<button class="btn ghost" id="prDel" style="width:100%;color:#9A3327">이 달 급여대장 지우기</button><button class="btn primary" id="prClose" style="width:100%;margin-top:8px">닫기</button>');
     $("prClose").addEventListener("click",closeSheet);
+    $("prSlip").addEventListener("click",function(){prSendSlips(m);});
     $("prDel").addEventListener("click",async function(){if(!confirm(m.replace("-","년 ")+"월 급여대장을 지울까요? (엑셀 원본은 그대로 있습니다)"))return;
       try{await cloudPost({action:"payrollDelete",month:m});payrollData=payrollData.filter(function(x){return x.month!==m;});closeSheet();renderPayroll();toast("지웠습니다");}catch(e){toast("실패: "+e.message);}});
+  }
+  // ---------- 급여대장 → 직원별 급여명세서 (직원 앱 '내 급여명세서'로 보냄) ----------
+  function prSlipItems(mo){
+    return (mo.people||[]).map(function(p){var y=p.pay||{},d=p.ded||{};
+      var earn=[["기본급",y.base],["직책수당",y.posAllow],["야간수당",y.night],["면허수당",y.license],["근로자의날수당",y.labor],["시간외수당",y.ot],["연차수당",y.annual],["비과세(식대 등)",p.nontax]].filter(function(x){return x[1];});
+      var ded=[["소득세",d.tax],["지방소득세",d.local],["건강보험",d.health],["국민연금",d.pension],["고용보험",d.employ],["장기요양보험",d.care],["정산 소득세",d.retTax],["정산 지방소득세",d.retLocal]].filter(function(x){return x[1];});
+      return {name:p.name,position:p.pos||"",joinDate:p.join||"",earn:earn,ded:ded,gross:p.gross||0,dedSum:p.dedSum||0,net:p.net||0};});
+  }
+  function prSendSlips(m){
+    var mo=prMonth(m);if(!mo)return;var items=prSlipItems(mo);
+    var names={};employees.forEach(function(x){names[String(x.name).replace(/\s/g,"")]=1;});
+    var miss=items.filter(function(x){return !names[x.name.replace(/\s/g,"")];});
+    var sent=(paySummary||[]).filter(function(x){return x.month===m;})[0];
+    var bad=items.filter(function(x){var e=x.earn.reduce(function(s,a){return s+a[1];},0),dd=x.ded.reduce(function(s,a){return s+a[1];},0);return Math.abs(e-x.gross)>2||Math.abs(dd-x.dedSum)>2||Math.abs(x.gross-x.dedSum-x.net)>2;});
+    openSheet('<h3>📨 '+m.replace("-","년 ")+'월 급여명세서 보내기</h3>'+
+      '<div class="field"><label>직원 앱에 보이는 날 (지급일)</label><input type="date" id="prOpen" value="'+esc(mo.payDate||nextMonth10(m))+'"></div>'+
+      '<div style="font-size:13px;margin:4px 0 8px"><b>'+items.length+'명</b>의 명세서를 급여대장 그대로 만듭니다. 각 직원은 자기 것만 볼 수 있어요.</div>'+
+      items.map(function(x){return '<div class="hm-row" style="cursor:default"><span>'+esc(x.name)+' <span style="font-size:11px;color:#9A9A90">'+esc(x.position)+'</span></span><span class="hm-d">'+won(x.net)+'원</span></div>';}).join("")+
+      (sent?'<div class="err" style="margin-top:10px;background:#FFF3D6;color:#8A5A00;border-color:#F0D493">이 달은 이미 '+sent.count+'명에게 보냈습니다. 보내면 같은 사람 것은 새 명세서로 바뀝니다.</div>':'')+
+      (miss.length?'<div class="err" style="margin-top:10px">직원 명단에 없는 이름: '+miss.map(function(x){return esc(x.name);}).join(", ")+' — 이 사람들은 올라가지 않습니다.</div>':'')+
+      (bad.length?'<div class="err" style="margin-top:10px">합계가 맞지 않는 사람: '+bad.map(function(x){return esc(x.name);}).join(", ")+' — 급여대장을 확인해 주세요.</div>':'')+
+      '<div class="btns" style="margin-top:12px"><button class="btn ghost" id="prSNo">취소</button><button class="btn primary" id="prSGo">보내기</button></div>');
+    $("prSNo").addEventListener("click",closeSheet);
+    $("prSGo").addEventListener("click",async function(){var b=$("prSGo");b.disabled=true;b.textContent="보내는 중…";
+      try{var r=await cloudPost({action:"payslipUpload",month:m,openDate:$("prOpen").value,items:items});
+        closeSheet();toast(r.saved+"명에게 급여명세서를 보냈습니다"+(r.unmatched&&r.unmatched.length?" (이름 불일치 "+r.unmatched.length+"명)":""));try{await cloudPull();}catch(e){}renderPayroll();}
+      catch(er){toast("실패: "+er.message);b.disabled=false;b.textContent="보내기";}});
   }
   async function prUploadFiles(files){
     toast("엑셀을 읽는 중…");var ok=await loadXLSX();if(!ok||!window.XLSX){toast("엑셀 도구를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.");return;}
