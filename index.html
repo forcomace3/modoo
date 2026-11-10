@@ -118,6 +118,7 @@
   .segbar button{flex:1;border:none;background:none;padding:9px 0;border-radius:8px;font-size:13px;font-weight:700;color:#7A7A72;cursor:pointer;font-family:inherit;}
   .segbar button.on{background:#fff;color:#212D64;box-shadow:0 1px 2px rgba(0,0,0,.06);}
   .pickrow{display:flex;gap:10px;margin-bottom:14px;}
+  .pr-card{background:#fff;border:1px solid #E4E1D6;border-radius:14px;padding:13px 14px;margin-top:10px;cursor:pointer}.pr-top{display:flex;justify-content:space-between;align-items:center;font-size:15px}.pr-b{font-size:11.5px;font-weight:800;padding:3px 8px;border-radius:999px}.pr-b.ok{background:#E6F4EC;color:#2E7D4F}.pr-b.warn{background:#FFF1D6;color:#9A5B00}.pr-grid{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:4px 10px;font-size:12.5px;margin-top:8px;color:#6A6A72}.pr-grid b{color:#1C2A27;text-align:right;font-variant-numeric:tabular-nums}.pr-sub{font-size:11.5px;color:#8A8A92;margin-top:6px}table.grid tr.pr-diff td{background:#FFF8E6}table.grid.pr-tbl td small{color:#8A8A92;font-size:10.5px}.pr-opt{background:#F7F6F1;border:1px solid #E4E1D6;border-radius:12px;padding:10px 12px}table.grid tr.pr-row td{background:#F3F6FB}
   .pickrow input{flex:1;border:1px solid #D8D5C8;border-radius:10px;padding:10px 12px;font-size:15px;background:#fff;font-family:inherit;}
   #printArea{background:#fff;border:1px solid #E4E1D6;border-radius:14px;padding:22px 20px;}
   .doc-title{text-align:center;font-size:20px;font-weight:800;letter-spacing:.06em;margin:0 0 4px;}
@@ -387,7 +388,7 @@
   </div>
   <input id="resignFileInput" type="file" accept="image/*,application/pdf" multiple style="display:none" />
   <input id="sigPhotoInput" type="file" accept="image/*" capture="environment" style="display:none" />
-  <input id="payXlsInput" type="file" accept=".xlsx,.xls" style="display:none" /><input id="payPdfInput" type="file" accept=".pdf,application/pdf" multiple style="display:none" />
+  <input id="payXlsInput" type="file" accept=".xlsx,.xls" style="display:none" /><input id="prXlsInput" type="file" accept=".xlsx,.xls" multiple style="display:none" /><input id="payPdfInput" type="file" accept=".pdf,application/pdf" multiple style="display:none" />
   <input id="draftFileInput" type="file" accept="image/*,application/pdf" multiple style="display:none" />
   <div class="hdr">
     <div class="row">
@@ -497,12 +498,16 @@
       <input type="date" id="pickDate" />
       <input type="month" id="pickMonth" class="hide" />
     </div>
+    <div id="prSetWrap" class="no-print hide" style="margin-bottom:12px"></div>
     <div id="printArea"></div>
     <div class="actionrow no-print">
       <button class="print" id="printBtn">🖨 인쇄 · PDF 저장</button>
       <button class="xls" id="xlsBtn">⬇ 엑셀 저장</button>
     </div>
   </div>
+
+  <!-- (11/9) 급여 -->
+  <div id="v-payroll" class="wrap hide"><div id="prBody"></div></div>
 
   <!-- 문서 -->
   <div id="v-docs" class="wrap hide">
@@ -681,6 +686,7 @@
     <button class="nav-btn on" data-v="capture"><span class="navic">📷</span>입력</button>
     <button class="nav-btn" data-v="list"><span class="navic">📋</span>내역</button>
     <button class="nav-btn" data-v="settlement"><span class="navic">🧾</span>결산</button>
+    <button class="nav-btn" data-v="payroll"><span class="navic">💰</span>급여</button>
     <button class="nav-btn" data-v="docs"><span class="navic">📄</span>문서</button>
     <button class="nav-btn" data-v="field"><span class="navic">🛠️</span>현장</button>
     <button class="nav-btn" data-v="emp"><span class="navic">👥</span>직원</button>
@@ -787,7 +793,7 @@
     empForms.slots=EMP_FORM_SLOTS;
     if(j.role){SESS=SESS||{};if(j.tk)SESS.tk=j.tk;SESS.role=j.role;SESS.name=j.name||SESS.name;SESS.site=j.site||SESS.site||"";saveSess();}
     notices=j.notices||[];roster=j.roster||[];me=j.me||null;supplyTemplate=j.supplyTemplate||"";mgrSites=j.mgrSites||[];
-    payslips=j.payslips||[];myDocs=j.myDocs||[];mySigs=j.mySigs||{};myPosts=j.myPosts||[];paySummary=j.paySummary||[];approvers=j.approvers||[];apprDocs=j.apprDocs||[];
+    payslips=j.payslips||[];myDocs=j.myDocs||[];mySigs=j.mySigs||{};myPosts=j.myPosts||[];paySummary=j.paySummary||[];payrollData=j.payroll||[];if(j.payrollOpt)payrollOpt=j.payrollOpt;approvers=j.approvers||[];apprDocs=j.apprDocs||[];
     if(j.siteDocs&&j.siteDocs.dogup&&j.siteDocs.dogup.laborTotal){DOGUP=j.siteDocs.dogup;PAYROLL=j.siteDocs.payroll;PERPERSON=j.siteDocs.perperson;DOC_XLSX_URL=j.siteDocs.xlsx||"";}
   }
   async function cloudPost(payload){
@@ -813,9 +819,9 @@
   function setView(v){
     if(!role())v="login"; else if(isStaff()){if(v!=="field")v="home";} else if(v==="login"||v==="home")v="capture";
     try{document.querySelector(".app").classList.toggle("on-login",v==="login");document.body.classList.toggle("on-login",v==="login");}catch(e){}
-    if(isMgr()&&["settlement","emp","settings"].indexOf(v)>=0)v="capture";
+    if(isMgr()&&["settlement","emp","settings","payroll"].indexOf(v)>=0)v="capture";
     view=v;
-    ["login","home","notice","capture","list","settlement","docs","emp","settings","field"].forEach(function(x){$("v-"+x).classList.toggle("hide",x!==v);});try{$("fldHome").classList.toggle("hide",!isStaff());}catch(e){}
+    ["login","home","notice","capture","list","settlement","payroll","docs","emp","settings","field"].forEach(function(x){$("v-"+x).classList.toggle("hide",x!==v);});try{$("fldHome").classList.toggle("hide",!isStaff());}catch(e){}
     if(v==="home")renderHome();
     if(v==="notice")renderNotices();
     document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-v")===v);});
@@ -825,6 +831,7 @@
     if(v==="docs")renderDocs();
     if(v==="emp")renderEmp();
     if(v==="settlement")renderSettlement();
+    if(v==="payroll")renderPayroll();
     if(v==="capture"){refreshKeyStatus();renderSiteInfo();renderDocCard();}
     if(v==="settings"){renderSecurity();try{renderSigAdmin();}catch(e){}$("s_url").value=cfg.url||"";$("s_name").value=cfg.name||"";$("s_company").value=cfg.company||"";$("s_site").value=buildings().join(", ");$("s_role1").value=ROLES.role1||"사장";$("s_role2").value=ROLES.role2||"감사";$("apiKey").value=cfg.apiKey||"";$("model").value=getModel();renderFixedSettings();}
     window.scrollTo(0,0);
@@ -1091,6 +1098,8 @@
     var rows=scoped().filter(function(x){return info.test(x.date);}).sort(function(a,b){return a.date<b.date?-1:1;});
     var total=rows.reduce(function(s,x){return s+x.amount;},0);
     var tSupply=rows.reduce(function(s,x){return s+(x.supply||0);},0),tVat=rows.reduce(function(s,x){return s+(x.vat||0);},0);
+    var prW=$("prSetWrap");if(prW){var showPr=isAdmin()&&curType==="monthly";prW.classList.toggle("hide",!showPr);if(showPr){prW.innerHTML=prOptBar("prOptB");prWireOpt($("prOptB"));}}
+    var prR=prSettleRow();if(prR)total+=prR.amount;
     var refs=[];rows.forEach(function(x){(x.attachments||[]).forEach(function(a){refs.push(a);});});
     var refIndexMap={};var ri=0;rows.forEach(function(x){(x.attachments||[]).forEach(function(a){ri++;a.__n=ri;});});
 
@@ -1099,9 +1108,11 @@
       var ap=(x.role1By&&x.role2By)?"완료":((x.role1By||x.role2By)?"진행":"-");
       return '<tr><td>'+(i+1)+'</td><td>'+fmtK(x.date)+'</td><td>'+esc(x.category)+'</td><td class="l">'+esc(x.vendor||"-")+'</td><td class="l">'+esc(x.title||x.items||"-")+'</td><td class="r">'+won(x.amount)+'</td><td>'+rn+'</td><td>'+ap+'</td></tr>';
     }).join("");
-    if(rows.length===0)bodyRows='<tr><td colspan="8" style="padding:16px;color:#9A9A90">해당 기간의 지출이 없습니다.</td></tr>';
+    if(rows.length===0&&!prR)bodyRows='<tr><td colspan="8" style="padding:16px;color:#9A9A90">해당 기간의 지출이 없습니다.</td></tr>';
+    if(prR)bodyRows+='<tr class="pr-row"><td>급</td><td>'+Number(prR.month.slice(5))+'월분</td><td>인건비</td><td class="l">-</td><td class="l">'+esc(prR.label)+'</td><td class="r">'+won(prR.amount)+'</td><td></td><td>-</td></tr>';
 
     var byCat=CATEGORIES.map(function(c){return {name:c,total:rows.filter(function(x){return x.category===c;}).reduce(function(s,x){return s+x.amount;},0)};}).filter(function(c){return c.total>0;});
+    if(prR)byCat.push({name:"인건비(급여)",total:prR.amount});
     var catRows=byCat.map(function(c){return '<tr><td class="l">'+c.name+'</td><td class="r">'+won(c.total)+'</td></tr>';}).join("");
     var doneCnt=rows.filter(function(x){return x.role1By&&x.role2By;}).length;
     var progCnt=rows.filter(function(x){return (x.role1By||x.role2By)&&!(x.role1By&&x.role2By);}).length;
@@ -1134,10 +1145,12 @@
   $("xlsBtn").addEventListener("click",async function(){if(!window.XLSX){toast("엑셀 준비 중…");await loadXLSX();}exportExcel();});
   function exportExcel(){
     var info=periodInfo();var rows=scoped().filter(function(x){return info.test(x.date);}).sort(function(a,b){return a.date<b.date?-1:1;});
-    if(rows.length===0){alert("해당 기간의 지출이 없습니다.");return;}
+    var prX=prSettleRow();
+    if(rows.length===0&&!prX){alert("해당 기간의 지출이 없습니다.");return;}
     var data=rows.map(function(x){var o={"날짜":x.date,"건물":x.site,"계정과목":x.category,"증빙구분":x.evidence,"결제수단":x.payment,"거래처":x.vendor,"사업자번호":x.bizno,"제목/품목":(x.title||x.items),"공급가액":x.supply,"부가세":x.vat,"합계(원)":x.amount,"용도":x.purpose,"작성자":x.createdBy};o[ROLES.role1]=x.role1By?(x.role1By+" "+fmtK(x.role1At)):"";o[ROLES.role2]=x.role2By?(x.role2By+" "+fmtK(x.role2At)):"";o["상태"]=x.status;o["근거자료수"]=(x.attachments||[]).length;return o;});
     var total=rows.reduce(function(s,x){return s+x.amount;},0);
     var tSupply=rows.reduce(function(s,x){return s+(x.supply||0);},0),tVat=rows.reduce(function(s,x){return s+(x.vat||0);},0);
+    if(prX){var pro={"날짜":prX.month,"건물":curLabel(),"계정과목":"인건비","증빙구분":"급여대장","결제수단":"계좌이체","거래처":"","사업자번호":"","제목/품목":prX.label,"공급가액":"","부가세":"","합계(원)":prX.amount,"용도":"","작성자":"","상태":"","근거자료수":""};pro[ROLES.role1]="";pro[ROLES.role2]="";data.push(pro);total+=prX.amount;}
     var tail={"날짜":"","건물":"","계정과목":"","증빙구분":"","결제수단":"","거래처":"","사업자번호":"","제목/품목":"합계","공급가액":tSupply,"부가세":tVat,"합계(원)":total,"용도":"","작성자":"","상태":"","근거자료수":""};tail[ROLES.role1]="";tail[ROLES.role2]="";
     data.push(tail);
     var fn=(curLabel()+"_"+info.label+"_"+todayISO()).replace(/[\\\/\?\*\[\]:]/g,"_");
@@ -2046,7 +2059,7 @@
   // ==================== v9 역할 화면 · 로그인 ====================
   function applyRoleUI(){try{adbarShow(SESS);var hb=document.getElementById("homeBtn");if(hb)hb.textContent=(SESS&&(SESS.role==="admin"||SESS.role==="manager"))?"⌂ 관리자 홈":"⌂ 처음으로";}catch(e){}
     var r=role();
-    var show={admin:["capture","list","settlement","docs","field","emp","settings"],manager:["capture","list","docs","field","notice"],staff:[]}[r]||[];
+    var show={admin:["capture","list","settlement","payroll","docs","field","emp","settings"],manager:["capture","list","docs","field","notice"],staff:[]}[r]||[];
     document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.toggle("hide",show.indexOf(b.getAttribute("data-v"))<0);});
     document.querySelector(".nav").classList.toggle("hide",!show.length);
     document.querySelector(".hdr").classList.toggle("hide",!r);
@@ -2688,6 +2701,153 @@
     var handled=false;try{handled=appBack();}catch(e){handled=false;}
     try{if(APP)APP.backResult(handled);}catch(e){}
   });
+
+
+  // ==================== (11/9) 급여 (본사 관리자 전용) ====================
+  // 부장님 급여대장(엑셀)을 달마다 올려 보관 · 4대보험은 요율로 앱이 따로 계산해 대조 · 차이가 나면 부장님 값(실지급)을 그대로 씀
+  var payrollData=[],payrollOpt={on:false,mode:"gross"};
+  var PR_RATE={health:0.03595,careOfHealth:0.9448/7.19,employ:0.009,pension:0.0475,empStab:0.0025};
+  var PR_MODES={net:"실지급액",gross:"지급총액(세전)",gross_er:"지급총액 + 회사부담 4대보험(추정)",gross_er_sev:"지급총액 + 회사부담 4대보험(추정) + 퇴직충당금"};
+  var PR_SHORT={net:"실지급",gross:"세전",gross_er:"세전+회사부담",gross_er_sev:"세전+회사부담+퇴직충당"};
+  var PR_KEYS=[["health","건강"],["care","요양"],["pension","연금"],["employ","고용"]];
+  function prFl10(x){return Math.floor((Number(x)||0)/10)*10;}
+  function prCap(m){return m<"2026-07"?[400000,6370000]:[410000,6590000];}
+  function prCalc(p,m){
+    var base=(p.gross||0)-(p.nontax||0),c=prCap(m),pb=Math.min(Math.max(Math.floor(base/1000)*1000,c[0]),c[1]);
+    var h=prFl10(base*PR_RATE.health),cr=prFl10(h*PR_RATE.careOfHealth),pe=(p.age>=60)?0:prFl10(pb*PR_RATE.pension),e=prFl10(base*PR_RATE.employ);
+    var j=String(p.join||""),l=String(p.leave||"");
+    if((j.slice(0,7)===m&&j.slice(8,10)!=="01")||(l&&l.slice(0,7)===m&&(p.days||0)<(p.baseDays||0))){h=0;cr=0;pe=0;}
+    if((p.age||0)>=65&&p.ded&&Number(p.ded.employ)===0)e=0;   // 65세 이후 새로 채용된 사람은 고용보험(실업급여) 면제
+    return {health:h,care:cr,pension:pe,employ:e};
+  }
+  function prCompare(mo){
+    var out={rows:[],diffN:0,diffSum:0};
+    (mo.people||[]).forEach(function(p){var c=prCalc(p,mo.month),d=[];
+      PR_KEYS.forEach(function(k){var a=c[k[0]],b=((p.ded||{})[k[0]])||0;if(Math.abs(a-b)>10)d.push({k:k[0],n:k[1],app:a,boss:b});});
+      if(d.length){out.diffN++;out.diffSum+=d.reduce(function(s,x){return s+(x.boss-x.app);},0);}
+      out.rows.push({p:p,calc:c,diffs:d});});
+    return out;
+  }
+  function prTotals(mo){
+    var t={n:0,gross:0,nontax:0,dedSum:0,net:0,sev:0,ins:0,tax:0,er:0};
+    (mo.people||[]).forEach(function(p){var d=p.ded||{},base=(p.gross||0)-(p.nontax||0);
+      t.n++;t.gross+=p.gross||0;t.nontax+=p.nontax||0;t.dedSum+=p.dedSum||0;t.net+=p.net||0;t.sev+=p.sev||0;
+      t.ins+=(d.health||0)+(d.care||0)+(d.pension||0)+(d.employ||0);t.tax+=(d.tax||0)+(d.local||0)+(d.retTax||0)+(d.retLocal||0);
+      t.er+=(d.health||0)+(d.care||0)+(d.pension||0)+(d.employ||0)+prFl10(base*PR_RATE.empStab);});
+    return t;
+  }
+  function prAmount(t,mode){return mode==="net"?t.net:mode==="gross_er"?t.gross+t.er:mode==="gross_er_sev"?t.gross+t.er+t.sev:t.gross;}
+  function prMonth(m){return payrollData.filter(function(x){return x.month===m;})[0]||null;}
+  function prSiteOk(mo){var b=curBuilding();return b==="__ALL__"||!mo.site||mo.site===b;}
+  // 결산(월말)에 넣을 한 줄 : 켜져 있고, 월말 결산이고, 그 달 급여대장이 있을 때만
+  function prSettleRow(){
+    if(!isAdmin()||!payrollOpt.on||curType!=="monthly")return null;
+    var mo=prMonth(pickMonth);if(!mo||!prSiteOk(mo))return null;
+    var t=prTotals(mo);return {month:mo.month,n:t.n,amount:prAmount(t,payrollOpt.mode),label:"급여 "+Number(mo.month.slice(5))+"월분 "+t.n+"명 · "+PR_SHORT[payrollOpt.mode]};
+  }
+  function prOptBar(id){
+    return '<div class="pr-opt" id="'+id+'"><label style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px"><input type="checkbox" class="prOn"'+(payrollOpt.on?" checked":"")+' style="width:18px;height:18px"> 월말 결산에 급여 포함</label>'+
+      '<select class="prMode" style="margin-top:8px;width:100%;padding:9px;border:1px solid #D8D6CC;border-radius:9px;font-family:inherit;font-size:13px">'+Object.keys(PR_MODES).map(function(k){return '<option value="'+k+'"'+(payrollOpt.mode===k?" selected":"")+'>'+PR_MODES[k]+'</option>';}).join("")+'</select></div>';
+  }
+  function prWireOpt(root){
+    var on=root.querySelector(".prOn"),md=root.querySelector(".prMode");
+    function save(){var o={on:!!on.checked,mode:md.value};payrollOpt=o;cloudPost({action:"payrollOpt",opt:o}).then(function(){toast(o.on?"월말 결산에 급여를 포함합니다":"월말 결산에서 급여를 뺐습니다");}).catch(function(e){toast("저장 실패: "+e.message);});if(view==="settlement")renderSettlement();}
+    on.addEventListener("change",save);md.addEventListener("change",save);
+  }
+  function prNorm(v){return String(v==null?"":v).replace(/\s+/g,"");}
+  function prNum(v){var n=Number(v);return isFinite(n)?Math.round(n):0;}
+  function prDate(v){
+    if(v instanceof Date&&!isNaN(v)){return v.getFullYear()+"-"+String(v.getMonth()+1).padStart(2,"0")+"-"+String(v.getDate()).padStart(2,"0");}
+    var m=String(v==null?"":v).match(/(\d{4})\D{1,3}(\d{1,2})\D{1,3}(\d{1,2})/);return m?m[1]+"-"+String(m[2]).padStart(2,"0")+"-"+String(m[3]).padStart(2,"0"):"";
+  }
+  function parsePayrollLedger(wb){
+    var sn=wb.SheetNames.filter(function(n){return prNorm(n)==="급여대장";})[0]||wb.SheetNames.filter(function(n){return /급여대장/.test(n)&&!/착오|\(/.test(n);})[0];
+    if(!sn)return null;
+    var A=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:null});
+    var month="",payDate="";
+    for(var r=0;r<Math.min(A.length,8);r++){var row=A[r]||[];for(var c=0;c<row.length;c++){var t=prNorm(row[c]),k;
+      if(/^귀속년월/.test(t)&&!month){for(k=c+1;k<row.length;k++){if(prNorm(row[k])){var mm=String(row[k]).match(/(\d{4})\D+(\d{1,2})/);if(mm)month=mm[1]+"-"+String(mm[2]).padStart(2,"0");break;}}}
+      if(/^지급일/.test(t)&&!payDate){for(k=c+1;k<row.length;k++){if(prNorm(row[k])){payDate=prDate(row[k]);break;}}}}}
+    var h=-1;for(var i=0;i<Math.min(A.length,25);i++){if((A[i]||[]).some(function(v){return prNorm(v)==="성명";})&&(A[i+1]||[]).some(function(v){return prNorm(v)==="기본급";})){h=i;break;}}
+    if(h<0)return null;
+    var H1=A[h]||[],H2=A[h+1]||[];
+    function col(row,re){for(var c=0;c<row.length;c++){if(re.test(prNorm(row[c])))return c;}return -1;}
+    var C={name:col(H1,/^성명$/),baseDays:col(H1,/^기준일수$/),join:col(H1,/^입사일/),leave:col(H1,/^퇴사일/),gubun:col(H1,/^구분$/),pos:col(H1,/^직책$/),age:col(H1,/^생년월일/),days:col(H1,/^근무일수$/),
+      sub:col(H1,/^소계$/),gross:col(H1,/^지급총액$/),sev:col(H1,/^퇴직충당/),dedSum:col(H1,/^공제액$/),net:col(H1,/^영수액$/),nontax:col(H2,/육아수당|식대|자가운전/),
+      base:col(H2,/^기본급$/),posAllow:col(H2,/^직책수당$/),night:col(H2,/^야간수당$/),license:col(H2,/^면허수당$/),labor:col(H2,/근로자의날/),ot:col(H2,/시간외|연장근로/),annual:col(H2,/^연차수당$/),
+      fam:col(H2,/^총가족수$/),kids:col(H2,/다자녀/),retTax:col(H2,/^(퇴직|연말|중도)정산(소득세|갑근세)$/),retLocal:col(H2,/^(퇴직|연말|중도)정산(지방세|주민세)$/),tax:col(H2,/^소득세$/),local:col(H2,/^(주민세|지방소득세)$/),
+      health:col(H2,/^건강보험$/),pension:col(H2,/^국민연금$/),employ:col(H2,/^고용보험$/),care:col(H2,/^(요양|장기요양|장기요양보험)$/)};
+    if(C.name<0||C.gross<0||C.net<0)return null;
+    function g(row,k){return C[k]>=0?row[C[k]]:null;}
+    var people=[];
+    for(var r2=h+2;r2<A.length;r2++){var rw=A[r2]||[],nm=String(g(rw,"name")||"").trim();
+      if(!nm||/합계|소계/.test(nm))continue;var gross=prNum(g(rw,"gross"));if(gross<=0)continue;
+      people.push({name:nm,gubun:String(g(rw,"gubun")||"").trim(),pos:String(g(rw,"pos")||"").trim(),join:prDate(g(rw,"join")),leave:prDate(g(rw,"leave")),age:prNum(g(rw,"age")),baseDays:prNum(g(rw,"baseDays")),days:prNum(g(rw,"days")),
+        pay:{base:prNum(g(rw,"base")),posAllow:prNum(g(rw,"posAllow")),night:prNum(g(rw,"night")),license:prNum(g(rw,"license")),labor:prNum(g(rw,"labor")),ot:prNum(g(rw,"ot")),annual:prNum(g(rw,"annual"))},
+        sub:prNum(g(rw,"sub")),nontax:prNum(g(rw,"nontax")),gross:gross,sev:prNum(g(rw,"sev")),fam:prNum(g(rw,"fam")),kids:prNum(g(rw,"kids")),
+        ded:{retTax:prNum(g(rw,"retTax")),retLocal:prNum(g(rw,"retLocal")),tax:prNum(g(rw,"tax")),local:prNum(g(rw,"local")),health:prNum(g(rw,"health")),pension:prNum(g(rw,"pension")),employ:prNum(g(rw,"employ")),care:prNum(g(rw,"care"))},
+        dedSum:prNum(g(rw,"dedSum")),net:prNum(g(rw,"net"))});}
+    return {month:month,payDate:payDate,sheet:sn,people:people};
+  }
+  function renderPayroll(){
+    var el=$("prBody");if(!el)return;
+    if(!isAdmin()){el.innerHTML='<div class="empty">본사 관리자만 볼 수 있습니다.</div>';return;}
+    var list=payrollData.slice().sort(function(a,b){return a.month<b.month?1:-1;});
+    var cards=list.map(function(mo){var t=prTotals(mo),cp=prCompare(mo);
+      var badge=cp.diffN?'<span class="pr-b warn">⚠ 대조 차이 '+cp.diffN+'명</span>':'<span class="pr-b ok">✓ 앱 계산과 일치</span>';
+      return '<div class="pr-card" data-prm="'+esc(mo.month)+'"><div class="pr-top"><b>'+mo.month.replace("-","년 ")+'월</b>'+badge+'</div>'+
+        '<div class="pr-grid"><span>인원</span><b>'+t.n+'명</b><span>지급총액</span><b>'+won(t.gross)+'</b><span>공제 합계</span><b>'+won(t.dedSum)+'</b><span>실지급액</span><b>'+won(t.net)+'</b></div>'+
+        '<div class="pr-sub">지급일 '+(mo.payDate?fmtK(mo.payDate):"-")+' · 퇴직충당 '+won(t.sev)+' · 회사부담 4대보험(추정) '+won(t.er)+'</div></div>';}).join("");
+    el.innerHTML='<div class="card" style="margin-top:0"><div style="font-weight:800;font-size:15px">💰 급여 (부장님 급여대장 기준)</div>'+
+      '<p style="font-size:12.5px;color:#6A6A72;line-height:1.6;margin:6px 0 10px">매달 부장님께 받은 급여대장 엑셀을 올리면 그대로 보관합니다. 4대보험은 앱이 2026년 요율로 따로 계산해서 대조하고, 차이가 나면 <b>부장님 값(실지급)</b>을 그대로 씁니다.</p>'+
+      '<button class="btn primary" id="prUpBtn" style="width:100%">⬆ 급여대장 엑셀 올리기 (여러 달 한 번에 가능)</button></div>'+
+      '<div class="card">'+prOptBar("prOptA")+'<p style="font-size:12px;color:#8A8A92;line-height:1.55;margin:8px 0 0">켜면 결산 → 월말 결산에 그 달(귀속월) 급여가 "인건비" 한 줄로 더해집니다. 개인별 금액은 결산에 나오지 않습니다.</p></div>'+
+      (cards||'<div class="empty">아직 올린 급여대장이 없습니다.<br>위 버튼으로 엑셀을 올려 주세요.</div>');
+    $("prUpBtn").addEventListener("click",function(){$("prXlsInput").click();});
+    prWireOpt($("prOptA"));
+    el.querySelectorAll("[data-prm]").forEach(function(c){c.addEventListener("click",function(){openPayrollMonth(c.getAttribute("data-prm"));});});
+  }
+  function openPayrollMonth(m){
+    var mo=prMonth(m);if(!mo)return;var t=prTotals(mo),cp=prCompare(mo);
+    var rows=cp.rows.map(function(x){var p=x.p,d=p.ded||{};
+      var note=x.diffs.length?x.diffs.map(function(df){return df.n+' 앱 '+won(df.app)+' / 부장님 '+won(df.boss);}).join("<br>"):'일치';
+      return '<tr'+(x.diffs.length?' class="pr-diff"':'')+'><td class="l">'+esc(p.name)+'<br><small>'+esc(p.pos||"")+(p.days<p.baseDays?' · '+p.days+'/'+p.baseDays+'일':'')+'</small></td><td class="r">'+won(p.gross)+'</td><td class="r">'+won((d.health||0)+(d.care||0)+(d.pension||0)+(d.employ||0))+'</td><td class="r">'+won((d.tax||0)+(d.local||0)+(d.retTax||0)+(d.retLocal||0))+'</td><td class="r"><b>'+won(p.net)+'</b></td><td class="l" style="font-size:11px">'+note+'</td></tr>';}).join("");
+    openSheet('<h3>💰 '+m.replace("-","년 ")+'월 급여</h3>'+
+      '<table class="grid" style="margin:8px 0"><tbody>'+
+      '<tr><td class="l">인원</td><td class="r">'+t.n+'명</td></tr><tr><td class="l">지급총액(세전)</td><td class="r">'+won(t.gross)+'</td></tr>'+
+      '<tr><td class="l">4대보험 근로자분</td><td class="r">'+won(t.ins)+'</td></tr><tr><td class="l">소득세·지방세</td><td class="r">'+won(t.tax)+'</td></tr>'+
+      '<tr><td class="l">공제 합계</td><td class="r">'+won(t.dedSum)+'</td></tr><tr><td class="l"><b>실지급액</b></td><td class="r"><b>'+won(t.net)+'</b></td></tr>'+
+      '<tr><td class="l">퇴직충당금</td><td class="r">'+won(t.sev)+'</td></tr><tr><td class="l">회사부담 4대보험(추정)</td><td class="r">'+won(t.er)+'</td></tr></tbody></table>'+
+      '<div style="font-size:12.5px;margin:4px 0 6px;font-weight:700;color:'+(cp.diffN?'#9A5B00':'#2E7D4F')+'">'+(cp.diffN?'⚠ 앱 요율 계산과 '+cp.diffN+'명 차이 · 부장님 값으로 처리했습니다':'✓ 4대보험 근로자분이 앱 요율 계산과 모두 일치합니다')+'</div>'+
+      '<div style="overflow-x:auto"><table class="grid pr-tbl"><thead><tr><th>이름</th><th>지급총액</th><th>4대보험</th><th>세금</th><th>실지급</th><th>대조 (앱 / 부장님)</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<p style="font-size:11.5px;color:#8A8A92;line-height:1.55;margin:8px 0">앱 계산: 건강 3.595% · 요양 = 건강보험료×13.14% · 연금 4.75%(60세 이상 제외, 상·하한 적용) · 고용 0.9%(65세 이후 채용자 면제) · 10원 미만 절사 · 월중 입사·퇴사 달은 건강·요양·연금 없음. 회사부담은 근로자분과 같은 금액 + 고용안정 0.25%로 추정(산재 제외).<br>올린 파일: '+esc(mo.fileName||"-")+' · '+(mo.savedAt?fmtK(String(mo.savedAt).slice(0,10)):"")+'</p>'+
+      '<button class="btn ghost" id="prDel" style="width:100%;color:#9A3327">이 달 급여대장 지우기</button><button class="btn primary" id="prClose" style="width:100%;margin-top:8px">닫기</button>');
+    $("prClose").addEventListener("click",closeSheet);
+    $("prDel").addEventListener("click",async function(){if(!confirm(m.replace("-","년 ")+"월 급여대장을 지울까요? (엑셀 원본은 그대로 있습니다)"))return;
+      try{await cloudPost({action:"payrollDelete",month:m});payrollData=payrollData.filter(function(x){return x.month!==m;});closeSheet();renderPayroll();toast("지웠습니다");}catch(e){toast("실패: "+e.message);}});
+  }
+  async function prUploadFiles(files){
+    toast("엑셀을 읽는 중…");var ok=await loadXLSX();if(!ok||!window.XLSX){toast("엑셀 도구를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.");return;}
+    var found=[],bad=[];
+    for(var i=0;i<files.length;i++){var f=files[i];
+      try{var wb=XLSX.read(await f.arrayBuffer(),{type:"array",cellDates:true});var r=parsePayrollLedger(wb);
+        if(!r||!r.people.length||!/^\d{4}-\d{2}$/.test(r.month)){bad.push(f.name);continue;}
+        r.fileName=f.name;r.site=(curBuilding()==="__ALL__"?site():curBuilding());found.push(r);}catch(e){bad.push(f.name);}}
+    if(!found.length){toast("'급여대장' 시트를 찾지 못했습니다");return;}
+    found.sort(function(a,b){return a.month<b.month?-1:1;});
+    var li=found.map(function(r){var t=prTotals(r),cp=prCompare(r);return '<tr><td class="l">'+r.month.replace("-","년 ")+'월'+(prMonth(r.month)?' <small style="color:#9A5B00">(바꿈)</small>':'')+'</td><td class="r">'+t.n+'명</td><td class="r">'+won(t.net)+'</td><td>'+(cp.diffN?'⚠ '+cp.diffN+'명':'✓')+'</td></tr>';}).join("");
+    openSheet('<h3>💰 급여대장 올리기</h3><p style="font-size:12.5px;color:#6A6A72;margin:4px 0 8px">건물: <b>'+esc(found[0].site)+'</b> · 같은 달이 이미 있으면 새 파일로 바꿉니다.</p>'+
+      '<table class="grid"><thead><tr><th>귀속월</th><th>인원</th><th>실지급액</th><th>대조</th></tr></thead><tbody>'+li+'</tbody></table>'+
+      (bad.length?'<p style="font-size:12px;color:#9A3327;margin-top:8px">읽지 못한 파일: '+bad.map(esc).join(", ")+'</p>':'')+
+      '<button class="btn primary" id="prGo" style="width:100%;margin-top:12px">'+found.length+'개월 저장하기</button><button class="btn ghost" id="prNo" style="width:100%;margin-top:8px">취소</button>');
+    $("prNo").addEventListener("click",closeSheet);
+    $("prGo").addEventListener("click",async function(){var b=$("prGo");b.disabled=true;var n=0;
+      for(var k=0;k<found.length;k++){b.textContent="저장하는 중… ("+(k+1)+"/"+found.length+")";
+        try{await cloudPost({action:"payrollSave",month:found[k].month,data:found[k]});n++;}catch(e){toast(found[k].month+" 실패: "+e.message);}}
+      closeSheet();try{await cloudPull();}catch(e){}renderPayroll();toast(n+"개월 급여대장을 저장했습니다");});
+  }
+  $("prXlsInput").addEventListener("change",function(e){var fs=Array.prototype.slice.call(e.target.files||[]);e.target.value="";if(fs.length)prUploadFiles(fs);});
+
 
   // ---------- boot ----------
   (async function(){

@@ -187,6 +187,7 @@ td input.num{text-align:right}
     <button data-e="capture"><span class="ic">📷</span> 지출 입력</button>
     <button data-e="list"><span class="ic">📋</span> 지출 내역</button>
     <button data-e="settlement"><span class="ic">🧾</span> 결산</button>
+    <button data-e="payroll"><span class="ic">💰</span> 급여</button>
     <button data-e="docs"><span class="ic">📄</span> 문서·결재</button>
     <button data-e="field"><span class="ic">🛠️</span> 현장 관리</button>
     <button data-e="emp"><span class="ic">👥</span> 직원</button>
@@ -591,7 +592,7 @@ function render(p){
 }
 function curPage(){ var e=document.querySelector('.page.on'); return e?e.id.slice(2):'dash'; }
 /* ---------- 한 화면에서 둘 다 : 수납·계약(이 파일) / 현장·직원(index.html 을 안에 띄움) ---------- */
-var MODE='pro', EMB_V='', EMP_T={home:['한눈에','관리자 홈'],capture:['현장·직원','지출 입력'],list:['현장·직원','지출 내역'],settlement:['현장·직원','결산'],docs:['현장·직원','문서·결재'],field:['현장·직원','현장 관리'],emp:['현장·직원','직원'],notice:['현장·직원','공지'],settings:['현장·직원','설정'],own:['운영','간편 관리 운영']};
+var MODE='pro', EMB_V='', EMP_T={home:['한눈에','관리자 홈'],capture:['현장·직원','지출 입력'],list:['현장·직원','지출 내역'],settlement:['현장·직원','결산'],payroll:['현장·직원','급여'],docs:['현장·직원','문서·결재'],field:['현장·직원','현장 관리'],emp:['현장·직원','직원'],notice:['현장·직원','공지'],settings:['현장·직원','설정'],own:['운영','간편 관리 운영']};
 function sessRole(){ try{ var s=JSON.parse(localStorage.getItem('fc_sess')||'null'); return (s&&s.role)||''; }catch(e){ return ''; } }
 /* (10/28) 들어온 문에 따라 한쪽만 : 직원 관리(본사 관리자·관리소장) = 현장·직원만 / 시설 종합 관리 = 수납·계약만 */
 var DOOR=(function(){ var q=window.__Q, m=q&&q.get('mode'), d='';
@@ -615,7 +616,7 @@ function setMode(m, v){
   document.getElementById('ymsel').classList.toggle('hide', MODE!=='pro');
   document.getElementById('content').classList.toggle('hide', MODE!=='pro');
   document.getElementById('emb').classList.toggle('on', MODE==='emp');
-  var own=sessRole()==='admin'; document.getElementById('btn-own').classList.toggle('hide', !own); document.getElementById('lbl-own').classList.toggle('hide', !own);
+  var own=sessRole()==='admin'; document.getElementById('btn-own').classList.toggle('hide', !own); document.querySelectorAll('[data-e="payroll"]').forEach(function(b){ b.classList.toggle('hide', !own); }); document.getElementById('lbl-own').classList.toggle('hide', !own);
   /* (10/27) 관리소장: 공지 메뉴 없음 · 공지 내용은 '관리소장 홈'에 모두 */
   document.querySelectorAll('#mnav-emp [data-e="own"]').forEach(function(b){ b.classList.toggle('hide', !own); });
   var mgr=sessRole()==='manager'; document.querySelectorAll('[data-e="notice"]').forEach(function(b){ b.classList.toggle('hide', mgr); });
