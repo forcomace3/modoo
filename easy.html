@@ -431,7 +431,7 @@ body{flex-direction:column;justify-content:flex-start}
   <input class="inp mb" id="rf-ttel" type="tel" inputmode="numeric" placeholder="010-0000-0000">
   <div class="label">세입자 주소 <span style="font-weight:600;color:var(--ink3)">(계약서의 임차인 칸 · 비워도 됩니다)</span></div>
   <input class="inp mb" id="rf-taddr" placeholder="세입자의 주소">
-  <div class="label">세입자 주민등록번호 <span style="font-weight:600;color:var(--ink3)">(계약서에만 쓰여요 · 사업자면 비워 두세요)</span></div>
+  <div class="label">세입자 주민등록번호 <span style="font-weight:600;color:var(--ink3)">(계약서와, 사업자가 아닌 개인에게 세금계산서를 끊을 때 쓰여요 · 사업자면 비워 두세요)</span></div>
   <input class="inp mb" id="rf-trrn" type="tel" inputmode="numeric" maxlength="14" placeholder="000000-0000000" oninput="rrnFmt(this)">
   <div class="label">중개 부동산 <span style="font-weight:600;color:var(--ink3)">(계약서 맨 아래 개업공인중개사 칸 · 분쟁 때 연락)</span></div>
   <input class="inp mb" id="rf-aname" placeholder="부동산 이름 (예: 센터엠공인중개사사무소)">
@@ -2922,7 +2922,7 @@ function roomCardHtml(r, multi){
     row('계약상태', L ? '<b style="color:'+(L.warn?'var(--warn-text)':(L.implied?'var(--info)':'var(--brand-dark)'))+'">'+L.label+'</b>' : none)+
     row('계약종료', L ? esc(fmtDate(L.end))+' · <b style="color:'+(L.warn?'var(--danger)':'inherit')+'">D-'+L.d+'일</b>'+(L.implied?' <span class="sub" style="color:var(--ink3)">(갱신된 기간)</span>':'') : none)+
     row('보증금', won(r.deposit||0)+'원')+
-    row('임대료', '월 '+won(dueAmt(r))+'원'+(vat?' <span class="sub" style="color:var(--ink3);white-space:nowrap">(부가세 '+won(vat)+'원 포함)</span>':''))+
+    row('임대료', '월 '+won(dueAmt(r))+'원'+((vat||r.fee)?' <span class="sub" style="color:var(--ink3);white-space:nowrap">('+[vat?'부가세 '+won(vat)+'원':'', r.fee?'관리비 '+won(r.fee)+'원':''].filter(Boolean).join(' · ')+' 포함)</span>':''))+
     row('임대료 받는 날', '매월 '+(r.day||1)+'일'+(r.pay?' · '+esc(r.pay):''))+
     row('납입상태', rentState(r))+
     '<div class="ra rab"><span>📄 임대차계약서</span><span><button onclick="contractOrigOpen(\''+r.id+'\')">원본 보기</button><i>/</i><button onclick="docvText(\''+r.id+'\')">텍스트 보기</button></span></div>'+
@@ -3765,7 +3765,8 @@ function taxReady(r){
   if(!r || r.use!=='biz') return '';
   var B=r.biz||{}, T=r.tbiz||{};
   if(!B.no) return '이 호실 사업자등록증을 먼저 넣어 주세요.';
-  if(!T.no||!T.name) return '세입자 사업자 정보(사업자번호·상호)를 넣어 주세요.';
+  if(taxPerson(r)) return r.tname ? 'ok' : '세입자 이름을 넣어 주세요.';
+  if(!T.no||!T.name) return '세입자 사업자 정보(사업자번호·상호)를 넣어 주세요. 사업자가 아닌 개인이면 주민등록번호를 넣어 주세요.';
   return 'ok';
 }
 function fmtYmd14(s){ s=String(s||''); return s.length>=8 ? s.slice(0,4)+'.'+parseInt(s.slice(4,6),10)+'.'+parseInt(s.slice(6,8),10) : s; }
@@ -3860,7 +3861,7 @@ function taxIssueAsk(id, ym){
     if(!j.ok){ toast(j.error||'확인하지 못했어요'); return; }
     sheet('<h2 class="cc">'+parseInt(ym.split('-')[1],10)+'월 세금계산서를<br>발행할까요?</h2>'+
       (j.test?'<div class="box y mt cc"><p class="sub" style="font-weight:700;color:var(--warn-text)">연습용(테스트) 서버 · 국세청에 전송되지 않아요</p></div>':'')+
-      '<div class="box mt" style="padding:12px 14px">'+riRow('공급자', esc(j.from))+riRow('받는 곳', esc(j.to)+' <span class="sub" style="color:var(--ink3)">'+esc(bizFmt(j.toNo))+'</span>')+riRow('이메일', j.email?esc(j.email):'<span style="color:var(--warn-text)">없음 (국세청 전송은 됨)</span>')+
+      '<div class="box mt" style="padding:12px 14px">'+riRow('공급자', esc(j.from))+riRow('받는 곳', esc(j.to)+' <span class="sub" style="color:var(--ink3)">'+(j.person?'개인 · '+esc(j.toNo):esc(bizFmt(j.toNo)))+'</span>')+riRow('이메일', j.email?esc(j.email):'<span style="color:var(--warn-text)">없음 (국세청 전송은 됨)</span>')+
       riRow('작성일', fmtYmd14(j.writeDate))+riRow('공급가액', won(j.supply)+'원')+riRow('세액', won(j.tax)+'원')+riRow('합계', '<b>'+won(j.total)+'원</b>')+'</div>'+
       '<p class="sub" style="margin-top:8px;font-weight:600;color:var(--ink3)">발행하면 국세청에 바로 전송되고 취소하려면 수정세금계산서를 끊어야 해요. 금액을 꼭 확인하세요.</p>'+
       '<button class="btn" style="margin-top:12px" onclick="taxIssueGo(\''+id+'\',\''+ym+'\')">발행하기</button><button class="btn gray" onclick="closeSheet()">취소</button>');
@@ -3879,6 +3880,8 @@ function taxIssueGo(id, ym){
 
 /* ===== (11/13) 세금계산서 메뉴 : 호실 카드에서 떼어 아래 메뉴의 한 화면으로 =====
    사업용 호실마다 이번 달 발행 · 발행 기록 · 연결(팝빌) · 공동인증서 · 포인트 · 자동 발행을 한곳에서 봅니다. */
+/* 사업자가 아닌 개인 세입자 : 사업자번호가 없고 주민등록번호 13자리가 있으면 '개인'으로 발행 */
+function taxPerson(r){ return !!r && !((r.tbiz||{}).no) && String(r.trrn||'').replace(/[^0-9]/g,'').length===13; }
 function taxRooms(){ return (S.rooms||[]).filter(function(r){ return r.use==='biz' && !r.vacant; }); }
 function navTaxSync(){ var b=document.getElementById('nav-tax'); if(b) b.classList.toggle('hidden', !(isRooms() && S.setupDone && taxRooms().length)); }
 function renderRTax(){
@@ -3887,10 +3890,11 @@ function renderRTax(){
   document.getElementById('rt-sub').textContent = L.length ? '사업용 호실 '+L.length+'곳 · '+mo+'월분 발행과 지난 기록을 여기서 봐요.' : '';
   if(!L.length){ el.innerHTML='<div class="box cc" style="padding:26px"><p>사업용(상가·사무실) 호실이 없어요</p><p class="sub" style="margin-top:6px;color:var(--ink3)">세금계산서는 사업용 호실에서만 발행해요.</p></div>'; return; }
   el.innerHTML = L.map(function(r){
-    var T=r.tbiz||{}, vat=vatOf(r)||vatInside(r), ok=taxReady(r);
+    var T=r.tbiz||{}, ok=taxReady(r), rent=r.rent||0, sup=(r.vat==='incl')?Math.round(rent*100/110):rent, tx=(r.vat==='incl')?rent-sup:Math.round(rent*0.1);
     var h='<div class="card rc" style="margin-bottom:12px"><div class="rh" onclick="openRInfo(\''+r.id+'\')"><span class="ho">'+esc(roomLabel(r))+'</span><span class="sub" style="font-weight:700;color:var(--ink3)">호실 보기 ›</span></div>'+
-      riRow('받는 곳', T.name ? esc(T.name)+(T.no?' <span class="sub" style="color:var(--ink3)">'+esc(bizFmt(T.no))+'</span>':'') : '<span style="color:var(--warn-text)">세입자 사업자 정보 없음</span>')+
-      riRow('월 임대료', won(dueAmt(r))+'원'+(vat?' <span class="sub" style="color:var(--ink3)">(부가세 '+won(vat)+'원 포함)</span>':''));
+      riRow('받는 곳', taxPerson(r) ? esc(r.tname||'')+' <span class="sub" style="color:var(--ink3)">개인 · '+esc(rrnMask(r.trrn))+'</span>' : (T.name ? esc(T.name)+(T.no?' <span class="sub" style="color:var(--ink3)">'+esc(bizFmt(T.no))+'</span>':'') : '<span style="color:var(--warn-text)">세입자 사업자 정보 없음</span>'))+
+      riRow('계산서 금액', won(sup+tx)+'원 <span class="sub" style="color:var(--ink3)">(공급가액 '+won(sup)+' + 세액 '+won(tx)+')</span>')+
+      (r.fee ? riRow('실제 받는 돈', won(dueAmt(r))+'원 <span class="sub" style="color:var(--ink3)">(관리비 '+won(r.fee)+'원은 계산서에 안 들어가요)</span>') : '');
     if(ok!=='ok') h+='<p class="sub" style="margin-top:10px;font-weight:700;color:var(--warn-text)">'+esc(ok)+'</p><button class="btn outline" style="margin:10px 0 0" onclick="openRInfo(\''+r.id+'\')">호실 정보 넣으러 가기</button>';
     else h+='<div id="rt-b-'+r.id+'" style="margin-top:10px"><p class="sub" style="font-weight:600;color:var(--ink3)">확인하는 중…</p></div>';
     return h+'</div>';
@@ -3937,7 +3941,7 @@ function rtLoad(id){
 function taxRefresh(id){ try{ if(CUR==='rtax') rtLoad(id); }catch(e){} }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1113-01';
+var APP_BUILD='1113-03';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
