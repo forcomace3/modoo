@@ -417,6 +417,7 @@
     <div class="hm-card" id="hmField"><div style="font-size:15px;font-weight:800;color:#212D64">🛠️ 현장 관리</div><div style="font-size:12.5px;color:#6A6A72;margin:4px 0 10px;line-height:1.5">업무 지시 · 점검 일지 · 고장 접수 · 법정 안전검사</div><button class="mini" id="hmFieldGo">현장 관리 열기 ›</button></div>
     <div class="hm-card" id="hmSig"></div>
     <div class="hm-card" id="hmInfo"></div>
+    <div class="siteinfo" id="hmOrg" style="margin-bottom:12px;display:none"></div>
     <div class="hm-card" id="hmRoster"></div>
     <button class="mini" id="hmLogout" style="color:#9A3327;margin-bottom:20px">로그아웃</button>
   </div>
@@ -1732,7 +1733,7 @@
     var by={};act.forEach(function(x){var t=x.team||"기타";(by[t]=by[t]||[]).push(x);});
     var rk=function(r){r=String(r||"");return /관리소장|^소장/.test(r)?5:(/과장|팀장|대장|감독/.test(r)?4:(/대리|반장/.test(r)?3:(/주임/.test(r)?2:1)));};
     Object.keys(by).forEach(function(t){by[t].sort(function(a,b){return rk(b.role)-rk(a.role)||(Number(b.total)||0)-(Number(a.total)||0)||String(a.name).localeCompare(String(b.name),"ko");});});
-    function box(x){return '<div class="ob"><div class="ob-r">'+esc(x.role||"&nbsp;")+'</div><div class="ob-n">'+esc(x.name)+'</div>'+(x.phone?'<a class="ob-p" href="tel:'+esc(String(x.phone).replace(/[^\d]/g,""))+'">'+esc(x.phone)+'</a>':"")+'</div>';}
+    function box(x){return '<div class="ob"><div class="ob-r">'+(x.role?esc(x.role):"&nbsp;")+'</div><div class="ob-n">'+esc(x.name)+'</div>'+(x.phone?'<a class="ob-p" href="tel:'+esc(String(x.phone).replace(/[^\d]/g,""))+'">'+esc(x.phone)+'</a>':"")+'</div>';}
     var mgr=(by["관리실"]||[]).map(box).join("");
     var cols=["시설팀","보안팀","미화팀"];
     Object.keys(by).forEach(function(t){if(t!=="관리실"&&cols.indexOf(t)<0)cols.push(t);});
@@ -2237,6 +2238,7 @@
     $("hmInfo").innerHTML='<div class="hm-h">👤 내 정보</div>'+(me?('<div class="hm-kv"><b>이름</b>'+esc(me.name)+'</div><div class="hm-kv"><b>소속</b>'+esc([me.team,me.role].filter(Boolean).join(" · ")||"-")+'</div><div class="hm-kv"><b>근무</b>'+esc(me.work||"-")+'</div><div class="hm-kv"><b>입사일</b>'+esc(me.joinDate?fmtK(me.joinDate):"-")+'</div><div class="hm-kv"><b>연락처</b>'+esc(me.phone||"-")+'</div>'):'<div class="hm-empty">정보를 불러오지 못했습니다.</div>');
     $("hmRoster").innerHTML='<div class="hm-h" style="justify-content:space-between">📞 비상연락망'+(me&&me.site==="신흥빌딩"?'<button class="fbtn up" id="hmCallAll">전체 보기</button>':'')+'</div>'+(roster.length?roster.map(function(p){return '<div class="rperson"><div class="rp-l">'+esc(p.name)+'<span class="rp-role">'+esc([p.team,p.role].filter(Boolean).join(" "))+'</span></div>'+(p.phone?telLink(p.phone):'')+'</div>';}).join(""):'<div class="hm-empty">연락처가 없습니다.</div>');
     if($("hmCallAll"))$("hmCallAll").addEventListener("click",openRosterSheet);
+    try{var hog=$("hmOrg");if(hog){hog.innerHTML=roster.length?orgChartHtml(roster):"";hog.style.display=roster.length?"":"none";}}catch(e){}
     $("hmHire").addEventListener("click",function(){var u=SITE+"forms.html";if(APP&&APP.openUrl)APP.openUrl(u);else window.open(u,"_blank");});
     $("hmResign").addEventListener("click",openResign);
     renderHomeV11();
