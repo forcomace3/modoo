@@ -94,6 +94,30 @@ button{border:none;background:none;cursor:pointer}
 .btn.r{background:var(--r)}
 .btn.y{background:var(--y)}
 .btn.sm{padding:6px 11px;font-size:12px;border-radius:7px}
+/* (11/13 · 2) 고지서 · 사진 읽기 */
+.mf{flex-wrap:wrap}
+.cam-b{margin-left:6px;font-size:13px;line-height:1;padding:2px 5px;border-radius:6px;background:#F1F5F9}
+.cam-b:hover{background:var(--navyl)}
+.bill{background:#fff;border:1px solid var(--line);border-radius:10px;padding:22px 24px;max-width:560px;margin:0 auto;color:#0F172A}
+.bill-b{font-size:12.5px;font-weight:700;color:var(--ink2)}
+.bill-t{font-size:20px;font-weight:800;letter-spacing:-.5px;margin-top:2px}
+.bill-who{font-size:15px;margin:14px 0 10px}
+.bill-pay{display:flex;align-items:center;justify-content:space-between;background:#EEF2FF;border-radius:8px;padding:12px 16px;margin-bottom:12px}
+.bill-pay span{font-size:12.5px;font-weight:700;color:var(--ink2)}
+.bill-pay b{font-size:22px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums}
+.bill-tb td{font-size:13px;padding:7px 8px;white-space:normal}
+.bill-tb small{font-size:10px;color:var(--navy);font-weight:700;margin-left:4px}
+.bill-tb tr.sum td{background:#F8FAFC}
+.bill-tb tr.arr td{color:var(--r)}
+.bill-m{font-size:12px;color:var(--ink2);line-height:1.8;margin-top:10px}
+.bill-f{font-size:13px;line-height:1.9;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.bill-f span{display:inline-block;min-width:70px;color:var(--ink2);font-weight:700;font-size:12px}
+.bill-n{font-size:12px;color:var(--ink2);margin-top:6px}
+.bill-from{text-align:right;font-size:12px;color:var(--ink2);font-weight:700;margin-top:8px}
+#printArea{display:none}
+@media print{ body.printing>*:not(#printArea){display:none!important} body.printing{background:#fff!important}
+  body.printing #printArea{display:block} #printArea .bill{border:0;border-radius:0;max-width:none;padding:0;page-break-after:always;break-after:page}
+  #printArea .bill:last-child{page-break-after:auto;break-after:auto} #printArea .bill-pay,#printArea .bill-tb tr.sum td{-webkit-print-color-adjust:exact;print-color-adjust:exact} @page{size:A4;margin:18mm} }
 /* (11/13) 다음 할 일 안내 */
 .gd{background:#fff;border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:var(--rad);margin-bottom:16px}
 .gd.g{border-left-color:var(--g)}.gd.y{border-left-color:var(--y)}
@@ -264,17 +288,18 @@ td input.num{text-align:right}
   <section class="page" id="p-charge">
     <div class="card">
       <div class="ch"><h3>이번 달 총액 넣기</h3><p>고지서 총액을 넣으면 항목 설정대로 나눕니다</p>
-        <div class="sp"></div><button class="btn o sm hide" id="c-prev" onclick="copyPrev()">↩ 지난달 값 가져오기</button><button class="btn" onclick="calcNow()">▶ 계산하기</button></div>
+        <div class="sp"></div><button class="btn o sm hide" id="c-cam" onclick="camPick(-1)">📷 고지서 사진 읽기</button><button class="btn o sm hide" id="c-prev" onclick="copyPrev()">↩ 지난달 값 가져오기</button><button class="btn" onclick="calcNow()">▶ 계산하기</button></div>
       <div class="cb"><div id="c-inputs"></div></div>
     </div>
     <div class="card" id="c-usewrap">
-      <div class="ch"><h3>세대별 사용량</h3><p>사용량으로 나누는 항목이 있을 때만 씁니다</p>
-        <div class="sp"></div><button class="btn o sm hide" id="c-prevu" onclick="copyPrevUse()">↩ 지난달 사용량 가져오기</button><button class="btn o sm" onclick="pasteUse()">📋 엑셀에서 붙여넣기</button></div>
+      <div class="ch"><h3>세대별 사용량</h3><p id="c-usep">사용량으로 나누는 항목이 있을 때만 씁니다</p>
+        <div class="sp"></div><button class="btn o sm hide" id="c-meter" onclick="meterToggle()">🔢 검침값으로 넣기</button><button class="btn o sm hide" id="c-prevu" onclick="copyPrevUse()">↩ 지난달 사용량 가져오기</button><button class="btn o sm" onclick="pasteUse()">📋 엑셀에서 붙여넣기</button></div>
       <div class="tw" id="c-usetbl"></div>
     </div>
     <div class="card">
       <div class="ch"><h3>부과 내역</h3><p id="c-info">계산하기를 누르면 세대별 금액이 나옵니다</p>
         <div class="sp"></div>
+        <button class="btn o sm" id="c-bill" onclick="billOpen()" disabled>🧾 세대별 고지서</button>
         <button class="btn o sm" onclick="exportCharge()">↓ 엑셀(CSV)</button>
         <button class="btn g sm" id="c-fix" onclick="confirmCharge()" disabled>✓ 부과 확정</button></div>
       <div class="tw" id="c-tbl"><div class="empty">아직 계산하지 않았습니다</div></div>
@@ -297,9 +322,12 @@ td input.num{text-align:right}
   <!-- ========== 세금계산서 ========== -->
   <section class="page" id="p-tax">
     <div class="note y" style="margin-bottom:16px">
-      <b>지금은 발행 직전까지만 합니다.</b> 명세를 만들어 <b>홈택스 일괄발행용 파일</b>로 내려받으시면,
-      홈택스에 올려서 발행하실 수 있습니다. 나중에 자동 발행을 붙이면 이 단계가 버튼 하나로 줄어듭니다.
-      <span class="guess">※ 열 이름은 홈택스 최신 양식과 대조 필요</span>
+      <b>팝빌에 연결하면 여기서 바로 발행합니다.</b> 연결 전이거나 홈택스로 직접 내고 싶을 때는 아래 <b>홈택스 일괄발행용 파일</b>을 내려받아 올리셔도 됩니다.
+      <span class="guess">※ 홈택스 양식 열 이름은 최신 양식과 대조 필요</span>
+    </div>
+    <div class="card" id="pbx">
+      <div class="ch"><h3>팝빌로 바로 발행</h3><p>확정한 달의 과세 관리비를 세대별로 한 번에 발행합니다</p></div>
+      <div class="cb" id="pb-body"></div>
     </div>
     <div class="grid g4" style="margin-bottom:16px" id="x-stats"></div>
     <div class="card">
@@ -1116,7 +1144,7 @@ function doReset(){ try{ localStorage.removeItem(KEY); }catch(e){} MEM=null; if(
 
 /* ---------- 시작 ---------- */
 /* ===== (11/13) 자동화 도구 : ① 다음 할 일 안내  ② 지난달 값 가져오기 · 전월 대비  ④ 입금 자동 대조 ===== */
-var PRO_BUILD='1113-01';
+var PRO_BUILD='1113-02';
 function mShort(ym){ return parseInt((ym||'').split('-')[1])+'월'; }
 /* 자료가 있는 가장 가까운 이전 달 (없으면 null) — 달을 새로 만들지 않도록 M() 을 쓰지 않는다 */
 function prevMonth(){
@@ -1304,7 +1332,7 @@ function guide(){
   } else {
     T='미납 '+unpaidN+'세대 · '+won(unpaidAmt)+'원이 남았어요';
     D='통장 입금 내역을 붙여넣으면 입금한 세대를 자동으로 찾아 드려요.';
-    A=gBtn('🏦 입금 내역으로 자동 확인','bankMatch()',1)+(p==='collect'?'':gBtn('수납 관리로 가기 →',"go('collect')"));
+    A=gBtn('🏦 입금 내역으로 자동 확인','bankMatch()',1)+gBtn('🧾 세대별 고지서','billOpen()')+(p==='collect'?'':gBtn('수납 관리로 가기 →',"go('collect')"));
   }
   var off=guideOff(), n=0;
   var chips=steps.map(function(s,i){ n++;
@@ -1316,7 +1344,7 @@ function guide(){
     (off?'<div class="gd-1">'+T+'</div>':'<div class="gd-b"><div class="gd-m"><div class="gd-t">'+T+'</div><div class="gd-d">'+D+'</div></div>'+(A?'<div class="gd-a">'+A+'</div>':'')+'</div>');
 }
 /* 화면을 다시 그릴 때마다 안내도 같이 고친다 */
-['rDash','rCharge','rCollect','rUnits','rItems','setUse'].forEach(function(nm){
+['rDash','rCharge','rCollect','rUnits','rItems','setUse','rTax','rReport','rBldg','loadLog'].forEach(function(nm){
   var f=window[nm]; if(typeof f!=='function') return;
   window[nm]=function(){ var r=f.apply(this,arguments); try{ guide(); }catch(e){} return r; };
 });
@@ -1482,6 +1510,482 @@ function bankApply(){
   __bk=null; bkWide(false); save(); closeM(); if(curPage()==='collect') rCollect(); else render(curPage());
   toast(n+'세대를 수납 처리했어요');
 }
+
+/* ===== (11/13) 자동화 도구 2 : ③ 검침값 자동 사용량  ⑤ 세대별 고지서  ⑥ 고지서 사진 읽기  ⑦ 팝빌 일괄 발행 ===== */
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return (window.__lsm||{})[k]||null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){ (window.__lsm=window.__lsm||{})[k]=v; } }
+function mNum(v){ v=(v==null?'':''+v).replace(/,/g,'').trim(); if(v==='') return null; var x=parseFloat(v); return isNaN(x)?null:x; }
+function nFmt(n){ return (Math.round(n*100)/100).toLocaleString('ko-KR'); }
+function wideM(px){ var x=document.querySelector('#modal .mbox'); if(x) x.style.maxWidth=px?px+'px':''; }
+
+/* ---------- ③ 검침값으로 사용량 자동 계산 ---------- */
+function meterHas(m){ return !!(m&&m.meter&&Object.keys(m.meter).some(function(k){ return (m.meter[k]||[]).some(function(x){ return x!=null&&x!==''; }); })); }
+function meterOn(){
+  var b=B(); if(!b) return false;
+  var v=lsGet('pro_meter_'+b.id); if(v==='1') return true; if(v==='0') return false;
+  var p=prevMonth(); return meterHas(M()) || !!(p&&meterHas(p.m));
+}
+function meterToggle(){ lsSet('pro_meter_'+B().id, meterOn()?'0':'1'); rCharge(); }
+/* 지난 검침값 : 이번 달에 직접 고친 값이 있으면 그것, 없으면 지난달 "이번 검침" */
+function meterPrev(ii,ui){
+  var m=M(), o=(m.meter0&&m.meter0[ii])?m.meter0[ii][ui]:null;
+  if(o!=null&&o!=='') return {v:+o, own:true};
+  var p=prevMonth();
+  if(p&&p.m.meter&&p.m.meter[ii]){ var pi=prevUnitMap(p)(ui); if(pi!=null){ var x=p.m.meter[ii][pi]; if(x!=null&&x!=='') return {v:+x, own:false}; } }
+  return null;
+}
+function meterCalc(ii,ui){
+  var m=M(), cur=(m.meter&&m.meter[ii])?m.meter[ii][ui]:null, pv=meterPrev(ii,ui);
+  if(!m.usage[ii]) m.usage[ii]=[];
+  if(cur==null||cur===''){ m.usage[ii][ui]=0; return 'empty'; }
+  if(!pv){ m.usage[ii][ui]=0; return 'noprev'; }
+  var d=Math.round((+cur-pv.v)*100)/100;
+  if(d<0){ m.usage[ii][ui]=0; return 'neg'; }
+  m.usage[ii][ui]=d; return 'ok';
+}
+function meterState(ii,ui){
+  var m=M(), cur=(m.meter&&m.meter[ii])?m.meter[ii][ui]:null, pv=meterPrev(ii,ui);
+  if(cur==null||cur==='') return 'empty'; if(!pv) return 'noprev'; if(+cur<pv.v) return 'neg'; return 'ok';
+}
+function meterCell(ii,ui){
+  var el=document.getElementById('mu-'+ii+'-'+ui); if(!el) return;
+  var m=M(), st=meterState(ii,ui), p=prevMonth(), h='';
+  if(st==='empty') h='<span style="color:var(--ink3)">-</span>';
+  else if(st==='noprev') h='<span class="tag t-w">지난 검침을 넣어 주세요</span>';
+  else if(st==='neg') h='<span class="tag t-no">지난 검침보다 작아요</span>';
+  else {
+    var use=+((m.usage[ii]||[])[ui]||0), pu=0;
+    if(p&&p.m.usage&&p.m.usage[ii]){ var pi=prevUnitMap(p)(ui); if(pi!=null) pu=+(p.m.usage[ii][pi]||0); }
+    h='<b>'+nFmt(use)+'</b>';
+    if(pu>0){ var odd=(use>=pu*2||use<=pu*0.5);
+      h+=' <span '+(odd?'class="tag t-w"':'style="color:var(--ink3);font-size:11px"')+'>'+mShort(p.ym)+' '+nFmt(pu)+(odd?' · 확인':'')+'</span>'; }
+  }
+  el.innerHTML=h;
+}
+function setMeter(ii,ui,v){
+  var m=M(); if(m.confirmed) return;
+  if(!m.meter) m.meter={}; if(!m.meter[ii]) m.meter[ii]=[];
+  m.meter[ii][ui]=mNum(v); meterCalc(ii,ui); save(); meterCell(ii,ui); try{ guide(); }catch(e){}
+}
+function setMeter0(ii,ui,v){
+  var m=M(); if(m.confirmed) return;
+  if(!m.meter0) m.meter0={}; if(!m.meter0[ii]) m.meter0[ii]=[];
+  m.meter0[ii][ui]=mNum(v); meterCalc(ii,ui); save(); meterCell(ii,ui); try{ guide(); }catch(e){}
+}
+function meterKey(ev,k){ if(ev.key!=='Enter') return; ev.preventDefault(); var n=document.querySelector('[data-mk="'+(k+1)+'"]'); if(n){ n.focus(); n.select(); } }
+function meterDraw(){
+  var b=B(), m=M(), p=prevMonth(), use=[]; b.items.forEach(function(it,i){ if(it.mode==='use') use.push(i); });
+  var btn=document.getElementById('c-meter'), sub=document.getElementById('c-usep'); if(!btn) return;
+  btn.classList.toggle('hide', !use.length);
+  if(!use.length) return;
+  var on=meterOn();
+  btn.textContent=on?'✎ 사용량 직접 넣기':'🔢 검침값으로 넣기';
+  if(sub) sub.textContent=on?'계량기 숫자만 넣으면 지난달과의 차이로 사용량을 계산합니다':'사용량으로 나누는 항목이 있을 때만 씁니다';
+  if(!on) return;
+  var pu=document.getElementById('c-prevu'); if(pu) pu.classList.add('hide');
+  var dis=m.confirmed?' disabled':'', k=0;
+  document.getElementById('c-usetbl').innerHTML='<table><thead><tr><th>호실</th>'+
+    use.map(function(ii){ var n=esc(b.items[ii].n);
+      return '<th class="num">'+n+' 지난 검침'+(p?' ('+mShort(p.ym)+')':'')+'</th><th class="num">'+n+' 이번 검침</th><th class="num">'+n+' 사용량</th>'; }).join('')+
+    '</tr></thead><tbody>'+
+    b.units.map(function(u,ui){
+      if(u.vacant) return '<tr style="opacity:.45"><td><b>'+esc(u.ho)+'</b> <span class="tag t-x">공실</span></td>'+use.map(function(){ return '<td class="num">-</td><td class="num">-</td><td class="num">-</td>'; }).join('')+'</tr>';
+      return '<tr><td><b>'+esc(u.ho)+'</b></td>'+use.map(function(ii){
+        var pv=meterPrev(ii,ui), cur=(m.meter&&m.meter[ii])?m.meter[ii][ui]:null; k++;
+        return '<td><input class="num" inputmode="decimal" value="'+(pv?pv.v:'')+'" style="'+(pv&&!pv.own?'color:var(--ink3)':'')+'" placeholder="처음 한 번만" oninput="setMeter0('+ii+','+ui+',this.value)"'+dis+'></td>'+
+          '<td><input class="num" inputmode="decimal" data-mk="'+k+'" value="'+(cur==null?'':cur)+'" placeholder="계량기 숫자" style="background:#fff;border-color:var(--line)" oninput="setMeter('+ii+','+ui+',this.value)" onkeydown="meterKey(event,'+k+')"'+dis+'></td>'+
+          '<td class="num" id="mu-'+ii+'-'+ui+'"></td>';
+      }).join('')+'</tr>';
+    }).join('')+'</tbody></table>';
+  b.units.forEach(function(u,ui){ if(!u.vacant) use.forEach(function(ii){ meterCell(ii,ui); }); });
+}
+function pasteMeter(){
+  var b=B(), use=b.items.map(function(it,i){ return {it:it,i:i}; }).filter(function(x){ return x.it.mode==='use'; });
+  modal('검침값 붙여넣기',
+    '<div class="note i" style="margin-bottom:12px">열 순서 : <b>호실 · '+use.map(function(x){ return esc(x.it.n)+' 이번 검침'; }).join(' · ')+'</b><br>'+
+    '호실 이름이 같은 세대에 들어가고, 지난 검침과의 차이로 사용량을 계산합니다.</div>'+
+    '<textarea id="pz3" rows="10" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px" placeholder="101호&#9;1523"></textarea>',
+    '<button class="btn o" onclick="closeM()">취소</button><button class="btn" onclick="doPasteMeter()">넣기</button>');
+}
+function doPasteMeter(){
+  var t=document.getElementById('pz3').value.trim(); if(!t){ toast('내용이 비어 있습니다'); return; }
+  var b=B(), m=M(); if(m.confirmed){ toast('이미 확정한 달이라 바꿀 수 없어요'); return; }
+  var use=[]; b.items.forEach(function(it,i){ if(it.mode==='use') use.push(i); });
+  var rows=t.split(/\r?\n/).map(function(l){ return l.split('\t'); });
+  if(rows.length && /호실|호수|세대/.test(rows[0][0]||'')) rows.shift();
+  var cnt=0; if(!m.meter) m.meter={};
+  rows.forEach(function(r){ var ho=(r[0]||'').trim(), ui=b.units.findIndex(function(u){ return u.ho===ho; }); if(ui<0) return; cnt++;
+    use.forEach(function(ii,k){ var v=mNum(r[k+1]); if(v==null) return; if(!m.meter[ii]) m.meter[ii]=[]; m.meter[ii][ui]=v; meterCalc(ii,ui); }); });
+  save(); closeM(); rCharge(); toast(cnt+'세대 검침값을 넣었습니다');
+}
+
+/* ---------- ⑥ 고지서 사진 읽기 ---------- */
+var __cam={item:-1, r:null, img:''};
+function camPick(i){
+  var m=M(); if(m.confirmed){ toast('이미 확정한 달이라 바꿀 수 없어요'); return; }
+  if(!FAC){ toast('서버에 연결된 뒤에 쓸 수 있어요'); return; }
+  __cam.item=i;
+  var f=document.getElementById('cam-f');
+  if(!f){ f=document.createElement('input'); f.type='file'; f.accept='image/*'; f.id='cam-f'; f.className='hide'; f.onchange=function(){ var x=f.files&&f.files[0]; f.value=''; if(x) camRead(x); }; document.body.appendChild(f); }
+  f.click();
+}
+function camShrink(file, cb){
+  var url=URL.createObjectURL(file), im=new Image();
+  im.onload=function(){
+    var mx=1600, s=Math.min(1, mx/Math.max(im.width,im.height)), c=document.createElement('canvas');
+    c.width=Math.max(1,Math.round(im.width*s)); c.height=Math.max(1,Math.round(im.height*s));
+    var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(im,0,0,c.width,c.height);
+    var q=0.85, d=c.toDataURL('image/jpeg',q); while(d.length>4500000 && q>0.4){ q-=0.15; d=c.toDataURL('image/jpeg',q); }
+    URL.revokeObjectURL(url); cb(d);
+  };
+  im.onerror=function(){ URL.revokeObjectURL(url); cb(''); };
+  im.src=url;
+}
+function camGuess(text){
+  var b=B(), t=(text||'').replace(/\s/g,''), K=[[/전력|전기|한전/,/전기/],[/수도|상수도|아리수|하수/,/수도/],[/가스/,/가스/],[/승강기|엘리베이터|엘리베이타|오티스|티케이|현대엘/,/승강|엘리/],[/청소|미화/,/청소|미화/],[/경비|보안|세콤|캡스|에스원/,/경비|보안/],[/소독|방역/,/소독|방역/],[/보험/,/보험/],[/인터넷|통신|케이티|유플러스|브로드/,/인터넷|통신/],[/정화조|분뇨/,/정화조/]];
+  for(var k=0;k<K.length;k++){ if(K[k][0].test(t)){ var i=b.items.findIndex(function(it){ return it.mode!=='each' && K[k][1].test(it.n||''); }); if(i>=0) return i; } }
+  return -1;
+}
+function camRead(file){
+  modal('고지서 사진 읽기','<div class="empty" style="padding:28px">사진을 읽는 중이에요… (10초쯤 걸려요)</div>','<button class="btn o" onclick="closeM()">취소</button>');
+  camShrink(file, function(d){
+    if(!d){ modal('고지서 사진 읽기','<div class="note r">사진을 열지 못했어요. 다른 사진으로 해 주세요.</div>'); return; }
+    __cam.img=d;
+    fetch(FAC.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'receiptRead',tk:FAC.tk,image:d,type:'image/jpeg'})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(!j.ok || !(+j.amount>0)){ modal('고지서 사진 읽기','<div class="note r">'+esc(j.ok?'금액을 읽지 못했어요. 숫자가 잘 보이게 다시 찍거나 직접 넣어 주세요.':(j.error||'읽지 못했어요'))+'</div>','<button class="btn o" onclick="closeM()">닫기</button><button class="btn" onclick="camPick('+__cam.item+')">다시 찍기</button>'); return; }
+      __cam.r=j; camShow();
+    }).catch(function(){ modal('고지서 사진 읽기','<div class="note r">인터넷 연결을 확인해 주세요.</div>'); });
+  });
+}
+function camShow(){
+  var b=B(), j=__cam.r, vars=[]; b.items.forEach(function(it,i){ if(it.mode!=='each') vars.push(i); });
+  var sel=__cam.item; if(sel<0||vars.indexOf(sel)<0) sel=camGuess((j.vendor||'')+' '+(j.items||''));
+  if(sel<0){ var m=M(); sel=vars.filter(function(i){ return !(+m.totals[i]); })[0]; if(sel==null) sel=vars[0]; }
+  modal('고지서에서 읽은 내용',
+    '<div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px">'+
+      '<img src="'+__cam.img+'" style="width:110px;max-height:150px;object-fit:cover;border-radius:8px;border:1px solid var(--line)">'+
+      '<div style="flex:1;min-width:200px;font-size:12.5px;line-height:1.9">'+
+        '<div><span style="color:var(--ink3)">보낸 곳</span> <b>'+esc(j.vendor||'-')+'</b></div>'+
+        '<div><span style="color:var(--ink3)">날짜</span> '+esc(j.date||'-')+' · <span style="color:var(--ink3)">내용</span> '+esc(j.items||'-')+'</div>'+
+        '<div><span style="color:var(--ink3)">합계</span> <b>'+won(j.amount)+'원</b> <span style="color:var(--ink3)">(공급가액 '+won(j.supply)+' + 부가세 '+won(j.vat)+')</span></div>'+
+      '</div></div>'+
+    '<div class="frow"><div class="fld"><label>어느 항목에 넣을까요?</label><select id="cam-i" onchange="camSel()">'+
+      vars.map(function(i){ return '<option value="'+i+'"'+(i===sel?' selected':'')+'>'+esc(b.items[i].n)+' ('+MODEL[b.items[i].mode]+(b.items[i].tax?' · 과세':'')+')</option>'; }).join('')+'</select></div>'+
+    '<div class="fld"><label>넣을 금액</label><input id="cam-v" class="num" type="tel" style="text-align:right"></div></div>'+
+    '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px"><button class="btn o sm" onclick="camAmt('+(+j.amount)+')">합계 '+won(j.amount)+'원</button><button class="btn o sm" onclick="camAmt('+(+j.supply)+')">부가세 뺀 '+won(j.supply)+'원</button></div>'+
+    '<div class="note i" id="cam-n"></div>',
+    '<button class="btn o" onclick="closeM()">취소</button><button class="btn" onclick="camApply()">이 금액 넣기</button>');
+  camSel();
+}
+function camSel(){
+  var b=B(), i=+document.getElementById('cam-i').value, it=b.items[i]||{}, j=__cam.r;
+  document.getElementById('cam-v').value = it.tax ? j.supply : j.amount;
+  document.getElementById('cam-n').innerHTML = it.tax
+    ? '<b>'+esc(it.n)+'</b>은 <b>과세</b> 항목이라 세대에 나눌 때 부가세 10%가 따로 붙어요. 두 번 붙지 않게 <b>부가세 뺀 금액</b>을 골라 두었습니다. 숫자가 고지서와 맞는지 꼭 확인해 주세요.'
+    : '<b>'+esc(it.n)+'</b>은 면세 항목이라 <b>합계</b>를 골라 두었습니다. 미납·연체료가 섞인 고지서는 <b>이번 달 요금</b>만 넣어야 해요. 숫자가 고지서와 맞는지 꼭 확인해 주세요.';
+}
+function camAmt(v){ document.getElementById('cam-v').value=v; }
+function camApply(){
+  var i=+document.getElementById('cam-i').value, v=nOf(document.getElementById('cam-v').value);
+  if(!(v>0)){ toast('금액을 넣어 주세요'); return; }
+  var m=M(); if(m.confirmed){ toast('이미 확정한 달이라 바꿀 수 없어요'); return; }
+  setTot(i,v); __cam.r=null; __cam.img=''; closeM(); rCharge(); toast(B().items[i].n+' '+won(v)+'원을 넣었어요');
+}
+
+/* ---------- ⑤ 세대별 고지서 ---------- */
+var __bill={ui:-1};
+function billOpt(){ var o={arr:true}; try{ o=Object.assign(o, JSON.parse(lsGet('pro_bill_opt')||'{}')); }catch(e){} return o; }
+function billUnits(){ var m=M(), a=[]; m.rows.forEach(function(r,i){ if(!r.vacant) a.push(i); }); return a; }
+function billData(ui){
+  var b=B(), m=M(), r=m.rows[ui]||{cells:[]}, u=b.units[ui]||{}, opt=billOpt(), p=prevMonth();
+  var lines=[]; b.items.forEach(function(it,ii){ var v=+(r.cells[ii]||0); if(v) lines.push({n:it.n||'항목', v:v, tax:!!it.tax}); });
+  var arr=[];
+  if(opt.arr) Object.keys(b.months).filter(function(k){ return k<S.ym; }).sort().forEach(function(k){
+    var mm=b.months[k]; if(!mm||!mm.confirmed||!mm.rows) return;
+    var j=mm.rows.findIndex(function(x){ return x.ho===r.ho && !x.vacant; });
+    if(j>=0 && !(mm.paid&&mm.paid[j]) && mm.rows[j].total>0) arr.push({ym:k, amt:mm.rows[j].total}); });
+  var arrSum=arr.reduce(function(a,x){ return a+x.amt; },0), meters=[];
+  b.items.forEach(function(it,ii){ if(it.mode!=='use') return;
+    var cur=(m.meter&&m.meter[ii])?m.meter[ii][ui]:null, use=+((m.usage[ii]||[])[ui]||0);
+    if(cur!=null&&cur!==''){ var pv=meterPrev(ii,ui); meters.push({n:it.n, prev:pv?pv.v:null, cur:+cur, use:use}); }
+    else if(use) meters.push({n:it.n, prev:null, cur:null, use:use}); });
+  var prevTotal=null; if(p&&p.m.rows){ var pr=p.m.rows.find(function(x){ return x.ho===r.ho && !x.vacant; }); if(pr) prevTotal={ym:p.ym, amt:pr.total}; }
+  var supply=(r.taxSupply||0)+(r.freeSupply||0);
+  return {bname:b.name, ym:S.ym, ho:r.ho||u.ho||'', name:u.corp||u.name||'', lines:lines, supply:supply, vat:r.vat||0, total:r.total||0,
+    arr:arr, arrSum:arrSum, pay:(r.total||0)+arrSum, meters:meters, prevTotal:prevTotal, due:b.due||25, late:b.late||0, bank:b.bank||'',
+    note:b.billNote||'', from:(b.supplier&&b.supplier.corp)||'', paid:!!(m.paid&&m.paid[ui]), confirmed:!!m.confirmed};
+}
+function billHtml(d){
+  var row=function(k,v,cls){ return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+k+'</td><td class="num">'+v+'</td></tr>'; };
+  return '<div class="bill"><div class="bill-h"><div class="bill-b">'+esc(d.bname)+'</div><div class="bill-t">'+ymL(d.ym)+'분 관리비 고지서</div></div>'+
+    '<div class="bill-who"><b>'+esc(d.ho)+'</b>'+(d.name?' &nbsp;'+esc(d.name)+' 귀하':'')+'</div>'+
+    '<div class="bill-pay"><span>납부하실 금액</span><b>'+won(d.pay)+'원</b></div>'+
+    '<table class="bill-tb"><tbody>'+
+      d.lines.map(function(l){ return row(esc(l.n)+(l.tax?' <small>과세</small>':''), won(l.v)); }).join('')+
+      (d.vat?row('부가세', won(d.vat)):'')+
+      row('<b>이번 달 관리비</b>','<b>'+won(d.total)+'</b>','sum')+
+      d.arr.map(function(a){ return row('미납 관리비 ('+mShort(a.ym)+'분)', won(a.amt), 'arr'); }).join('')+
+      (d.arrSum?row('<b>합계</b>','<b>'+won(d.pay)+'</b>','sum'):'')+
+    '</tbody></table>'+
+    (d.meters.length?'<div class="bill-m">'+d.meters.map(function(x){ return esc(x.n)+' 사용량 <b>'+nFmt(x.use)+'</b>'+(x.cur!=null?' (지난 검침 '+(x.prev==null?'-':nFmt(x.prev))+' → 이번 검침 '+nFmt(x.cur)+')':''); }).join('<br>')+'</div>':'')+
+    (d.prevTotal?'<div class="bill-m">'+mShort(d.prevTotal.ym)+'분 관리비 '+won(d.prevTotal.amt)+'원 → 이번 달 '+won(d.total)+'원 ('+(d.total===d.prevTotal.amt?'같음':((d.total>d.prevTotal.amt?'＋':'－')+won(Math.abs(d.total-d.prevTotal.amt))+'원'))+')</div>':'')+
+    '<div class="bill-f"><div><span>납부 기한</span> 매월 '+d.due+'일'+(d.late?' (늦으면 월 '+d.late+'% 연체료)':'')+'</div>'+
+      (d.bank?'<div><span>입금 계좌</span> <b>'+esc(d.bank)+'</b></div>':'')+
+      (d.note?'<div class="bill-n">'+esc(d.note).replace(/\n/g,'<br>')+'</div>':'')+
+      (d.from?'<div class="bill-from">'+esc(d.from)+'</div>':'')+'</div></div>';
+}
+function billText(d){
+  var L=['['+d.bname+'] '+ymL(d.ym)+'분 관리비 안내', d.ho+(d.name?' '+d.name+' 님':''), ''];
+  d.lines.forEach(function(l){ L.push('· '+l.n+' '+won(l.v)+'원'); });
+  if(d.vat) L.push('· 부가세 '+won(d.vat)+'원');
+  L.push('이번 달 관리비 : '+won(d.total)+'원');
+  d.arr.forEach(function(a){ L.push('미납 ('+mShort(a.ym)+'분) : '+won(a.amt)+'원'); });
+  if(d.arrSum) L.push('납부하실 금액 : '+won(d.pay)+'원');
+  d.meters.forEach(function(x){ L.push(x.n+' 사용량 '+nFmt(x.use)+(x.cur!=null?' (검침 '+(x.prev==null?'-':nFmt(x.prev))+' → '+nFmt(x.cur)+')':'')); });
+  L.push(''); L.push('납부 기한 : 매월 '+d.due+'일'); if(d.bank) L.push('입금 계좌 : '+d.bank); if(d.note){ L.push(''); L.push(d.note); }
+  return L.join('\n');
+}
+function billOpen(ui){
+  var m=M(); if(!m.rows.length){ toast('먼저 계산하세요'); return; }
+  var us=billUnits(); if(!us.length){ toast('고지서를 낼 세대가 없어요'); return; }
+  if(ui==null||us.indexOf(ui)<0) ui=us.indexOf(__bill.ui)>=0?__bill.ui:us[0];
+  __bill.ui=ui;
+  var b=B(), opt=billOpt(), d=billData(ui), k=us.indexOf(ui);
+  wideM(700);
+  modal('세대별 고지서',
+    (m.confirmed?'':'<div class="note y" style="margin-bottom:10px">아직 <b>확정 전</b>이에요. 금액이 바뀔 수 있으니 확정한 뒤에 보내 주세요.</div>')+
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">'+
+      '<button class="btn o sm" onclick="billOpen('+us[(k-1+us.length)%us.length]+')">◀</button>'+
+      '<select id="bill-u" onchange="billOpen(+this.value)" style="border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-weight:700;background:#fff">'+
+        us.map(function(i){ var u=b.units[i]||{}; return '<option value="'+i+'"'+(i===ui?' selected':'')+'>'+esc(m.rows[i].ho)+' '+esc(u.corp||u.name||'')+'</option>'; }).join('')+'</select>'+
+      '<button class="btn o sm" onclick="billOpen('+us[(k+1)%us.length]+')">▶</button>'+
+      '<label style="font-size:12px;color:var(--ink2);display:flex;align-items:center;gap:5px;margin-left:auto"><input type="checkbox" '+(opt.arr?'checked':'')+' onchange="billSetOpt(this.checked)" style="width:auto"> 지난 미납액도 함께</label></div>'+
+    (MGR?'':'<div class="fld" style="margin-bottom:10px"><input id="bill-note" value="'+esc(b.billNote||'')+'" placeholder="고지서 아래에 넣을 안내 문구 (예: 문의 02-000-0000)" onchange="billNote(this.value)"></div>')+
+    '<div id="bill-pv" style="background:#F1F5F9;border-radius:10px;padding:14px">'+billHtml(d)+'</div>',
+    '<button class="btn o" onclick="billCopy()">📋 문자용 글 복사</button><button class="btn o" onclick="billImage()">🖼 이미지로 저장·공유</button>'+
+    '<button class="btn o" onclick="billPrint([__bill.ui])">🖨 이 세대만</button><button class="btn" onclick="billPrint(billUnits())">🖨 전체 인쇄 ('+us.length+'세대)</button>');
+}
+function billSetOpt(v){ var o=billOpt(); o.arr=!!v; lsSet('pro_bill_opt', JSON.stringify(o)); billOpen(__bill.ui); }
+function billNote(v){ if(MGR) return; B().billNote=(v||'').trim(); save(); var e=document.getElementById('bill-pv'); if(e) e.innerHTML=billHtml(billData(__bill.ui)); }
+function billPrint(list){
+  var pa=document.getElementById('printArea'); if(!pa){ pa=document.createElement('div'); pa.id='printArea'; document.body.appendChild(pa); }
+  pa.innerHTML=list.map(function(i){ return billHtml(billData(i)); }).join('');
+  document.body.classList.add('printing');
+  setTimeout(function(){ try{ window.print(); }catch(e){ toast('이 기기에서는 인쇄를 열지 못했어요'); } },80);
+}
+window.addEventListener('afterprint', function(){ document.body.classList.remove('printing'); var pa=document.getElementById('printArea'); if(pa) pa.innerHTML=''; });
+function billCopy(){
+  var t=billText(billData(__bill.ui));
+  var done=function(){ toast('복사했어요. 문자나 카카오톡에 붙여넣으세요'); };
+  var old=function(){ var a=document.createElement('textarea'); a.value=t; a.style.position='fixed'; a.style.opacity='0'; document.body.appendChild(a); a.select(); try{ document.execCommand('copy'); done(); }catch(e){ toast('복사하지 못했어요'); } document.body.removeChild(a); };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, old); else old();
+}
+/* 고지서를 그림 한 장으로 (카카오톡으로 보내기 좋게) */
+function billCanvas(d){
+  var W=720, P=44, F="-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Malgun Gothic',sans-serif";
+  var rows=[]; d.lines.forEach(function(l){ rows.push([l.n+(l.tax?' (과세)':''), won(l.v), 0]); });
+  if(d.vat) rows.push(['부가세', won(d.vat), 0]);
+  rows.push(['이번 달 관리비', won(d.total), 1]);
+  d.arr.forEach(function(a){ rows.push(['미납 관리비 ('+mShort(a.ym)+'분)', won(a.amt), 2]); });
+  if(d.arrSum) rows.push(['합계', won(d.pay), 1]);
+  var extra=[]; d.meters.forEach(function(x){ extra.push(x.n+' 사용량 '+nFmt(x.use)+(x.cur!=null?'  (검침 '+(x.prev==null?'-':nFmt(x.prev))+' → '+nFmt(x.cur)+')':'')); });
+  if(d.prevTotal) extra.push(mShort(d.prevTotal.ym)+'분 '+won(d.prevTotal.amt)+'원 → 이번 달 '+won(d.total)+'원');
+  var foot=['납부 기한   매월 '+d.due+'일'+(d.late?' (늦으면 월 '+d.late+'% 연체료)':'')]; if(d.bank) foot.push('입금 계좌   '+d.bank);
+  var notes=d.note?d.note.split('\n'):[];
+  var H=P+70+56+96+rows.length*40+18+extra.length*28+(extra.length?14:0)+foot.length*32+notes.length*26+(d.from?40:0)+P;
+  var sc=2, c=document.createElement('canvas'); c.width=W*sc; c.height=H*sc; var g=c.getContext('2d'); g.scale(sc,sc);
+  g.fillStyle='#fff'; g.fillRect(0,0,W,H); g.textBaseline='middle';
+  var y=P;
+  g.fillStyle='#64748B'; g.font='600 17px '+F; g.textAlign='left'; g.fillText(d.bname, P, y+10);
+  g.fillStyle='#0F172A'; g.font='800 27px '+F; g.fillText(ymL(d.ym)+'분 관리비 고지서', P, y+46); y+=70;
+  g.fillStyle='#0F172A'; g.font='800 21px '+F; g.fillText(d.ho+(d.name?'   '+d.name+' 귀하':''), P, y+22); y+=56;
+  g.fillStyle='#EEF2FF'; g.fillRect(P, y, W-P*2, 76);
+  g.fillStyle='#334155'; g.font='700 17px '+F; g.fillText('납부하실 금액', P+20, y+38);
+  g.fillStyle='#1E3A8A'; g.font='800 32px '+F; g.textAlign='right'; g.fillText(won(d.pay)+'원', W-P-20, y+38); y+=96;
+  rows.forEach(function(r){
+    if(r[2]===1){ g.fillStyle='#F8FAFC'; g.fillRect(P, y, W-P*2, 40); }
+    g.strokeStyle='#E2E8F0'; g.lineWidth=1; g.beginPath(); g.moveTo(P, y+40); g.lineTo(W-P, y+40); g.stroke();
+    g.textAlign='left'; g.fillStyle=r[2]===2?'#B91C1C':'#0F172A'; g.font=(r[2]===1?'800':'500')+' 17px '+F; g.fillText(r[0], P+10, y+20);
+    g.textAlign='right'; g.fillText(r[1], W-P-10, y+20); y+=40; });
+  y+=18; g.textAlign='left';
+  extra.forEach(function(t){ g.fillStyle='#475569'; g.font='500 15px '+F; g.fillText(t, P+4, y+14); y+=28; }); if(extra.length) y+=14;
+  foot.forEach(function(t){ g.fillStyle='#0F172A'; g.font='700 17px '+F; g.fillText(t, P+4, y+16); y+=32; });
+  notes.forEach(function(t){ g.fillStyle='#475569'; g.font='500 15px '+F; g.fillText(t, P+4, y+13); y+=26; });
+  if(d.from){ g.textAlign='right'; g.fillStyle='#64748B'; g.font='600 15px '+F; g.fillText(d.from, W-P, y+24); }
+  return c;
+}
+function billImage(){
+  var d=billData(__bill.ui), c=billCanvas(d), name=(d.bname+'_'+d.ym+'_'+d.ho+'_고지서.png').replace(/[\\\/:*?"<>|\s]/g,'_');
+  c.toBlob(function(bl){
+    if(!bl){ toast('이미지를 만들지 못했어요'); return; }
+    var f=null; try{ f=new File([bl], name, {type:'image/png'}); }catch(e){}
+    if(f && navigator.canShare && navigator.canShare({files:[f]})){ navigator.share({files:[f], title:d.ho+' 관리비 고지서'}).catch(function(){}); return; }
+    var a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download=name; a.click(); toast('이미지를 내려받았어요');
+  }, 'image/png');
+}
+
+/* ---------- ⑦ 팝빌로 세금계산서 일괄 발행 (본사만) ---------- */
+var PBX={key:'', st:null, list:null, err:'', busy:false, run:null};
+function taxApi(o){
+  o.tk=FAC.tk;
+  return fetch(FAC.url.replace(/\/api$/,'/tax'),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)}).then(function(r){ return r.json(); });
+}
+function pbxKey(){ return (B().id||'')+'|'+S.ym; }
+function pbxLoad(force){
+  if(!FAC || MGR) return;
+  var key=pbxKey(); if(!force && PBX.key===key && (PBX.st||PBX.err)) { pbxRender(); return; }
+  PBX.key=key; PBX.st=null; PBX.list=null; PBX.err=''; PBX.busy=true; pbxRender();
+  var bid=B().id, ym=S.ym, conf=!!M().confirmed;
+  taxApi({action:'facTaxStatus', bldg:bid}).then(function(j){
+    if(PBX.key!==key) return;
+    if(!j.ok){ PBX.busy=false; PBX.err=(j.error==='unknown action'||/호실을 찾을 수 없|건물주/.test(j.error||''))?'서버에 일괄 발행 기능이 아직 올라가지 않았어요. (세금계산서 서버 배포 필요)':(j.error||'불러오지 못했어요'); pbxRender(); return; }
+    PBX.st=j;
+    if(!conf){ PBX.busy=false; pbxRender(); return; }
+    return taxApi({action:'facTaxList', bldg:bid, ym:ym}).then(function(k){ if(PBX.key!==key) return; PBX.busy=false; if(k.ok) PBX.list=k; else PBX.err=k.error||''; pbxRender(); });
+  }).catch(function(){ if(PBX.key!==key) return; PBX.busy=false; PBX.err='인터넷 연결을 확인해 주세요.'; pbxRender(); });
+}
+function pbxDate(s){ s=String(s||''); return s.length>=8 ? s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8) : s; }
+function pbxRender(){
+  var el=document.getElementById('pb-body'); if(!el) return;
+  var box=document.getElementById('pbx'); if(box) box.classList.toggle('hide', !FAC||MGR);
+  var st=PBX.st, L=PBX.list, b=B(), h='';
+  if(PBX.busy && !st){ el.innerHTML='<div class="empty" style="padding:22px">팝빌 연결 상태를 확인하는 중…</div>'; return; }
+  if(PBX.err && !st){ el.innerHTML='<div class="note r">'+esc(PBX.err)+'</div><div style="margin-top:10px"><button class="btn o sm" onclick="pbxLoad(true)">↻ 다시 확인</button></div>'; return; }
+  if(!st){ el.innerHTML=''; return; }
+  var test=st.test?' <span class="tag t-w">시험 서버 · 국세청으로 가지 않아요</span>':'';
+  if(!st.joined){
+    el.innerHTML='<div class="note y">공급자 <b>'+esc(st.corpName||'')+'</b> ('+esc(b.supplier.regno||st.corp)+') 이(가) 아직 팝빌에 연결되지 않았어요.'+test+'<br>'+
+      '연결하고 <b>공동인증서</b>를 한 번 등록하면, 그 다음부터는 여기서 단추 하나로 발행합니다.</div>'+
+      '<div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap"><button class="btn sm" onclick="pbxJoinAsk()">팝빌 연결하기</button><button class="btn o sm" onclick="pbxLoad(true)">↻ 다시 확인</button></div>';
+    return;
+  }
+  var cert=st.cert?('<span class="tag t-ok">인증서 등록됨 · '+pbxDate(st.cert)+'까지</span>'):('<span class="tag t-no">인증서 없음</span>');
+  h+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;margin-bottom:12px">'+
+    '<b>'+esc(st.corpName||'')+'</b> <span style="color:var(--ink3)">'+esc(b.supplier.regno||st.corp)+'</span> <span class="tag t-ok">팝빌 연결됨</span> '+cert+
+    (st.balance!=null?' <span class="tag t-i">포인트 '+won(st.balance)+(st.unitCost?' · 건당 '+won(st.unitCost):'')+'</span>':'')+test+
+    '<span style="flex:1"></span><button class="btn o sm" onclick="pbxOpen(\'cert\')">인증서 등록</button><button class="btn o sm" onclick="pbxOpen(\'charge\')">포인트 충전</button><button class="btn o sm" onclick="pbxLoad(true)">↻</button></div>';
+  if(!M().confirmed){ el.innerHTML=h+'<div class="empty" style="padding:22px">'+ymL(S.ym)+'분 부과를 확정하면 발행할 수 있어요.</div>'; return; }
+  if(PBX.err){ el.innerHTML=h+'<div class="note r">'+esc(PBX.err)+'</div>'; return; }
+  if(!L){ el.innerHTML=h+'<div class="empty" style="padding:22px">불러오는 중…</div>'; return; }
+  if(!L.items.length){ el.innerHTML=h+'<div class="empty" style="padding:22px">발행 대상이 없어요. 과세 항목이 있는 세대만 나옵니다.</div>'; return; }
+  var can=0, done=0;
+  var rows=L.items.map(function(x,i){
+    var stt, chk='';
+    if(x.status==='issued'){ done++; stt='<span class="tag t-ok">발행 완료</span> <span style="color:var(--ink3);font-size:11px">'+esc(x.nts)+'</span> <button class="btn o sm" onclick="pbxView('+i+')">보기</button>'; }
+    else if(x.why){ stt='<span class="tag t-x">제외 · '+esc(x.why)+'</span>'; }
+    else { can++; chk='<input type="checkbox" class="pb-c" data-i="'+i+'" checked onchange="pbxCount()" style="width:auto">';
+      stt=x.status==='failed'?'<span class="tag t-no" title="'+esc(x.error)+'">실패 · 다시 발행</span> <span style="color:var(--r);font-size:11px;white-space:normal">'+esc((x.error||'').slice(0,60))+'</span>':'<span class="tag t-w">발행 전</span>'; }
+    return '<tr><td style="text-align:center">'+chk+'</td><td><b>'+esc(x.ho)+'</b></td><td>'+esc(x.name||'-')+'</td><td>'+esc(x.no||'-')+'</td>'+
+      '<td style="color:var(--ink3)">'+esc(x.email||'-')+'</td><td class="num">'+won(x.supply)+'</td><td class="num">'+won(x.tax)+'</td><td class="num"><b>'+won(x.supply+x.tax)+'</b></td>'+
+      '<td>'+x.purpose+'</td><td>'+stt+'</td></tr>'; }).join('');
+  h+='<div class="tw" style="border:1px solid var(--line2);border-radius:8px"><table><thead><tr><th style="width:36px"></th><th>호실</th><th>공급받는자</th><th>등록번호</th><th>이메일</th>'+
+    '<th class="num">공급가액</th><th class="num">세액</th><th class="num">합계</th><th>구분</th><th>상태</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px">'+
+      '<label style="font-size:12px;font-weight:700;color:var(--ink2)">작성일자 <input type="date" id="pb-wd" value="'+esc(L.writeDate)+'" max="'+esc(L.today||'')+'" style="border:1px solid var(--line);border-radius:8px;padding:6px 9px;margin-left:4px"></label>'+
+      '<span style="font-size:11.5px;color:var(--ink3)">발행 완료 '+done+'건 · 남은 '+can+'건 · 이메일이 있는 세대에는 팝빌이 메일로 보내 줍니다</span><span style="flex:1"></span>'+
+      '<button class="btn g" id="pb-go" onclick="pbxIssueAsk()"'+(can?'':' disabled')+'>발행하기</button></div>';
+  el.innerHTML=h; pbxCount();
+}
+function pbxCount(){ var n=document.querySelectorAll('.pb-c:checked').length, g=document.getElementById('pb-go'); if(g){ g.textContent=n?('선택한 '+n+'건 발행하기'):'선택한 건 없음'; g.disabled=!n; } }
+function pbxOpen(which){
+  var w=null; try{ w=window.open('about:blank','_blank'); }catch(e){}
+  taxApi({action:'facTaxUrl', bldg:B().id, which:which}).then(function(j){
+    if(!j.ok){ if(w) w.close(); toast(j.error||'열지 못했어요'); return; }
+    if(w) w.location.href=j.url; else modal('팝빌 열기','<div class="note i">아래 단추를 누르면 팝빌 화면이 열립니다.</div><div style="margin-top:12px"><a class="btn" href="'+esc(j.url)+'" target="_blank" rel="noopener" onclick="closeM()">팝빌 열기</a></div>');
+  }).catch(function(){ if(w) w.close(); toast('인터넷 연결을 확인해 주세요'); });
+}
+function pbxView(i){
+  var x=PBX.list&&PBX.list.items[i]; if(!x) return;
+  var w=null; try{ w=window.open('about:blank','_blank'); }catch(e){}
+  taxApi({action:'facTaxView', bldg:B().id, ym:S.ym, ho:x.ho}).then(function(j){
+    if(!j.ok){ if(w) w.close(); toast(j.error||'열지 못했어요'); return; }
+    if(w) w.location.href=j.url; else modal('세금계산서 보기','<a class="btn" href="'+esc(j.url)+'" target="_blank" rel="noopener" onclick="closeM()">세금계산서 열기</a>');
+  }).catch(function(){ if(w) w.close(); toast('인터넷 연결을 확인해 주세요'); });
+}
+function pbxJoinAsk(needId, msg){
+  var st=PBX.st||{}, b=B();
+  modal('팝빌 연결하기',
+    (msg?'<div class="note '+(needId?'y':'r')+'" style="margin-bottom:12px">'+esc(msg)+'</div>':'')+
+    '<div class="note i" style="margin-bottom:12px">공급자 <b>'+esc(st.corpName||'')+'</b> ('+esc(b.supplier.regno||'')+') 을(를) 전자세금계산서 서비스 <b>팝빌</b>에 연결합니다.<br>'+
+    '아직 팝빌 회원이 아니면 이 사업자로 <b>새 계정을 만들고</b>, 이미 회원이면 쓰던 계정에 연결만 합니다.</div>'+
+    (needId?'<div class="fld"><label>팝빌 아이디</label><input id="pb-id" placeholder="팝빌에 로그인할 때 쓰는 아이디" autocomplete="off"></div>'
+      :'<div class="frow"><div class="fld"><label>담당자 이메일</label><input id="pb-em" type="email" value="'+esc(b.supplier.email||'')+'" placeholder="발행 알림을 받을 주소"></div>'+
+       '<div class="fld"><label>담당자 연락처</label><input id="pb-tel" type="tel" placeholder="02-000-0000"></div></div>'),
+    '<button class="btn o" onclick="closeM()">취소</button><button class="btn" id="pb-jb" onclick="pbxJoin('+(needId?1:0)+')">연결하기</button>');
+}
+function pbxJoin(needId){
+  var o={action:'facTaxJoin', bldg:B().id}, g=function(id){ var e=document.getElementById(id); return e?e.value.trim():''; };
+  if(needId){ o.userId=g('pb-id'); if(!o.userId){ toast('팝빌 아이디를 넣어 주세요'); return; } }
+  else { o.email=g('pb-em'); o.tel=g('pb-tel'); if(!o.email||!o.tel){ toast('이메일과 연락처를 넣어 주세요'); return; } }
+  var jb=document.getElementById('pb-jb'); if(jb){ jb.disabled=true; jb.textContent='연결하는 중…'; }
+  taxApi(o).then(function(j){
+    if(j.ok){ closeM(); toast('팝빌에 연결했어요. 이제 인증서를 등록해 주세요'); pbxLoad(true); return; }
+    if(j.needId){ pbxJoinAsk(true, j.error); return; }
+    pbxJoinAsk(!!needId, j.error||'연결하지 못했어요');
+  }).catch(function(){ if(jb){ jb.disabled=false; jb.textContent='연결하기'; } toast('인터넷 연결을 확인해 주세요'); });
+}
+function pbxPicked(){ var a=[]; document.querySelectorAll('.pb-c:checked').forEach(function(c){ var x=PBX.list.items[+c.dataset.i]; if(x) a.push(x); }); return a; }
+function pbxIssueAsk(){
+  var a=pbxPicked(); if(!a.length){ toast('발행할 세대를 골라 주세요'); return; }
+  var st=PBX.st||{}, wd=(document.getElementById('pb-wd')||{}).value||PBX.list.writeDate;
+  var sup=a.reduce(function(s,x){ return s+x.supply; },0), tax=a.reduce(function(s,x){ return s+x.tax; },0), noMail=a.filter(function(x){ return !x.email; }).length;
+  var need=st.unitCost?st.unitCost*a.length:0;
+  PBX.run={list:a, wd:wd, i:0, ok:0, fail:[], stop:false};
+  modal('세금계산서 '+a.length+'건 발행',
+    '<div style="font-size:13px;line-height:2">'+
+      '<div>공급자 <b>'+esc(st.corpName||'')+'</b> → 공급받는자 <b>'+a.length+'곳</b> ('+esc(a.slice(0,4).map(function(x){ return x.ho; }).join(', '))+(a.length>4?' 외':'')+')</div>'+
+      '<div>'+ymL(S.ym)+'분 관리비 · 작성일자 <b>'+esc(wd)+'</b></div>'+
+      '<div>공급가액 <b>'+won(sup)+'원</b> + 세액 <b>'+won(tax)+'원</b> = 합계 <b>'+won(sup+tax)+'원</b></div></div>'+
+    (st.test?'<div class="note y" style="margin-top:10px"><b>시험 서버</b>라 실제 국세청에는 전송되지 않습니다. 연습용이에요.</div>'
+      :'<div class="note r" style="margin-top:10px">발행하면 <b>국세청으로 바로 전송</b>됩니다. 잘못 발행한 건은 지울 수 없고 <b>수정세금계산서</b>를 내야 해요. 금액과 작성일자를 한 번 더 확인해 주세요.</div>')+
+    (st.cert?'':'<div class="note r" style="margin-top:8px">공동인증서가 등록되지 않은 것 같아요. 등록 전에는 발행이 실패합니다.</div>')+
+    (need && st.balance!=null && st.balance<need?'<div class="note y" style="margin-top:8px">포인트가 모자랄 수 있어요. (필요 약 '+won(need)+' · 지금 '+won(st.balance)+')</div>':'')+
+    (noMail?'<div class="note i" style="margin-top:8px">이메일이 없는 '+noMail+'곳은 메일이 가지 않아요. (발행은 됩니다)</div>':''),
+    '<button class="btn o" onclick="closeM()">취소</button><button class="btn g" onclick="pbxIssueRun()">'+a.length+'건 발행하기</button>');
+}
+function pbxIssueRun(){
+  var R=PBX.run; if(!R) return;
+  var bid=B().id, ym=S.ym;
+  var show=function(end){
+    modal(end?'발행을 마쳤어요':'발행하는 중…',
+      '<div style="font-size:14px;font-weight:800;margin-bottom:8px">'+(end?'':(R.i+1)+' / '+R.list.length+' · '+esc(R.list[Math.min(R.i,R.list.length-1)].ho))+(end?'성공 '+R.ok+'건'+(R.fail.length?' · 실패 '+R.fail.length+'건':''):'')+'</div>'+
+      '<div style="height:8px;background:#E2E8F0;border-radius:8px;overflow:hidden"><div style="height:8px;width:'+Math.round((end?R.list.length:R.i)/R.list.length*100)+'%;background:var(--g)"></div></div>'+
+      (R.fail.length?'<div class="note r" style="margin-top:12px">'+R.fail.map(function(f){ return '<b>'+esc(f.ho)+'</b> '+esc(f.error); }).join('<br>')+'</div>':'')+
+      (end&&!R.fail.length?'<div class="note g" style="margin-top:12px">모두 발행했어요.</div>':'')+
+      (end?'':'<div style="font-size:11.5px;color:var(--ink3);margin-top:10px">창을 닫지 말고 잠시 기다려 주세요.</div>'),
+      end?'<button class="btn" onclick="closeM()">확인</button>':'<button class="btn o" onclick="PBX.run.stop=true;this.disabled=true;this.textContent=\'멈추는 중…\'">그만하기</button>');
+  };
+  var next=function(){
+    if(R.stop || R.i>=R.list.length){ show(true); PBX.run=null; pbxLoad(true); return; }
+    show(false);
+    var x=R.list[R.i];
+    taxApi({action:'facTaxIssue', bldg:bid, ym:ym, ho:x.ho, writeDate:R.wd}).then(function(j){
+      if(j.ok||j.dup) R.ok++; else R.fail.push({ho:x.ho, error:j.error||'실패'});
+      R.i++; next();
+    }).catch(function(){ R.fail.push({ho:x.ho, error:'인터넷 연결이 끊겼어요'}); R.stop=true; R.i++; next(); });
+  };
+  next();
+}
+
+/* ---------- 화면에 끼워 넣기 ---------- */
+function chargeExtra2(){
+  var b=B(), m=M();
+  try{ meterDraw(); }catch(e){}
+  var hasVar=b.items.some(function(it){ return it.mode!=='each'; });
+  var cam=document.getElementById('c-cam'); if(cam) cam.classList.toggle('hide', !hasVar || !!m.confirmed || !FAC);
+  if(hasVar && !m.confirmed && FAC) b.items.forEach(function(it,i){ if(it.mode==='each') return;
+    var inp=document.getElementById('ti-'+i), lb=inp&&inp.parentNode.querySelector('label');
+    if(lb && !lb.querySelector('.cam-b')){ var x=document.createElement('button'); x.className='cam-b'; x.type='button'; x.title='고지서 사진으로 넣기'; x.textContent='📷'; x.onclick=function(){ camPick(i); }; lb.appendChild(x); } });
+  var bl=document.getElementById('c-bill'); if(bl) bl.disabled=!m.rows.length;
+}
+(function(){
+  var f=window.rCharge; window.rCharge=function(){ var r=f.apply(this,arguments); try{ chargeExtra2(); }catch(e){} return r; };
+  var t=window.rTax; window.rTax=function(){ var r=t.apply(this,arguments); try{ pbxLoad(false); }catch(e){} return r; };
+  var pu=window.pasteUse; window.pasteUse=function(){ if(meterOn()) pasteMeter(); else pu.apply(this,arguments); };
+  var cm=window.closeM; window.closeM=function(){ var r=cm.apply(this,arguments); wideM(0); if(PBX.run) PBX.run.stop=true; return r; };
+})();
 
 load();
 S.ym = S.ym || thisYm();
