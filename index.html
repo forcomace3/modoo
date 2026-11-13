@@ -530,6 +530,7 @@
         <div id="docAttachList"></div>
         <button class="addfile" id="docAddFileBtn">＋ 사진·파일 추가</button>
       </div>
+      <div id="lvInline" class="hide"></div>
       <div class="err hide" id="docErr"></div>
       <div class="btns" style="margin-top:14px">
         <button class="btn ghost" id="docCancelBtn">취소</button>
@@ -1486,6 +1487,7 @@
   var docDraft=null, docEditingId=null, docEditingSite="";
   function scopedDocs(){return isAll()?docs.slice():docs.filter(function(d){return String(d.site||"")===curBuilding();});}
   function openDocForm(d){
+    try{lvInline(false);}catch(e){}
     docDraft=d;
     $("d_type").value=d.doctype||"품의서";$("d_date").value=d.date||todayISO();
     $("d_title").value=d.title||"";$("d_body").value=d.body||((d.doctype==="기안서")?DRAFT_TPL:"");
@@ -1495,8 +1497,8 @@
     $("docSaveBtn").textContent=docEditingId?"수정 저장":"저장하기";
     window.scrollTo(0,0);
   }
-  function closeDocForm(){docDraft=null;docEditingId=null;docEditingSite="";$("docForm").classList.add("hide");}
-  $("d_type").addEventListener("change",function(){if(this.value!=="연차신청서")return;this.value="품의서";if(docEditingId){toast("기존 문서는 연차신청서로 바꿀 수 없습니다");return;}closeDocForm();openLeaveForm();});
+  function closeDocForm(){docDraft=null;docEditingId=null;docEditingSite="";$("docForm").classList.add("hide");try{lvInline(false);}catch(e){}}
+  $("d_type").addEventListener("change",function(){if(this.value==="연차신청서"&&docEditingId){this.value="품의서";toast("기존 문서는 연차신청서로 바꿀 수 없습니다");return;}lvInline(this.value==="연차신청서");});
   function renderDocAttach(){
     var box=$("docAttachList");
     box.innerHTML=(docDraft.attachments||[]).map(function(a,i){var th=(a.dataUrl&&(a.type||"").indexOf("image")===0)?'<img class="th" src="'+a.dataUrl+'">':'<span class="fico">📄</span>';return '<div class="achip">'+th+'<span class="nm">'+esc(a.name)+'</span><button class="x" data-i="'+i+'">×</button></div>';}).join("");
@@ -2997,7 +2999,8 @@
     if(!o)return '<div style="font-size:12.5px;color:#8A8A92">연차 현황은 본사에서 정리 중입니다.</div>';
     return '<div class="lv-box"><div class="lv-y">'+esc(yr||o.year||"")+'년 연차</div><div class="lv-g"><span>발생</span><b>'+lvFmt(o.grant)+'일</b><span>사용</span><b>'+lvFmt(o.used)+'일</b><span>결재 중</span><b>'+lvFmt(o.pending)+'일</b><span>남음</span><b class="'+((o.left-o.pending)<0?'lv-neg':'lv-ok')+'">'+lvFmt(o.left)+'일</b></div></div>';
   }
-  function openLeaveForm(){
+  function openLeaveForm(target){
+    if(target&&target.nodeType!==1)target=null;
     // 본사 관리자 = 직원 연차 대리 등록만 / 관리소장 = 본인 신청 또는 우리 현장 직원 대리 등록 / 직원 = 본인 신청
     var canProxy=(isAdmin()||isMgr())&&leaveData&&leaveData.emp;
     var emps=canProxy?Object.keys(leaveData.emp).map(function(k){return leaveData.emp[k];}).filter(function(o){return o.status!=="퇴사"&&!(isMgr()&&/소장/.test(o.role||""));}).sort(function(a,b){return String(a.name)<String(b.name)?-1:1;}):[];
@@ -3006,13 +3009,15 @@
     var forEmp=isAdmin()?emps[0].id:"",L=isAdmin()?emps[0]:lvMine(),dates=[];
     var defAp=approvers.length?(approvers.filter(function(a){return String(a.key).indexOf("mgr:")===0;})[0]||approvers[0]).key:"";
     var whoSel=canProxy?'<div class="field"><label>누구의 연차인가요?</label><select id="lvWho">'+(isMgr()?'<option value="">나 (소장 본인) — 본사 결재</option>':'')+emps.map(function(o){return '<option value="'+esc(o.id)+'">'+esc(o.name)+' · '+esc(o.role||"")+(isAdmin()?' ('+esc(o.site)+')':'')+' — 바로 등록</option>';}).join("")+'</select></div>':'';
-    openSheet('<h3>🌴 연차 신청서</h3>'+whoSel+'<div id="lvBoxW">'+lvBoxHtml(L,(leaveData&&leaveData.year)||(L&&L.year))+'</div>'+
+    var lvHtml=(target?'<div style="font-size:15px;font-weight:800;margin:4px 0 6px">🌴 연차 신청서</div>':'<h3>🌴 연차 신청서</h3>')+whoSel+'<div id="lvBoxW">'+lvBoxHtml(L,(leaveData&&leaveData.year)||(L&&L.year))+'</div>'+
       '<div class="field" style="margin-top:12px"><label>종류</label><select id="lvKind"><option value="연차">연차 (하루)</option><option value="오전 반차">오전 반차 (0.5일)</option><option value="오후 반차">오후 반차 (0.5일)</option></select></div>'+
       '<div class="field"><label>날짜 (여러 날이면 하나씩 추가)</label><div style="display:flex;gap:8px"><input type="date" id="lvDate" value="'+todayISO()+'" style="flex:1"><button class="btn ghost" id="lvAdd" style="flex:0 0 auto;padding:0 16px">＋ 추가</button></div><div id="lvChips" style="margin-top:8px"></div></div>'+
       '<div class="field"><label>사유 (선택)</label><input id="lvWhy" placeholder="예) 개인 사정 / 병원 진료"></div>'+
       '<div class="field" id="lvApprF"><label>결재자</label><select id="lvAppr">'+approvers.map(function(a){return '<option value="'+esc(a.key)+'"'+(a.key===defAp?' selected':'')+'>'+esc(a.label)+'</option>';}).join("")+'</select></div>'+
       '<div id="lvSum" style="font-size:13px;font-weight:700;margin:6px 0"></div><div class="err hide" id="lvErr"></div>'+
-      '<div class="btns" style="margin-top:12px"><button class="btn ghost" id="lvCancel">취소</button><button class="btn primary" id="lvGo">결재 올리기</button></div>');
+      '<div class="btns" style="margin-top:12px"><button class="btn ghost" id="lvCancel">취소</button><button class="btn primary" id="lvGo">결재 올리기</button></div>';
+    if(target){target.innerHTML=lvHtml;}else openSheet(lvHtml);
+    function lvClose(){if(target){try{closeDocForm();}catch(e){}}else closeSheet();}
     function per(){return $("lvKind").value==="연차"?1:0.5;}
     function draw(){
       $("lvChips").innerHTML=dates.length?dates.map(function(d,i){return '<span class="lv-chip">'+esc(fmtK(d))+' <b data-i="'+i+'">×</b></span>';}).join(""):'<span style="font-size:12px;color:#9A9A90">＋ 추가를 눌러 날짜를 넣어 주세요.</span>';
@@ -3027,7 +3032,7 @@
     function setWho(){forEmp=$("lvWho")?$("lvWho").value:"";L=forEmp?leaveData.emp[forEmp]:lvMine();$("lvBoxW").innerHTML=lvBoxHtml(L,leaveData&&leaveData.year);
       $("lvApprF").classList.toggle("hide",!!forEmp||isAdmin());$("lvGo").textContent=forEmp?"등록 (바로 승인)":"결재 올리기";draw();}
     if($("lvWho"))$("lvWho").addEventListener("change",setWho);
-    $("lvCancel").addEventListener("click",closeSheet);
+    $("lvCancel").addEventListener("click",lvClose);
     $("lvGo").addEventListener("click",async function(){
       var er=$("lvErr");if(!dates.length){er.textContent="날짜를 하나 이상 추가해 주세요.";er.classList.remove("hide");return;}
       var kind=$("lvKind").value,n=dates.length*per(),why=$("lvWhy").value.trim();
@@ -3037,8 +3042,8 @@
       var payload={action:"docAdd",record:{doctype:"연차신청서",date:todayISO(),title:title,body:body,leave:{kind:kind,dates:dates,reason:why}},attachments:[]};
       if(forEmp)payload.forEmp=forEmp;else payload.approver=$("lvAppr").value;
       try{await cloudPost(payload);
-        closeSheet();toast(forEmp?(L&&L.name?L.name+"님 ":"")+"연차를 등록했습니다":"연차 신청서를 올렸습니다");try{await cloudPull();}catch(e){}
-        if(isStaff())renderHome();else if(isMgr())renderNotices();else if(view==="payroll")renderPayroll();else if(view==="docs")renderDocs();}
+        lvClose();toast(forEmp?(L&&L.name?L.name+"님 ":"")+"연차를 등록했습니다":"연차 신청서를 올렸습니다");try{await cloudPull();}catch(e){}
+        if(isStaff())renderHome();else if(view==="docs")renderDocs();else if(isMgr())renderNotices();else if(view==="payroll")renderPayroll();}
       catch(e){er.textContent="실패: "+e.message;er.classList.remove("hide");b.disabled=false;b.textContent=lbl;}
     });
     if(canProxy)setWho();else draw();
@@ -3089,6 +3094,13 @@
       try{var r=await cloudPost({action:"leaveBaseSet",base:{year:year||leaveData.year,cutoff:cut,emp:emp}});leaveData=r.leave;closeSheet();renderPayroll();toast(found.length+"명 연차 기록을 넣었습니다");}catch(e){toast("실패: "+e.message);}});
   }
   $("lvXlsInput").addEventListener("change",function(e){var f=(e.target.files||[])[0];e.target.value="";if(f)lvImportExcel(f);});
+
+  // 문서 작성 화면 안에서 연차 신청서로 바꿔 보여 주기 (팝업 대신)
+  function lvInline(on){
+    var f=$("docForm");if(!f)return;var box=$("lvInline");
+    Array.prototype.forEach.call(f.children,function(ch){if(ch.id==="lvInline")return;if(ch.contains($("d_type")))return;ch.style.display=on?"none":"";});
+    if(box){box.classList.toggle("hide",!on);if(on)openLeaveForm(box);else box.innerHTML="";}
+  }
 
   // ---------- boot ----------
   (async function(){
