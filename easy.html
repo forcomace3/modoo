@@ -575,6 +575,13 @@ body{flex-direction:column;justify-content:flex-start}
   <div id="rm-list" style="flex:1"></div>
 </section>
 
+<!-- ================= (11/13) 세금계산서 ================= -->
+<section class="scr" id="s-rtax">
+  <h2 style="font-size:calc(var(--fs-body) + 3px)">세금계산서</h2>
+  <p class="sub" id="rt-sub" style="margin:2px 0 10px;line-height:1.45;font-size:var(--fs-small)"></p>
+  <div id="rt-list" style="flex:1"></div>
+</section>
+
 <!-- ================= 호실 한 곳의 월세 ================= -->
 <section class="scr" id="s-rdue">
   <h2 id="rd2-title" class="rd-h"></h2>
@@ -999,6 +1006,7 @@ body{flex-direction:column;justify-content:flex-start}
   <button data-nav="bldginfo" onclick="go('bldginfo')"><span class="ic">🏢</span><span id="nav-b">우리 건물</span></button>
   <button data-nav="money" onclick="go('money')"><span class="ic">💰</span>돈 확인</button>
   <button data-nav="home" onclick="go('home')"><span class="ic">🏠</span>할 일</button>
+  <button data-nav="rtax" id="nav-tax" class="hidden" onclick="go('rtax')"><span class="ic">🧾</span>세금계산서</button>
   <button data-nav="help" onclick="go('help')"><span class="ic">☎</span>도움</button>
 </nav>
 
@@ -1116,11 +1124,11 @@ function korNum(n){
 function numOf(el){ return parseInt((document.getElementById(el).value+'').replace(/[^0-9]/g,''))||0; }
 
 /* ---------- 화면 이동 ---------- */
-var NAV_SCREENS = ['home','money','bldginfo','help','rhome','rmoney','rlist'];
+var NAV_SCREENS = ['home','money','bldginfo','help','rhome','rmoney','rlist','rtax'];
 var RMAP = {home:'rhome', money:'rmoney', bldginfo:'rlist'}, RNAV = {rhome:'home', rmoney:'money', rlist:'bldginfo'};
 var SETUP_STEPS = ['me','kind','room','rlist','addr','btype','size','judge','units','tenant','meter','fixed','helper'];
 /* 뒤로 가기를 숨길 화면들 (여기서는 돌아갈 곳이 없습니다) */
-var NO_BACK = ['splash','login','home','done','send','sent','money','bldginfo','help','rhome','rmoney','rlist'];
+var NO_BACK = ['splash','login','home','done','send','sent','money','bldginfo','help','rhome','rmoney','rlist','rtax'];
 var CUR = 'splash', STACK = [];
 
 function go(id, noPush){
@@ -1145,6 +1153,8 @@ function go(id, noPush){
   if(id==='rhome') renderRHome();
   if(id==='rmoney') renderRMoney();
   if(id==='rlist') renderRList();
+  if(id==='rtax') renderRTax();
+  try{ navTaxSync(); }catch(e){}
   if(!S.setupDone && SETUP_STEPS.indexOf(id)>=0){ S.step = id; save(); }
   if(id==='home') renderHome();
   if(id==='money') renderMoney();
@@ -2152,6 +2162,7 @@ function pickKind(k){
 }
 function applyKind(){
   var nb=document.getElementById('nav-b'); if(nb) nb.textContent = isRooms() ? '내 호실' : '우리 건물';
+  try{ navTaxSync(); }catch(e){}
 }
 
 /* 이번 달 받을 돈 목록을 호실 정보에 맞춥니다. 이미 받은 것은 건드리지 않습니다. */
@@ -2914,7 +2925,6 @@ function roomCardHtml(r, multi){
     row('임대료', '월 '+won(dueAmt(r))+'원'+(vat?' <span class="sub" style="color:var(--ink3);white-space:nowrap">(부가세 '+won(vat)+'원 포함)</span>':''))+
     row('임대료 받는 날', '매월 '+(r.day||1)+'일'+(r.pay?' · '+esc(r.pay):''))+
     row('납입상태', rentState(r))+
-    (r.use==='biz' ? '<button class="ra" onclick="roomTaxGo(\''+r.id+'\')">🧾 세금계산서 발행하기</button>' : '')+
     '<div class="ra rab"><span>📄 임대차계약서</span><span><button onclick="contractOrigOpen(\''+r.id+'\')">원본 보기</button><i>/</i><button onclick="docvText(\''+r.id+'\')">텍스트 보기</button></span></div>'+
     '<button class="ra" onclick="openRenew(\''+r.id+'\')">🔄 임대차계약서 갱신하기</button>'+
     '<button class="ra" onclick="'+(tel?'facOpen(\'sms:'+tel+'\')':'toast(\'전화번호가 없어요\')')+'">💬 임차인 문자 보내기</button>'+
@@ -3765,7 +3775,7 @@ function taxBoxHtml(r){
   var ok=taxReady(r);
   var h='<div class="box mb" id="ri-tax" style="padding:12px 14px"><p style="font-weight:800">🧾 전자세금계산서</p>';
   if(ok!=='ok'){ h+='<p class="sub" style="margin-top:4px;font-weight:700;color:var(--warn-text)">'+esc(ok)+'</p><p class="sub" style="margin-top:4px;font-weight:600;color:var(--ink3)">위 <b>정보 고치기</b>에서 넣으면 매달 월세 세금계산서를 자동으로 끊어 드릴 수 있어요.</p></div>'; return h; }
-  h+='<div id="ri-tax-b"><p class="sub" style="font-weight:600;color:var(--ink3)">확인하는 중…</p></div></div>';
+  h+='<p class="sub" style="margin-top:4px;font-weight:600;color:var(--ink3)">발행 · 발행 기록 · 인증서 · 포인트는 아래 <b>🧾 세금계산서</b> 메뉴에서 해요.</p><button class="btn outline" style="margin:10px 0 0" onclick="go(\'rtax\')">🧾 세금계산서 메뉴 열기</button></div>';
   return h;
 }
 function taxLoadBox(id){
@@ -3808,7 +3818,7 @@ function taxJoinGo(id){
   taxPost({action:'taxJoin', room:id, email:email}).then(function(j){
     if(!j.ok){ toast(j.error||'연결하지 못했어요'); return; }
     closeSheet(); toast(j.existing?'이미 가입된 사업자라 연결만 했어요':'연결했어요. 이제 인증서를 등록해 주세요');
-    taxLoadBox(id);
+    taxLoadBox(id); taxRefresh(id);
   }).catch(function(){ toast('인터넷 연결을 확인해 주세요'); });
 }
 function taxOpen(id, which){
@@ -3818,7 +3828,7 @@ function taxOpen(id, which){
 function taxToggle(id){
   var r=findRoom(id); if(!r) return;
   if(!r.tax) r.tax={};
-  r.tax.auto=!r.tax.auto; save(); toast(r.tax.auto?'자동 발행을 켰어요':'자동 발행을 껐어요'); taxLoadBox(id);
+  r.tax.auto=!r.tax.auto; save(); toast(r.tax.auto?'자동 발행을 켰어요':'자동 발행을 껐어요'); taxLoadBox(id); taxRefresh(id);
 }
 function taxShow(id, ym){
   toast('여는 중…');
@@ -3839,7 +3849,7 @@ function renderRDueTax(ym, id){
     var done=(j.recent||[]).filter(function(x){ return x.ym===ym && x.status==='issued'; })[0];
     var h='<p style="font-weight:800">🧾 '+parseInt(ym.split('-')[1],10)+'월 세금계산서</p>';
     if(done) h+='<p class="sub" style="margin-top:4px;font-weight:700;color:var(--brand-dark)">✓ 발행됨 · 승인번호 '+esc(done.nts||'')+'</p><button class="btn outline" style="margin:10px 0 0" onclick="taxShow(\''+id+'\',\''+ym+'\')">세금계산서 보기</button>';
-    else if(!j.joined) h+='<p class="sub" style="margin-top:4px;font-weight:600">아직 발행 연결이 안 됐어요. 호실 한눈에 보기에서 <b>세금계산서 발행 연결하기</b>를 눌러 주세요.</p>';
+    else if(!j.joined) h+='<p class="sub" style="margin-top:4px;font-weight:600">아직 발행 연결이 안 됐어요. 아래 <b>🧾 세금계산서</b> 메뉴에서 <b>세금계산서 발행 연결하기</b>를 눌러 주세요.</p>';
     else h+='<p class="sub" style="margin-top:4px;font-weight:600">'+(r.tax&&r.tax.auto?'받는 날 아침에 자동으로 끊어요. 지금 바로 끊을 수도 있어요.':'아직 발행하지 않았어요.')+'</p><button class="btn" style="margin:10px 0 0" onclick="taxIssueAsk(\''+id+'\',\''+ym+'\')">세금계산서 발행하기</button>';
     b.innerHTML=h;
   }).catch(function(){});
@@ -3850,7 +3860,7 @@ function taxIssueAsk(id, ym){
     if(!j.ok){ toast(j.error||'확인하지 못했어요'); return; }
     sheet('<h2 class="cc">'+parseInt(ym.split('-')[1],10)+'월 세금계산서를<br>발행할까요?</h2>'+
       (j.test?'<div class="box y mt cc"><p class="sub" style="font-weight:700;color:var(--warn-text)">연습용(테스트) 서버 · 국세청에 전송되지 않아요</p></div>':'')+
-      '<div class="box mt" style="padding:12px 14px">'+riRow('공급자', esc(j.from))+riRow('받는 곳', esc(j.to)+' <span class="sub" style="color:var(--ink3)">'+esc(bizFmt(j.toNo))+'</span>')+riRow('이메일', esc(j.email||'<span style="color:var(--warn-text)">없음 (국세청 전송은 됨)</span>'))+
+      '<div class="box mt" style="padding:12px 14px">'+riRow('공급자', esc(j.from))+riRow('받는 곳', esc(j.to)+' <span class="sub" style="color:var(--ink3)">'+esc(bizFmt(j.toNo))+'</span>')+riRow('이메일', j.email?esc(j.email):'<span style="color:var(--warn-text)">없음 (국세청 전송은 됨)</span>')+
       riRow('작성일', fmtYmd14(j.writeDate))+riRow('공급가액', won(j.supply)+'원')+riRow('세액', won(j.tax)+'원')+riRow('합계', '<b>'+won(j.total)+'원</b>')+'</div>'+
       '<p class="sub" style="margin-top:8px;font-weight:600;color:var(--ink3)">발행하면 국세청에 바로 전송되고 취소하려면 수정세금계산서를 끊어야 해요. 금액을 꼭 확인하세요.</p>'+
       '<button class="btn" style="margin-top:12px" onclick="taxIssueGo(\''+id+'\',\''+ym+'\')">발행하기</button><button class="btn gray" onclick="closeSheet()">취소</button>');
@@ -3862,12 +3872,72 @@ function taxIssueGo(id, ym){
     if(!j.ok){ toast(j.error||'발행하지 못했어요'); return; }
     toast('발행했어요 · 승인번호 '+(j.nts||''));
     var it=rItem(ym,id); if(it){ it.tax={nts:j.nts||'', at:todayStr()}; save(); }
-    renderRDueTax(ym,id);
+    renderRDueTax(ym,id); taxRefresh(id);
   }).catch(function(){ toast('인터넷 연결을 확인해 주세요'); });
 }
 
+
+/* ===== (11/13) 세금계산서 메뉴 : 호실 카드에서 떼어 아래 메뉴의 한 화면으로 =====
+   사업용 호실마다 이번 달 발행 · 발행 기록 · 연결(팝빌) · 공동인증서 · 포인트 · 자동 발행을 한곳에서 봅니다. */
+function taxRooms(){ return (S.rooms||[]).filter(function(r){ return r.use==='biz' && !r.vacant; }); }
+function navTaxSync(){ var b=document.getElementById('nav-tax'); if(b) b.classList.toggle('hidden', !(isRooms() && S.setupDone && taxRooms().length)); }
+function renderRTax(){
+  var L=taxRooms(), el=document.getElementById('rt-list'); if(!el) return;
+  var ym=thisYm(), mo=parseInt(ym.split('-')[1],10);
+  document.getElementById('rt-sub').textContent = L.length ? '사업용 호실 '+L.length+'곳 · '+mo+'월분 발행과 지난 기록을 여기서 봐요.' : '';
+  if(!L.length){ el.innerHTML='<div class="box cc" style="padding:26px"><p>사업용(상가·사무실) 호실이 없어요</p><p class="sub" style="margin-top:6px;color:var(--ink3)">세금계산서는 사업용 호실에서만 발행해요.</p></div>'; return; }
+  el.innerHTML = L.map(function(r){
+    var T=r.tbiz||{}, vat=vatOf(r)||vatInside(r), ok=taxReady(r);
+    var h='<div class="card rc" style="margin-bottom:12px"><div class="rh" onclick="openRInfo(\''+r.id+'\')"><span class="ho">'+esc(roomLabel(r))+'</span><span class="sub" style="font-weight:700;color:var(--ink3)">호실 보기 ›</span></div>'+
+      riRow('받는 곳', T.name ? esc(T.name)+(T.no?' <span class="sub" style="color:var(--ink3)">'+esc(bizFmt(T.no))+'</span>':'') : '<span style="color:var(--warn-text)">세입자 사업자 정보 없음</span>')+
+      riRow('월 임대료', won(dueAmt(r))+'원'+(vat?' <span class="sub" style="color:var(--ink3)">(부가세 '+won(vat)+'원 포함)</span>':''));
+    if(ok!=='ok') h+='<p class="sub" style="margin-top:10px;font-weight:700;color:var(--warn-text)">'+esc(ok)+'</p><button class="btn outline" style="margin:10px 0 0" onclick="openRInfo(\''+r.id+'\')">호실 정보 넣으러 가기</button>';
+    else h+='<div id="rt-b-'+r.id+'" style="margin-top:10px"><p class="sub" style="font-weight:600;color:var(--ink3)">확인하는 중…</p></div>';
+    return h+'</div>';
+  }).join('');
+  L.forEach(function(r){ if(taxReady(r)==='ok') rtLoad(r.id); });
+}
+function rtLoad(id){
+  var r=findRoom(id), b=document.getElementById('rt-b-'+id); if(!r||!b) return;
+  if(!FAC){ b.innerHTML='<p class="sub" style="font-weight:700;color:var(--ink3)">로그인하면 세금계산서를 발행할 수 있어요.</p>'; return; }
+  var ym=thisYm(), mo=parseInt(ym.split('-')[1],10);
+  taxPost({action:'taxStatus', room:id}).then(function(j){
+    b=document.getElementById('rt-b-'+id); if(!b) return;
+    if(!j.ok){ b.innerHTML='<p class="sub" style="font-weight:700;color:var(--danger)">'+esc(j.error||'확인하지 못했어요')+'</p>'; return; }
+    var h='';
+    if(j.test) h+='<div class="box y cc" style="padding:8px 12px;margin-bottom:10px"><p class="sub" style="font-weight:700;color:var(--warn-text)">지금은 연습용(테스트) 서버라 국세청에 전송되지 않아요</p></div>';
+    if(!j.joined){
+      h+='<p class="sub" style="font-weight:600">세금계산서 발급 대행(팝빌)에 이 사업장('+esc(bizFmt(j.corp))+')을 연결해야 발행할 수 있어요. 연결 뒤 <b>공동인증서(전자세금계산서용)</b>를 한 번 등록합니다.</p>'+
+         '<button class="btn" style="margin:10px 0 0" onclick="taxJoin(\''+id+'\')">🔗 세금계산서 발행 연결하기</button>';
+      b.innerHTML=h; return;
+    }
+    var certOk=!!j.cert, auto=!!(r.tax&&r.tax.auto);
+    var done=(j.recent||[]).filter(function(x){ return x.ym===ym && x.status==='issued'; })[0];
+    /* 이번 달 */
+    if(done) h+='<div class="box g" style="padding:10px 14px"><p style="font-weight:800;color:var(--brand-dark)">✓ '+mo+'월분 발행됨</p><p class="sub" style="margin-top:2px;font-weight:600">승인번호 '+esc(done.nts||'')+'</p></div>'+
+               '<button class="btn outline" style="margin:10px 0 0" onclick="taxShow(\''+id+'\',\''+ym+'\')">'+mo+'월분 세금계산서 보기</button>';
+    else h+='<p class="sub" style="font-weight:700">'+mo+'월분은 아직 발행하지 않았어요.'+(auto?' 받는 날 아침에 자동으로 끊어요.':'')+'</p>'+
+            (certOk?'':'<p class="sub" style="margin-top:4px;font-weight:700;color:var(--danger)">공동인증서가 등록되지 않아 발행이 안 돼요. 아래에서 먼저 등록해 주세요.</p>')+
+            '<button class="btn" style="margin:10px 0 0" onclick="taxIssueAsk(\''+id+'\',\''+ym+'\')">🧾 '+mo+'월분 세금계산서 발행하기</button>';
+    /* 연결 상태 */
+    h+='<div style="margin-top:12px">'+riRow('연결', '연결됨 <span class="sub" style="color:var(--ink3)">('+esc(j.userId||'')+')</span>')+
+       riRow('공동인증서', certOk ? fmtYmd14(j.cert)+'까지' : '<span style="color:var(--danger)">등록 안 됨</span>', certOk?'':'var(--danger)')+
+       (j.balance!=null ? riRow('발행 포인트', won(j.balance)+'P <span class="sub" style="color:var(--ink3)">(건당 약 200P)</span>', j.balance<200?'var(--danger)':'') : '')+'</div>';
+    if(j.balance!=null && j.balance<200) h+='<p class="sub" style="margin-top:6px;font-weight:700;color:var(--danger)">포인트가 모자라 발행이 안 돼요. 충전해 주세요.</p>';
+    h+='<div style="display:flex;gap:8px;margin-top:10px">'+
+       '<button class="btn outline" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="taxOpen(\''+id+'\',\'cert\')">🔐 인증서 '+(certOk?'바꾸기':'등록')+'</button>'+
+       '<button class="btn outline" style="flex:1;margin:0;padding:12px 6px;font-size:var(--fs-small)" onclick="taxOpen(\''+id+'\',\'charge\')">💳 포인트 충전</button></div>';
+    h+='<button class="opt'+(auto?' on':'')+'" style="margin-top:10px" onclick="taxToggle(\''+id+'\')"><span class="em">🤖</span><div>매달 받는 날 자동 발행<small>'+(auto?'켜짐 · 아침 9시에 자동으로 끊어요':'꺼짐 · 이 화면에서 직접 발행')+'</small></div></button>';
+    var H=(j.recent||[]).filter(function(x){ return x.status==='issued'; });
+    h+='<div class="label" style="margin-top:12px">발행 기록</div>'+(H.length ? H.slice(0,12).map(function(x){ return '<p class="sub" style="font-weight:600;padding:4px 0;border-bottom:1px solid #EEF1F5;display:flex;justify-content:space-between;gap:8px"><span>'+esc(x.ym)+' · 승인 '+esc(x.nts||'')+'</span><a href="javascript:taxShow(\''+id+'\',\''+esc(x.ym)+'\')" style="color:var(--brand-dark);flex-shrink:0">보기</a></p>'; }).join('') : '<p class="sub" style="color:var(--ink3);font-weight:600">아직 발행한 기록이 없어요.</p>');
+    b.innerHTML=h;
+  }).catch(function(){ var bb=document.getElementById('rt-b-'+id); if(bb) bb.innerHTML='<p class="sub" style="font-weight:700;color:var(--danger)">인터넷 연결을 확인해 주세요.</p>'; });
+}
+/* 발행·연결·자동 발행을 바꾼 뒤 : 열려 있는 화면을 다시 그림 */
+function taxRefresh(id){ try{ if(CUR==='rtax') rtLoad(id); }catch(e){} }
+
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1030-15';
+var APP_BUILD='1113-01';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
