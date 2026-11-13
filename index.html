@@ -1326,6 +1326,12 @@
       '<div class="si-people" id="rosterBtn"><span>👥 관리소장 '+esc(SITEINFO.head.name)+' 외 '+(SITEINFO.total-1)+'명</span><span>세부명단 ▸</span></div>';
     $("rosterBtn").addEventListener("click",openRosterSheet);
   }
+  function orgAllBtn(box,site){
+    if(!box||site!=="신흥빌딩")return;var hh=box.querySelector(".si-h");if(!hh||hh.querySelector(".org-all"))return;
+    hh.style.display="flex";hh.style.alignItems="center";hh.style.gap="6px";
+    var bt=document.createElement("button");bt.className="fbtn up org-all";bt.style.marginLeft="auto";bt.textContent="☎ 전체 연락처";
+    bt.addEventListener("click",openRosterSheet);hh.appendChild(bt);
+  }
   function openRosterSheet(){
     var html='<h3>신흥빌딩 인원 현황 ('+SITEINFO.total+'명)</h3>';
     SITEINFO.teams.forEach(function(t){
@@ -2199,7 +2205,7 @@
       +tile("📥","결재할 문서",todo+"건",todo?"아래 기안서에서 결재해 주세요":"밀린 결재 없음",todo?"#D14343":"#0F766E","")
       +tile("📢","안 읽은 공지",unread+"건",unread?"아래 공지사항에서 확인":"모두 읽음",unread?"#B7791F":"#0F766E","")
       +tile("🧾","이번 달 지출",ex.length+"건",won(exSum)+"원"+(exWait?" · 결재 전 "+exWait+"건":""),"","list")
-      +tile("👥","우리 현장 직원",(roster||[]).length+"명","비상연락망은 아래에","","")
+      +tile("👥","우리 현장 직원",(roster||[]).length+"명","조직도는 아래에","","")
       +'</div>';
     el.querySelectorAll("[data-msgo]").forEach(function(t){t.addEventListener("click",function(){setView(t.getAttribute("data-msgo"));try{window.scrollTo(0,0);}catch(e){}});});
   }
@@ -2217,6 +2223,7 @@
       +(roster.length?roster.map(function(p){return '<div class="rperson"><div class="rp-l">'+esc(p.name)+'<span class="rp-role">'+esc([p.team,p.role].filter(Boolean).join(" "))+'</span></div>'+(p.phone?telLink(p.phone):'')+'</div>';}).join(""):'<div class="hm-empty">등록된 직원이 없습니다.</div>');
     if($("mgrCallAll"))$("mgrCallAll").addEventListener("click",openRosterSheet);
     var og=$("mgrOrg");og.innerHTML=roster.length?orgChartHtml(roster):"";og.style.display=roster.length?"":"none";
+    try{orgAllBtn(og,site0);$("mgrCall").style.display="none";}catch(e){}
   }
   $("mgrLogout").addEventListener("click",function(){if(confirm("로그아웃할까요?"))logoutLocal();});
   $("supplyBtn").addEventListener("click",function(){
@@ -2238,7 +2245,8 @@
     $("hmInfo").innerHTML='<div class="hm-h">👤 내 정보</div>'+(me?('<div class="hm-kv"><b>이름</b>'+esc(me.name)+'</div><div class="hm-kv"><b>소속</b>'+esc([me.team,me.role].filter(Boolean).join(" · ")||"-")+'</div><div class="hm-kv"><b>근무</b>'+esc(me.work||"-")+'</div><div class="hm-kv"><b>입사일</b>'+esc(me.joinDate?fmtK(me.joinDate):"-")+'</div><div class="hm-kv"><b>연락처</b>'+esc(me.phone||"-")+'</div>'):'<div class="hm-empty">정보를 불러오지 못했습니다.</div>');
     $("hmRoster").innerHTML='<div class="hm-h" style="justify-content:space-between">📞 비상연락망'+(me&&me.site==="신흥빌딩"?'<button class="fbtn up" id="hmCallAll">전체 보기</button>':'')+'</div>'+(roster.length?roster.map(function(p){return '<div class="rperson"><div class="rp-l">'+esc(p.name)+'<span class="rp-role">'+esc([p.team,p.role].filter(Boolean).join(" "))+'</span></div>'+(p.phone?telLink(p.phone):'')+'</div>';}).join(""):'<div class="hm-empty">연락처가 없습니다.</div>');
     if($("hmCallAll"))$("hmCallAll").addEventListener("click",openRosterSheet);
-    try{var hog=$("hmOrg");if(hog){hog.innerHTML=roster.length?orgChartHtml(roster):"";hog.style.display=roster.length?"":"none";}}catch(e){}
+    try{var hog=$("hmOrg");if(hog){hog.innerHTML=roster.length?orgChartHtml(roster):"";hog.style.display=roster.length?"":"none";orgAllBtn(hog,me&&me.site);}}catch(e){}
+    try{$("hmRoster").style.display="none";}catch(e){}
     $("hmHire").addEventListener("click",function(){var u=SITE+"forms.html";if(APP&&APP.openUrl)APP.openUrl(u);else window.open(u,"_blank");});
     $("hmResign").addEventListener("click",openResign);
     renderHomeV11();
