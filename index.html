@@ -118,6 +118,7 @@
   .segbar button{flex:1;border:none;background:none;padding:9px 0;border-radius:8px;font-size:13px;font-weight:700;color:#7A7A72;cursor:pointer;font-family:inherit;}
   .segbar button.on{background:#fff;color:#212D64;box-shadow:0 1px 2px rgba(0,0,0,.06);}
   .pickrow{display:flex;gap:10px;margin-bottom:14px;}
+  .lv-box{background:#F3F8F4;border:1px solid #CFE6D7;border-radius:12px;padding:10px 12px;margin-top:6px}.lv-y{font-size:12px;font-weight:800;color:#2E7D4F;margin-bottom:6px}.lv-g{display:grid;grid-template-columns:repeat(4,auto 1fr);gap:4px 6px;font-size:12.5px;color:#6A6A72;align-items:center}.lv-g b{color:#1C2A27;font-variant-numeric:tabular-nums}.lv-g b.lv-ok{color:#2E7D4F}.lv-g b.lv-neg{color:#9A3327}.lv-chip{display:inline-flex;gap:6px;align-items:center;background:#EEF2F8;border-radius:999px;padding:4px 10px;margin:0 6px 6px 0;font-size:12.5px}.lv-chip b{cursor:pointer;color:#9A3327}
   .pr-card{background:#fff;border:1px solid #E4E1D6;border-radius:14px;padding:13px 14px;margin-top:10px;cursor:pointer}.pr-top{display:flex;justify-content:space-between;align-items:center;font-size:15px}.pr-b{font-size:11.5px;font-weight:800;padding:3px 8px;border-radius:999px}.pr-b.ok{background:#E6F4EC;color:#2E7D4F}.pr-b.warn{background:#FFF1D6;color:#9A5B00}.pr-grid{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:4px 10px;font-size:12.5px;margin-top:8px;color:#6A6A72}.pr-grid b{color:#1C2A27;text-align:right;font-variant-numeric:tabular-nums}.pr-sub{font-size:11.5px;color:#8A8A92;margin-top:6px}table.grid tr.pr-diff td{background:#FFF8E6}table.grid.pr-tbl td small{color:#8A8A92;font-size:10.5px}.pr-opt{background:#F7F6F1;border:1px solid #E4E1D6;border-radius:12px;padding:10px 12px}table.grid tr.pr-row td{background:#F3F6FB}
   .pickrow input{flex:1;border:1px solid #D8D5C8;border-radius:10px;padding:10px 12px;font-size:15px;background:#fff;font-family:inherit;}
   #printArea{background:#fff;border:1px solid #E4E1D6;border-radius:14px;padding:22px 20px;}
@@ -388,7 +389,7 @@
   </div>
   <input id="resignFileInput" type="file" accept="image/*,application/pdf" multiple style="display:none" />
   <input id="sigPhotoInput" type="file" accept="image/*" capture="environment" style="display:none" />
-  <input id="payXlsInput" type="file" accept=".xlsx,.xls" style="display:none" /><input id="prXlsInput" type="file" accept=".xlsx,.xls" multiple style="display:none" /><input id="payPdfInput" type="file" accept=".pdf,application/pdf" multiple style="display:none" />
+  <input id="payXlsInput" type="file" accept=".xlsx,.xls" style="display:none" /><input id="prXlsInput" type="file" accept=".xlsx,.xls" multiple style="display:none" /><input id="lvXlsInput" type="file" accept=".xlsx,.xls" style="display:none" /><input id="payPdfInput" type="file" accept=".pdf,application/pdf" multiple style="display:none" />
   <input id="draftFileInput" type="file" accept="image/*,application/pdf" multiple style="display:none" />
   <div class="hdr">
     <div class="row">
@@ -519,7 +520,7 @@
     <button class="mini hide" id="supplyBtn" style="margin-top:10px">📦 다음 달 보급품 요청하기</button>
     <div id="docForm" class="card hide">
       <div class="row2">
-        <div class="field"><label>문서 유형</label><select id="d_type"><option>품의서</option><option>기안서</option><option>보급품요청</option><option>업무보고서</option><option>공문</option><option>기타</option></select></div>
+        <div class="field"><label>문서 유형</label><select id="d_type"><option>품의서</option><option>기안서</option><option>연차신청서</option><option>보급품요청</option><option>업무보고서</option><option>공문</option><option>기타</option></select></div>
         <div class="field"><label>기안일</label><input type="date" id="d_date" /></div>
       </div>
       <div class="field"><label>제목</label><input type="text" id="d_title" placeholder="예: 옥상 방수공사 진행의 건" /></div>
@@ -793,7 +794,7 @@
     empForms.slots=EMP_FORM_SLOTS;
     if(j.role){SESS=SESS||{};if(j.tk)SESS.tk=j.tk;SESS.role=j.role;SESS.name=j.name||SESS.name;SESS.site=j.site||SESS.site||"";saveSess();}
     notices=j.notices||[];roster=j.roster||[];me=j.me||null;supplyTemplate=j.supplyTemplate||"";mgrSites=j.mgrSites||[];
-    payslips=j.payslips||[];myDocs=j.myDocs||[];mySigs=j.mySigs||{};myPosts=j.myPosts||[];paySummary=j.paySummary||[];payrollData=j.payroll||[];if(j.payrollOpt)payrollOpt=j.payrollOpt;approvers=j.approvers||[];apprDocs=j.apprDocs||[];
+    payslips=j.payslips||[];myDocs=j.myDocs||[];mySigs=j.mySigs||{};myPosts=j.myPosts||[];paySummary=j.paySummary||[];myLeave=j.myLeave||null;leaveData=j.leave||null;payrollData=j.payroll||[];if(j.payrollOpt)payrollOpt=j.payrollOpt;approvers=j.approvers||[];apprDocs=j.apprDocs||[];
     if(j.siteDocs&&j.siteDocs.dogup&&j.siteDocs.dogup.laborTotal){DOGUP=j.siteDocs.dogup;PAYROLL=j.siteDocs.payroll;PERPERSON=j.siteDocs.perperson;DOC_XLSX_URL=j.siteDocs.xlsx||"";}
   }
   async function cloudPost(payload){
@@ -1467,6 +1468,7 @@
       +'<div class="pvrow"><b>제목</b>'+esc(x.title||"(제목 없음)")+'</div>'
       +'<div class="pvrow"><b>기안일</b>'+esc(fmtK(x.date))+'</div>'
       +(x.body?('<div class="pvbody">'+esc(x.body)+'</div>'):"")
+      +((x.doctype==="연차신청서"&&!isStaff())?('<div class="pvrow" style="display:block"><b>신청자 연차 현황</b>'+lvBoxHtml(lvOfDoc(x),leaveData&&leaveData.year)+'</div>'):"")
       +((x.attachments||[]).length?('<div class="pvrow"><b>첨부</b>'+attLinks_(x.attachments)+'</div>'):"")
       +'</div>'+lineActHtml(x)
       +'<div class="btns" style="margin-top:12px"><button class="btn ghost" id="pvLink">🔗 링크 복사</button><button class="btn ghost" id="pvClose">닫기</button><button class="btn primary" id="pvEdit">✏️ 수정하기</button></div>';
@@ -1494,6 +1496,7 @@
     window.scrollTo(0,0);
   }
   function closeDocForm(){docDraft=null;docEditingId=null;docEditingSite="";$("docForm").classList.add("hide");}
+  $("d_type").addEventListener("change",function(){if(this.value!=="연차신청서")return;this.value="품의서";if(docEditingId){toast("기존 문서는 연차신청서로 바꿀 수 없습니다");return;}closeDocForm();openLeaveForm();});
   function renderDocAttach(){
     var box=$("docAttachList");
     box.innerHTML=(docDraft.attachments||[]).map(function(a,i){var th=(a.dataUrl&&(a.type||"").indexOf("image")===0)?'<img class="th" src="'+a.dataUrl+'">':'<span class="fico">📄</span>';return '<div class="achip">'+th+'<span class="nm">'+esc(a.name)+'</span><button class="x" data-i="'+i+'">×</button></div>';}).join("");
@@ -2518,7 +2521,7 @@
 
   function draftCardHtml(mine){
     var todo=(apprDocs||[]).filter(isMyTurn),done=(apprDocs||[]).filter(function(x){return !isMyTurn(x);}).slice(0,4);
-    return '<div class="hm-h" style="justify-content:space-between">📝 기안서<button class="fbtn up" id="dfNew">＋ 기안서 작성</button></div>'
+    var lvL=lvMine();return '<div class="hm-h" style="justify-content:space-between">📝 기안서<span style="display:flex;gap:6px">'+(isAdmin()?'':'<button class="fbtn up" id="lvNew" style="background:#E6F4EC;color:#2E7D4F;border-color:#BFE3CC">🌴 연차 신청'+(lvL?' · '+lvFmt(lvL.left)+'일 남음':'')+'</button>')+'<button class="fbtn up" id="dfNew">＋ 기안서 작성</button></span></div>'
       +(todo.length?'<div style="font-size:13px;font-weight:800;color:#9A3327;margin:4px 0">📥 내가 결재할 문서 '+todo.length+'건</div>'+todo.map(function(x){return '<div class="hm-row" data-mdoc="'+esc(x.id)+'"><span>'+esc(x.title||"(제목 없음)")+' <span style="font-size:11px;color:#9A9A90">· '+esc(x.createdBy||"")+'</span></span><span class="st-b st-w">결재하기 ›</span></div>';}).join(""):'')
       +'<div style="font-size:13px;font-weight:800;color:#55586E;margin:10px 0 4px">내가 올린 기안서</div>'
       +(mine.length?mine.slice(0,6).map(function(x){return '<div class="hm-row" data-mdoc="'+esc(x.id)+'"><span>'+esc(x.title||"(제목 없음)")+'</span>'+stBadge(x)+'</div>';}).join(""):'<div class="hm-empty">필요한 물품·수리·건의 사항을 기안서로 올리면 상급자에게 결재가 올라갑니다.</div>')
@@ -2526,6 +2529,7 @@
   }
   function wireDraftCard(root){
     var nb=root.querySelector("#dfNew");if(nb)nb.addEventListener("click",openStaffDraft);
+    var lb=root.querySelector("#lvNew");if(lb)lb.addEventListener("click",openLeaveForm);
     root.querySelectorAll("[data-mdoc]").forEach(function(el){el.addEventListener("click",function(){openDocPreview(el.getAttribute("data-mdoc"));});});
   }
 
@@ -2811,9 +2815,9 @@
       '<p style="font-size:12.5px;color:#6A6A72;line-height:1.6;margin:6px 0 10px">매달 부장님께 받은 급여대장 엑셀을 올리면 그대로 보관합니다. 4대보험은 앱이 2026년 요율로 따로 계산해서 대조하고, 차이가 나면 <b>부장님 값(실지급)</b>을 그대로 씁니다.</p>'+
       '<button class="btn primary" id="prUpBtn" style="width:100%">⬆ 급여대장 엑셀 올리기 (여러 달 한 번에 가능)</button></div>'+
       '<div class="card">'+prOptBar("prOptA")+'<p style="font-size:12px;color:#8A8A92;line-height:1.55;margin:8px 0 0">켜면 결산 → 월말 결산에 그 달(귀속월) 급여가 "인건비" 한 줄로 더해집니다. 개인별 금액은 결산에 나오지 않습니다.</p></div>'+
-      (cards||'<div class="empty">아직 올린 급여대장이 없습니다.<br>위 버튼으로 엑셀을 올려 주세요.</div>');
+      (cards||'<div class="empty">아직 올린 급여대장이 없습니다.<br>위 버튼으로 엑셀을 올려 주세요.</div>')+'<div id="lvAdmin"></div>';
     $("prUpBtn").addEventListener("click",function(){$("prXlsInput").click();});
-    prWireOpt($("prOptA"));
+    prWireOpt($("prOptA"));try{renderLeaveAdmin($("lvAdmin"));}catch(e){}
     el.querySelectorAll("[data-prm]").forEach(function(c){c.addEventListener("click",function(){var m=c.getAttribute("data-prm"),mo=prMonth(m);if(!mo||mo.status==="estimate")openPayrollEstimate(m);else openPayrollMonth(m);});});
   }
   function openPayrollMonth(m){
@@ -2975,6 +2979,116 @@
       try{await cloudPost({action:"payrollSave",month:m,data:e});payrollData=payrollData.filter(function(x){return x.month!==m;}).concat([e]);closeSheet();renderPayroll();toast("가계산을 저장했습니다");}
       catch(er){toast("실패: "+er.message);b.disabled=false;b.textContent="가계산 저장 (결산에 반영)";}});
   }
+
+  // ==================== (11/13) 연차 신청서 (문서 결재) ====================
+  var myLeave=null,leaveData=null;
+  function lvFmt(n){n=Number(n)||0;return (Math.round(n*10)/10).toString();}
+  function lvMine(){
+    if(isStaff())return myLeave;
+    if(isMgr()&&leaveData&&leaveData.emp){var ks=Object.keys(leaveData.emp);for(var i=0;i<ks.length;i++){var o=leaveData.emp[ks[i]];if(o.status!=="퇴사"&&/소장/.test(o.role||"")&&String(o.site)===String((SESS&&SESS.site)||""))return Object.assign({year:leaveData.year},o);}}
+    return null;
+  }
+  function lvOfDoc(x){ // 결재하는 사람이 볼 신청자 연차 현황
+    if(!leaveData||!leaveData.emp)return null;var ck=String(x.createdKey||"");
+    if(ck.indexOf("emp:")===0)return leaveData.emp[ck.slice(4)]||null;
+    var ks=Object.keys(leaveData.emp);for(var i=0;i<ks.length;i++){var o=leaveData.emp[ks[i]];if(ck==="mgr:"+o.site&&/소장/.test(o.role||"")&&o.status!=="퇴사")return o;}return null;
+  }
+  function lvBoxHtml(o,yr){
+    if(!o)return '<div style="font-size:12.5px;color:#8A8A92">연차 현황은 본사에서 정리 중입니다.</div>';
+    return '<div class="lv-box"><div class="lv-y">'+esc(yr||o.year||"")+'년 연차</div><div class="lv-g"><span>발생</span><b>'+lvFmt(o.grant)+'일</b><span>사용</span><b>'+lvFmt(o.used)+'일</b><span>결재 중</span><b>'+lvFmt(o.pending)+'일</b><span>남음</span><b class="'+((o.left-o.pending)<0?'lv-neg':'lv-ok')+'">'+lvFmt(o.left)+'일</b></div></div>';
+  }
+  function openLeaveForm(){
+    // 본사 관리자 = 직원 연차 대리 등록만 / 관리소장 = 본인 신청 또는 우리 현장 직원 대리 등록 / 직원 = 본인 신청
+    var canProxy=(isAdmin()||isMgr())&&leaveData&&leaveData.emp;
+    var emps=canProxy?Object.keys(leaveData.emp).map(function(k){return leaveData.emp[k];}).filter(function(o){return o.status!=="퇴사"&&!(isMgr()&&/소장/.test(o.role||""));}).sort(function(a,b){return String(a.name)<String(b.name)?-1:1;}):[];
+    if(isAdmin()&&!emps.length){toast("직원 연차 정보가 아직 없습니다");return;}
+    if(!isAdmin()&&!approvers.length){toast("결재할 상급자 정보가 없습니다. 본사에 문의해 주세요.");return;}
+    var forEmp=isAdmin()?emps[0].id:"",L=isAdmin()?emps[0]:lvMine(),dates=[];
+    var defAp=approvers.length?(approvers.filter(function(a){return String(a.key).indexOf("mgr:")===0;})[0]||approvers[0]).key:"";
+    var whoSel=canProxy?'<div class="field"><label>누구의 연차인가요?</label><select id="lvWho">'+(isMgr()?'<option value="">나 (소장 본인) — 본사 결재</option>':'')+emps.map(function(o){return '<option value="'+esc(o.id)+'">'+esc(o.name)+' · '+esc(o.role||"")+(isAdmin()?' ('+esc(o.site)+')':'')+' — 바로 등록</option>';}).join("")+'</select></div>':'';
+    openSheet('<h3>🌴 연차 신청서</h3>'+whoSel+'<div id="lvBoxW">'+lvBoxHtml(L,(leaveData&&leaveData.year)||(L&&L.year))+'</div>'+
+      '<div class="field" style="margin-top:12px"><label>종류</label><select id="lvKind"><option value="연차">연차 (하루)</option><option value="오전 반차">오전 반차 (0.5일)</option><option value="오후 반차">오후 반차 (0.5일)</option></select></div>'+
+      '<div class="field"><label>날짜 (여러 날이면 하나씩 추가)</label><div style="display:flex;gap:8px"><input type="date" id="lvDate" value="'+todayISO()+'" style="flex:1"><button class="btn ghost" id="lvAdd" style="flex:0 0 auto;padding:0 16px">＋ 추가</button></div><div id="lvChips" style="margin-top:8px"></div></div>'+
+      '<div class="field"><label>사유 (선택)</label><input id="lvWhy" placeholder="예) 개인 사정 / 병원 진료"></div>'+
+      '<div class="field" id="lvApprF"><label>결재자</label><select id="lvAppr">'+approvers.map(function(a){return '<option value="'+esc(a.key)+'"'+(a.key===defAp?' selected':'')+'>'+esc(a.label)+'</option>';}).join("")+'</select></div>'+
+      '<div id="lvSum" style="font-size:13px;font-weight:700;margin:6px 0"></div><div class="err hide" id="lvErr"></div>'+
+      '<div class="btns" style="margin-top:12px"><button class="btn ghost" id="lvCancel">취소</button><button class="btn primary" id="lvGo">결재 올리기</button></div>');
+    function per(){return $("lvKind").value==="연차"?1:0.5;}
+    function draw(){
+      $("lvChips").innerHTML=dates.length?dates.map(function(d,i){return '<span class="lv-chip">'+esc(fmtK(d))+' <b data-i="'+i+'">×</b></span>';}).join(""):'<span style="font-size:12px;color:#9A9A90">＋ 추가를 눌러 날짜를 넣어 주세요.</span>';
+      $("lvChips").querySelectorAll("[data-i]").forEach(function(b){b.addEventListener("click",function(){dates.splice(Number(b.getAttribute("data-i")),1);draw();});});
+      var n=dates.length*per(),s=$("lvSum");
+      if(!dates.length){s.textContent="";return;}
+      var after=L?(L.left-(L.pending||0)-n):null;
+      s.innerHTML='이번 신청 <b>'+lvFmt(n)+'일</b>'+(L?' → 승인되면 남는 연차 <b style="color:'+(after<0?'#9A3327':'#2E7D4F')+'">'+lvFmt(after)+'일</b>'+(after<0?' (남은 연차보다 많아요)':''):'');
+    }
+    $("lvAdd").addEventListener("click",function(){var d=$("lvDate").value;if(!d)return;if(per()<1&&dates.length){toast("반차는 하루씩 신청해 주세요");return;}if(dates.indexOf(d)<0)dates.push(d);dates.sort();draw();});
+    $("lvKind").addEventListener("change",function(){if(per()<1&&dates.length>1)dates=dates.slice(0,1);draw();});
+    function setWho(){forEmp=$("lvWho")?$("lvWho").value:"";L=forEmp?leaveData.emp[forEmp]:lvMine();$("lvBoxW").innerHTML=lvBoxHtml(L,leaveData&&leaveData.year);
+      $("lvApprF").classList.toggle("hide",!!forEmp||isAdmin());$("lvGo").textContent=forEmp?"등록 (바로 승인)":"결재 올리기";draw();}
+    if($("lvWho"))$("lvWho").addEventListener("change",setWho);
+    $("lvCancel").addEventListener("click",closeSheet);
+    $("lvGo").addEventListener("click",async function(){
+      var er=$("lvErr");if(!dates.length){er.textContent="날짜를 하나 이상 추가해 주세요.";er.classList.remove("hide");return;}
+      var kind=$("lvKind").value,n=dates.length*per(),why=$("lvWhy").value.trim();
+      var title=(kind==="연차"?"연차":kind)+" 신청 · "+dates.map(function(d){return Number(d.slice(5,7))+"/"+Number(d.slice(8,10));}).join(", ")+" ("+lvFmt(n)+"일)";
+      var body="■ 종류: "+kind+"\n■ 날짜: "+dates.map(fmtK).join(", ")+"\n■ 일수: "+lvFmt(n)+"일"+(why?"\n■ 사유: "+why:"")+(L?"\n■ 신청 때 남은 연차: "+lvFmt(L.left)+"일 (결재 중 "+lvFmt(L.pending)+"일 별도)":"");
+      var b=$("lvGo"),lbl=b.textContent;b.disabled=true;b.textContent="올리는 중…";
+      var payload={action:"docAdd",record:{doctype:"연차신청서",date:todayISO(),title:title,body:body,leave:{kind:kind,dates:dates,reason:why}},attachments:[]};
+      if(forEmp)payload.forEmp=forEmp;else payload.approver=$("lvAppr").value;
+      try{await cloudPost(payload);
+        closeSheet();toast(forEmp?(L&&L.name?L.name+"님 ":"")+"연차를 등록했습니다":"연차 신청서를 올렸습니다");try{await cloudPull();}catch(e){}
+        if(isStaff())renderHome();else if(isMgr())renderNotices();else if(view==="payroll")renderPayroll();else if(view==="docs")renderDocs();}
+      catch(e){er.textContent="실패: "+e.message;er.classList.remove("hide");b.disabled=false;b.textContent=lbl;}
+    });
+    if(canProxy)setWho();else draw();
+  }
+  // ---------- 본사 관리자 : 연차 현황 (급여 화면 아래) ----------
+  function renderLeaveAdmin(el){
+    if(!el)return;if(!leaveData||!leaveData.emp){el.innerHTML='';return;}
+    var list=Object.keys(leaveData.emp).map(function(k){return leaveData.emp[k];}).filter(function(o){return o.status!=="퇴사";}).sort(function(a,b){return String(a.site+a.name)<String(b.site+b.name)?-1:1;});
+    el.innerHTML='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:800;font-size:15px">🌴 '+esc(leaveData.year)+'년 연차 현황</div><span style="display:flex;gap:6px"><button class="mini" id="lvAddA" style="margin:0">＋ 연차 등록</button><button class="mini" id="lvXls" style="margin:0">⬆ 엑셀 불러오기</button></span></div>'+
+      '<p style="font-size:12px;color:#6A6A72;line-height:1.55;margin:6px 0 8px">직원이 앱에서 낸 연차 신청서가 소장 결재로 <b>결재 완료</b>되면 "앱 사용"에 자동으로 더해집니다. 발생 일수는 입사일 기준 법정 계산값이 기본이고(파란 숫자), 고치면 그 값을 씁니다.'+(leaveData.cutoff?' 엑셀 기록 기준일: '+esc(fmtK(leaveData.cutoff))+' (그 뒤 날짜만 앱에서 셈)':'')+'</p>'+
+      '<div style="overflow-x:auto"><table class="grid pr-tbl"><thead><tr><th>이름</th><th>입사일</th><th>발생</th><th>엑셀 사용</th><th>앱 사용</th><th>결재 중</th><th>남음</th></tr></thead><tbody>'+
+      list.map(function(o){return '<tr><td class="l">'+esc(o.name)+'<br><small>'+esc(o.site)+' · '+esc(o.role||"")+'</small></td><td style="font-size:11px">'+esc(o.joinDate?fmtK(o.joinDate):"-")+'</td>'+
+        '<td><input class="lvIn" data-id="'+esc(o.id)+'" data-f="grant" type="number" step="0.5" value="'+lvFmt(o.grant)+'" style="width:52px;padding:4px;border:1px solid #D8D6CC;border-radius:6px;font-family:inherit;'+(o.grantAuto?'color:#2F4E8A':'font-weight:700')+'"></td>'+
+        '<td><input class="lvIn" data-id="'+esc(o.id)+'" data-f="used0" type="number" step="0.5" value="'+lvFmt(o.used0)+'" style="width:52px;padding:4px;border:1px solid #D8D6CC;border-radius:6px;font-family:inherit"></td>'+
+        '<td class="r">'+lvFmt(o.usedApp)+'</td><td class="r">'+lvFmt(o.pending)+'</td><td class="r"><b style="color:'+(o.left<0?'#9A3327':'#1C2A27')+'">'+lvFmt(o.left)+'</b></td></tr>';}).join("")+
+      '</tbody></table></div><button class="btn primary" id="lvSave" style="width:100%;margin-top:10px">연차 기초 자료 저장</button></div>';
+    var ch={};
+    el.querySelectorAll(".lvIn").forEach(function(inp){inp.addEventListener("change",function(){var id=inp.getAttribute("data-id"),f=inp.getAttribute("data-f");ch[id]=ch[id]||{};ch[id][f]=inp.value;});});
+    $("lvSave").addEventListener("click",async function(){
+      var emp={};Object.keys(ch).forEach(function(id){var o=leaveData.emp[id]||{};emp[id]={grant:ch[id].grant!=null?ch[id].grant:(o.grantAuto?"":o.grant),used0:ch[id].used0!=null?ch[id].used0:o.used0};});
+      if(!Object.keys(emp).length){toast("바뀐 내용이 없습니다");return;}
+      try{var r=await cloudPost({action:"leaveBaseSet",base:{emp:emp}});leaveData=r.leave;renderLeaveAdmin(el);toast("저장했습니다");}catch(e){toast("실패: "+e.message);}
+    });
+    $("lvXls").addEventListener("click",function(){$("lvXlsInput").click();});
+    $("lvAddA").addEventListener("click",openLeaveForm);
+  }
+  async function lvImportExcel(f){
+    toast("엑셀을 읽는 중…");var ok=await loadXLSX();if(!ok||!window.XLSX){toast("엑셀 도구를 불러오지 못했습니다.");return;}
+    var wb=XLSX.read(await f.arrayBuffer(),{type:"array"});var sn=wb.SheetNames.filter(function(n){return /연차관리/.test(n);})[0];
+    if(!sn){toast("'연차관리' 시트를 찾지 못했습니다");return;}
+    var A=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:null});
+    var h=-1,cName=-1,cUse=-1,year="";
+    for(var i=0;i<Math.min(A.length,12);i++){var r=A[i]||[];for(var c=0;c<r.length;c++){var t=String(r[c]==null?"":r[c]).replace(/\s/g,"");if(/^\d{4}년$/.test(t)&&!year)year=t.slice(0,4);if(t==="연차사용자"){h=i;cName=c;}}}
+    if(h<0){toast("'연차 사용자' 칸을 찾지 못했습니다");return;}
+    var H=A[h]||[];for(var c2=cName+1;c2<H.length;c2++){if(String(H[c2]==null?"":H[c2]).replace(/\s/g,"")==="사용"){cUse=c2;break;}}
+    if(cUse<0){toast("'사용' 합계 칸을 찾지 못했습니다");return;}
+    var byName={};Object.keys(leaveData.emp).forEach(function(k){var o=leaveData.emp[k];if(o.status!=="퇴사")byName[String(o.name).replace(/\s/g,"")]=o;});
+    var found=[],miss=[];
+    for(var r2=h+1;r2<A.length;r2++){var row=A[r2]||[];var nm=String(row[cName]==null?"":row[cName]).trim();if(!nm)continue;
+      var key=nm.split(/\s+/)[0].replace(/\s/g,"");var v=Number(row[cUse])||0;var o=byName[key];if(o)found.push({o:o,used:v});else miss.push(nm.split(/\s+/)[0]);}
+    var cut=todayISO();
+    openSheet('<h3>🌴 연차관리 엑셀 불러오기</h3><p style="font-size:12.5px;color:#6A6A72;margin:4px 0 8px">'+esc(year||leaveData.year)+'년 사용 합계를 "엑셀 사용"에 넣고, 기준일을 오늘('+esc(fmtK(cut))+')로 정합니다. 앞으로는 오늘 이후 날짜의 연차만 앱 결재로 셉니다.</p>'+
+      '<table class="grid"><thead><tr><th>이름</th><th>엑셀 사용</th></tr></thead><tbody>'+found.map(function(x){return '<tr><td class="l">'+esc(x.o.name)+'</td><td class="r">'+lvFmt(x.used)+'일</td></tr>';}).join("")+'</tbody></table>'+
+      (miss.length?'<p style="font-size:12px;color:#9A3327;margin-top:8px">직원 명단에서 못 찾은 이름: '+miss.map(esc).join(", ")+'</p>':'')+
+      '<div class="btns" style="margin-top:12px"><button class="btn ghost" id="lvINo">취소</button><button class="btn primary" id="lvIGo">'+found.length+'명 넣기</button></div>');
+    $("lvINo").addEventListener("click",closeSheet);
+    $("lvIGo").addEventListener("click",async function(){var emp={};found.forEach(function(x){emp[x.o.id]={grant:x.o.grantAuto?"":x.o.grant,used0:x.used};});
+      try{var r=await cloudPost({action:"leaveBaseSet",base:{year:year||leaveData.year,cutoff:cut,emp:emp}});leaveData=r.leave;closeSheet();renderPayroll();toast(found.length+"명 연차 기록을 넣었습니다");}catch(e){toast("실패: "+e.message);}});
+  }
+  $("lvXlsInput").addEventListener("change",function(e){var f=(e.target.files||[])[0];e.target.value="";if(f)lvImportExcel(f);});
 
   // ---------- boot ----------
   (async function(){
