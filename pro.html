@@ -94,6 +94,25 @@ button{border:none;background:none;cursor:pointer}
 .btn.r{background:var(--r)}
 .btn.y{background:var(--y)}
 .btn.sm{padding:6px 11px;font-size:12px;border-radius:7px}
+/* (11/13) 다음 할 일 안내 */
+.gd{background:#fff;border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:var(--rad);margin-bottom:16px}
+.gd.g{border-left-color:var(--g)}.gd.y{border-left-color:var(--y)}
+.gd-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line2)}
+.gd.off .gd-h{border-bottom:0;padding-bottom:4px}
+.gd-h>b{font-size:12.5px;font-weight:800;color:var(--navy)}
+.gd-w{font-size:11.5px;color:var(--ink3);font-weight:600}
+.gd-s{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-left:auto}
+.gd-s i{width:10px;height:1px;background:var(--line)}
+.gs{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:#F1F5F9;color:var(--ink3);white-space:nowrap}
+.gs.ok{background:var(--gl);color:#0B6B30}.gs.on{background:var(--navy);color:#fff}
+.gd-x{font-size:11px;color:var(--ink3);font-weight:700;padding:3px 6px;background:none}
+.gd-b{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 14px}
+.gd-m{flex:1;min-width:240px}
+.gd-t{font-size:14.5px;font-weight:800;letter-spacing:-.3px}
+.gd-d{font-size:12px;color:var(--ink2);line-height:1.7;margin-top:3px}
+.gd-a{display:flex;gap:7px;flex-wrap:wrap}
+.gd-1{padding:0 14px 10px;font-size:12.5px;font-weight:700;color:var(--ink2)}
+@media(max-width:860px){.gd-s{margin-left:0;width:100%}.gd-a{width:100%}.gd-a .btn{flex:1}}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 
 table{width:100%;border-collapse:collapse}
@@ -224,6 +243,7 @@ td input.num{text-align:right}
 
   <div id="emb"><iframe id="embf" title="현장·직원 관리"></iframe></div>
   <div class="content" id="content">
+  <div id="guide" class="hide"></div>
 
   <!-- ========== 현황 ========== -->
   <section class="page on" id="p-dash">
@@ -244,12 +264,12 @@ td input.num{text-align:right}
   <section class="page" id="p-charge">
     <div class="card">
       <div class="ch"><h3>이번 달 총액 넣기</h3><p>고지서 총액을 넣으면 항목 설정대로 나눕니다</p>
-        <div class="sp"></div><button class="btn" onclick="calcNow()">▶ 계산하기</button></div>
+        <div class="sp"></div><button class="btn o sm hide" id="c-prev" onclick="copyPrev()">↩ 지난달 값 가져오기</button><button class="btn" onclick="calcNow()">▶ 계산하기</button></div>
       <div class="cb"><div id="c-inputs"></div></div>
     </div>
     <div class="card" id="c-usewrap">
       <div class="ch"><h3>세대별 사용량</h3><p>사용량으로 나누는 항목이 있을 때만 씁니다</p>
-        <div class="sp"></div><button class="btn o sm" onclick="pasteUse()">📋 엑셀에서 붙여넣기</button></div>
+        <div class="sp"></div><button class="btn o sm hide" id="c-prevu" onclick="copyPrevUse()">↩ 지난달 사용량 가져오기</button><button class="btn o sm" onclick="pasteUse()">📋 엑셀에서 붙여넣기</button></div>
       <div class="tw" id="c-usetbl"></div>
     </div>
     <div class="card">
@@ -266,6 +286,7 @@ td input.num{text-align:right}
     <div class="grid g4" style="margin-bottom:16px" id="k-stats"></div>
     <div class="card">
       <div class="ch"><h3>수납 현황</h3><p id="k-info"></p><div class="sp"></div>
+        <button class="btn sm" onclick="bankMatch()">🏦 입금 내역으로 자동 확인</button>
         <button class="btn o sm" onclick="allPaid(true)">전체 수납 처리</button>
         <button class="btn o sm" onclick="allPaid(false)">전체 해제</button>
         <button class="btn o sm" onclick="exportCollect()">↓ 엑셀(CSV)</button></div>
@@ -553,7 +574,7 @@ function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.cl
 function modal(t,b,f){ document.getElementById('m-t').textContent=t; document.getElementById('m-b').innerHTML=b;
   document.getElementById('m-f').innerHTML=f||'<button class="btn o" onclick="closeM()">닫기</button>';
   document.getElementById('modal').classList.add('on'); }
-function closeM(){ document.getElementById('modal').classList.remove('on'); }
+function closeM(){ document.getElementById('modal').classList.remove('on'); try{ bkWide(false); }catch(e){} }
 function dl(name, text, type){
   var blob=new Blob(['﻿'+text],{type:(type||'text/csv')+';charset=utf-8;'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click();
@@ -680,6 +701,7 @@ function rDash(){
   else if(!m.confirmed) al='<div class="note y" style="margin-bottom:16px"><b>'+ymL(S.ym)+'분이 아직 부과 전입니다.</b> <b>관리비 부과</b>에서 총액을 넣고 계산하세요.</div>';
   else if(billed-paid>0) al='<div class="note r" style="margin-bottom:16px">미납 <b>'+won(billed-paid)+'원</b>이 남아 있습니다.</div>';
   else al='<div class="note g" style="margin-bottom:16px">이번 달 수납이 모두 끝났습니다.</div>';
+  al='';
   if(NOB) al='<div class="note r" style="margin-bottom:16px"><b>담당 건물이 아직 연결되지 않았습니다.</b> 본사 관리자에게 <b>건물·사업자 → 담당 관리소장 현장</b>에 <b>'+esc(meSite()||'우리 현장')+'</b>을(를) 넣어 달라고 요청해 주세요.</div>';
   if(!MGR){ var rq=S.pro.bldgs.filter(function(x){ var q=x.months&&x.months[S.ym]; return q&&q.req&&!q.confirmed; });
     if(rq.length) al='<div class="note y" style="margin-bottom:16px">📤 <b>확정 요청</b> : '+rq.map(function(x){ return esc(x.name)+' ('+esc(x.months[S.ym].req.by||'관리소장')+')'; }).join(', ')+' — 건물을 열고 <b>관리비 부과</b>에서 확인 후 확정해 주세요.</div>'+al; }
@@ -716,7 +738,7 @@ function rCharge(){
     ? '<div class="grid g3">'+varItems.map(function(x){
         return '<div class="fld"><label>'+esc(x.it.n)+' <span style="color:var(--ink3);font-weight:600">('+MODEL[x.it.mode]+')</span></label>'+
         '<input class="num" type="tel" value="'+(m.totals[x.i]||'')+'" placeholder="고지서 총액" '+
-        'oninput="M().totals['+x.i+']=nOf(this.value);save()"></div>'; }).join('')+'</div>'
+        'id="ti-'+x.i+'" oninput="setTot('+x.i+',this.value)"><div class="hint" id="th-'+x.i+'"></div></div>'; }).join('')+'</div>'
     : '<div class="empty">매달 넣을 항목이 없습니다. 모두 세대 정액입니다.</div>';
 
   var useItems = b.items.map(function(it,i){return {it:it,i:i};}).filter(function(x){ return x.it.mode==='use'; });
@@ -732,6 +754,7 @@ function rCharge(){
           return '<td><input class="num" type="tel" value="'+(arr[ui]||'')+'" oninput="setUse('+x.i+','+ui+',this.value)"></td>';
         }).join('')+'</tr>'; }).join('')+'</tbody></table>';
   }
+  try{ chargeExtra(); }catch(e){}
   if(m.rows.length) drawCharge(m.rows);
 }
 function setUse(ii,ui,v){ var m=M(); if(!m.usage[ii]) m.usage[ii]=[]; m.usage[ii][ui]=nOf(v); save(); }
@@ -750,28 +773,28 @@ function drawCharge(rows){
   document.getElementById('c-info').innerHTML = ymL(S.ym)+'분 · 합계 <b>'+won(tot)+'원</b>'+(m.confirmed?' · <span class="tag t-ok">확정됨'+(m.confirmedAt?' '+esc(m.confirmedAt):'')+'</span>':' · <span class="tag t-w">미확정</span>')+(m.req&&!m.confirmed?' · <span class="tag t-w">확정 요청 · '+esc(m.req.by||'')+' '+esc(m.req.at||'')+'</span>':'');
   document.getElementById('c-tbl').innerHTML='<table><thead><tr><th>호실</th><th>임차인</th>'+
     b.items.map(function(it){ return '<th class="num">'+esc(it.n)+(it.tax?' <span class="tag t-i">과세</span>':'')+'</th>'; }).join('')+
-    '<th class="num">공급가액</th><th class="num">부가세</th><th class="num">청구액</th></tr></thead><tbody>'+
+    '<th class="num">공급가액</th><th class="num">부가세</th><th class="num">청구액</th>'+dvHead()+'</tr></thead><tbody>'+
     rows.map(function(r,i){
       var u=b.units[i]||{};
       if(r.vacant) return '<tr style="opacity:.45"><td><b>'+esc(r.ho)+'</b></td><td><span class="tag t-x">공실</span></td>'+
-        b.items.map(function(){return '<td class="num">-</td>';}).join('')+'<td class="num">-</td><td class="num">-</td><td class="num">-</td></tr>';
+        b.items.map(function(){return '<td class="num">-</td>';}).join('')+'<td class="num">-</td><td class="num">-</td><td class="num">-</td>'+dvCell(null)+'</tr>';
       return '<tr><td><b>'+esc(r.ho)+'</b></td><td>'+esc(u.name||'-')+'</td>'+
         r.cells.map(function(c){ return '<td class="num">'+won(c)+'</td>'; }).join('')+
         '<td class="num">'+won(r.taxSupply+r.freeSupply)+'</td>'+
         '<td class="num">'+(r.vat?won(r.vat):'-')+'</td>'+
-        '<td class="num"><b>'+won(r.total)+'</b></td></tr>';
+        '<td class="num"><b>'+won(r.total)+'</b></td>'+dvCell(r)+'</tr>';
     }).join('')+
     '<tr style="background:#FAFCFE;font-weight:800"><td colspan="2">합계</td>'+
       b.items.map(function(it,ii){ return '<td class="num">'+won(rows.reduce(function(a,r){return a+(r.cells[ii]||0);},0))+'</td>'; }).join('')+
       '<td class="num">'+won(rows.reduce(function(a,r){return a+(r.taxSupply||0)+(r.freeSupply||0);},0))+'</td>'+
       '<td class="num">'+won(rows.reduce(function(a,r){return a+(r.vat||0);},0))+'</td>'+
-      '<td class="num">'+won(tot)+'</td></tr></tbody></table>';
+      '<td class="num">'+won(tot)+'</td>'+dvTot(rows)+'</tr></tbody></table>'; dvInfo(rows);
 }
 function confirmCharge(){
   var m=M(), b=B();
   if(!m.rows.length){ toast('먼저 계산하세요'); return; }
   if(MGR){ reqConfirm(); return; }
-  m.confirmed=true; m.confirmedBy='본사'; m.confirmedAt=new Date().toISOString().slice(0,10); delete m.req;
+  m.confirmed=true; delete m.cp; m.confirmedBy='본사'; m.confirmedAt=new Date().toISOString().slice(0,10); delete m.req;
   if(!m.paid || m.paid.length!==b.units.length) m.paid=b.units.map(function(){return false;});
   save(); toast(ymL(S.ym)+'분을 확정했습니다'); render('charge');
 }
@@ -1092,6 +1115,374 @@ function resetAll(){
 function doReset(){ try{ localStorage.removeItem(KEY); }catch(e){} MEM=null; if(FAC){ __facPending='{}'; facFlush(function(){ facGo('facpro'); }, true); } else location.reload(); }
 
 /* ---------- 시작 ---------- */
+/* ===== (11/13) 자동화 도구 : ① 다음 할 일 안내  ② 지난달 값 가져오기 · 전월 대비  ④ 입금 자동 대조 ===== */
+var PRO_BUILD='1113-01';
+function mShort(ym){ return parseInt((ym||'').split('-')[1])+'월'; }
+/* 자료가 있는 가장 가까운 이전 달 (없으면 null) — 달을 새로 만들지 않도록 M() 을 쓰지 않는다 */
+function prevMonth(){
+  var b=B(); if(!b||!b.months) return null;
+  var ks=Object.keys(b.months).filter(function(k){ return k<S.ym; }).sort().reverse();
+  for(var i=0;i<ks.length;i++){ var m=b.months[ks[i]]; if(!m) continue;
+    var hasT=Object.keys(m.totals||{}).some(function(k){ return +m.totals[k]>0; });
+    if(hasT || (m.rows&&m.rows.length)) return {ym:ks[i], m:m}; }
+  return null;
+}
+
+/* ---------- ② 지난달 값 ---------- */
+function tHint(i){
+  var el=document.getElementById('th-'+i); if(!el) return;
+  var p=prevMonth(), m=M(), cur=+(m.totals[i]||0), pv=p?+((p.m.totals||{})[i]||0):0;
+  var cp=!!(m.cp&&m.cp.indexOf(i)>=0), h='';
+  if(pv){
+    h=mShort(p.ym)+' '+won(pv)+'원';
+    if(cur && cur!==pv){ var d=cur-pv, pc=Math.round(Math.abs(d)/pv*100);
+      h+=' · <b style="color:'+(d>0?'var(--r)':'var(--navy)')+'">'+(d>0?'▲':'▼')+' '+won(Math.abs(d))+'원 ('+pc+'%)</b>'+(pc>=30?' <span class="tag t-w">크게 달라요</span>':''); }
+    else if(cur && cp) h+=' · <span class="tag t-w">지난 값 그대로 · 고지서와 맞는지 확인</span>';
+    else if(cur) h+=' · 같음';
+  } else if(p){ h=mShort(p.ym)+'에는 값이 없었어요'; }
+  el.innerHTML=h;
+  var inp=document.getElementById('ti-'+i); if(inp) inp.style.background=cp?'var(--yl)':'';
+}
+function setTot(i,v){
+  var m=M(); m.totals[i]=nOf(v);
+  if(m.cp){ m.cp=m.cp.filter(function(x){ return x!==i; }); if(!m.cp.length) delete m.cp; }
+  save(); tHint(i); try{ guide(); }catch(e){}
+}
+function chargeExtra(){
+  var b=B(), m=M(), p=prevMonth();
+  b.items.forEach(function(it,i){ if(it.mode!=='each') tHint(i); });
+  var canT=false, canU=false;
+  if(p && !m.confirmed){
+    b.items.forEach(function(it,i){
+      if(it.mode!=='each' && +((p.m.totals||{})[i]||0) && !(+m.totals[i])) canT=true;
+      if(it.mode==='use' && p.m.usage && p.m.usage[i]){ var pmu=prevUnitMap(p), cu=m.usage[i]||[];
+        b.units.forEach(function(u,ui){ var pi=pmu(ui); if(pi!=null && +(p.m.usage[i][pi]||0) && !(+cu[ui])) canU=true; }); }
+    });
+  }
+  var b1=document.getElementById('c-prev'), b2=document.getElementById('c-prevu');
+  if(b1){ b1.classList.toggle('hide', !canT); if(p) b1.textContent='↩ '+mShort(p.ym)+' 값 가져오기'; }
+  if(b2){ b2.classList.toggle('hide', !canU); if(p) b2.textContent='↩ '+mShort(p.ym)+' 사용량 가져오기'; }
+  /* 사용량 칸에 지난달 값을 흐리게 보여준다 */
+  if(p && p.m.usage){
+    var useIdx=[]; b.items.forEach(function(it,i){ if(it.mode==='use') useIdx.push(i); });
+    var pm=prevUnitMap(p);
+    document.querySelectorAll('#c-usetbl tbody tr').forEach(function(tr,ui){
+      var pi=pm(ui); if(pi==null) return;
+      tr.querySelectorAll('input').forEach(function(inp,k){ var a=p.m.usage[useIdx[k]]; var v=a?+(a[pi]||0):0; if(v) inp.placeholder=mShort(p.ym)+' '+v; });
+    });
+  }
+}
+/* 지난달 자료의 몇 번째 줄이 지금 이 세대인지 (호실 이름으로 찾고, 계산 기록이 없으면 순서로) */
+function prevUnitMap(p){
+  var b=B(), pr=(p.m.rows||[]), map={};
+  pr.forEach(function(r,i){ if(map[r.ho]==null) map[r.ho]=i; });
+  return function(ui){ var u=b.units[ui]; if(!u) return null; if(pr.length){ var x=map[u.ho]; return x==null?null:x; } return ui; };
+}
+function copyPrev(){
+  var b=B(), m=M(), p=prevMonth();
+  if(!p){ toast('가져올 지난달 자료가 없어요'); return; }
+  if(m.confirmed){ toast('이미 확정한 달이라 바꿀 수 없어요'); return; }
+  var n=0, cp=m.cp||[];
+  b.items.forEach(function(it,i){ if(it.mode==='each') return;
+    var pv=+((p.m.totals||{})[i]||0);
+    if(pv && !(+m.totals[i])){ m.totals[i]=pv; n++; if(cp.indexOf(i)<0) cp.push(i); } });
+  if(!n){ toast('빈 칸이 없어요. 이미 넣은 값은 그대로 둡니다'); return; }
+  m.cp=cp; save(); render('charge');
+  toast(mShort(p.ym)+' 값 '+n+'개를 채웠어요. 고지서와 다른 항목만 고치세요');
+}
+function copyPrevUse(){
+  var b=B(), m=M(), p=prevMonth();
+  if(!p||!p.m.usage){ toast('가져올 지난달 사용량이 없어요'); return; }
+  if(m.confirmed){ toast('이미 확정한 달이라 바꿀 수 없어요'); return; }
+  var n=0, pm=prevUnitMap(p);
+  b.items.forEach(function(it,ii){ if(it.mode!=='use') return; var pa=p.m.usage[ii]; if(!pa) return;
+    if(!m.usage[ii]) m.usage[ii]=[];
+    b.units.forEach(function(u,ui){ var pi=pm(ui); if(pi==null) return; var pv=+(pa[pi]||0);
+      if(pv && !(+m.usage[ii][ui])){ m.usage[ii][ui]=pv; n++; } });
+  });
+  if(!n){ toast('빈 칸이 없어요. 이미 넣은 값은 그대로 둡니다'); return; }
+  save(); render('charge');
+  toast(mShort(p.ym)+' 사용량 '+n+'칸을 채웠어요. 이번 달 검침값과 다르면 고치세요');
+}
+/* 부과 내역 표의 "지난달 대비" 칸 */
+var __dv=null;
+function dvBig(d,pv){ return Math.abs(d)>=10000 && (!pv || Math.abs(d)/pv>=0.2); }
+function dvHead(){
+  var p=prevMonth(); __dv=null;
+  if(!p || !(p.m.rows&&p.m.rows.length)) return '';
+  var map={}; p.m.rows.forEach(function(r){ if(!r.vacant && map[r.ho]==null) map[r.ho]=r.total; });
+  __dv={ym:p.ym, map:map, tot:p.m.rows.reduce(function(a,r){ return a+(r.total||0); },0)};
+  return '<th class="num">'+mShort(p.ym)+' 대비</th>';
+}
+function dvFmt(d){ return '<span style="color:'+(d>0?'var(--r)':'var(--navy)')+'">'+(d>0?'▲':'▼')+' '+won(Math.abs(d))+'</span>'; }
+function dvCell(r){
+  if(!__dv) return '';
+  if(!r) return '<td class="num">-</td>';
+  var pv=__dv.map[r.ho];
+  if(pv==null) return '<td class="num"><span class="tag t-i">'+mShort(__dv.ym)+'엔 없음</span></td>';
+  var d=r.total-pv;
+  if(!d) return '<td class="num" style="color:var(--ink3)">같음</td>';
+  return '<td class="num">'+dvFmt(d)+(dvBig(d,pv)?' <span class="tag t-w">확인</span>':'')+'</td>';
+}
+function dvTot(rows){
+  if(!__dv) return '';
+  var d=rows.reduce(function(a,r){ return a+(r.total||0); },0)-__dv.tot;
+  return '<td class="num">'+(d?dvFmt(d):'같음')+'</td>';
+}
+function dvCount(rows){
+  if(!__dv) return 0;
+  return rows.filter(function(r){ if(r.vacant) return false; var pv=__dv.map[r.ho]; return pv!=null && dvBig(r.total-pv,pv); }).length;
+}
+function dvInfo(rows){
+  var n=dvCount(rows), el=document.getElementById('c-info');
+  if(n && el) el.innerHTML+=' · <span class="tag t-w">'+mShort(__dv.ym)+'보다 크게 달라진 세대 '+n+'곳</span>';
+}
+
+/* ---------- ① 다음 할 일 ---------- */
+function guideOff(){ try{ return localStorage.getItem('pro_guide_off')==='1'; }catch(e){ return false; } }
+function guideToggle(){ try{ localStorage.setItem('pro_guide_off', guideOff()?'0':'1'); }catch(e){} guide(); }
+function itemsOk(){ B().itemsOk=true; save(); toast('항목을 확인했어요'); guide(); }
+function gBtn(label, fn, main){ return '<button class="btn sm'+(main?'':' o')+'" onclick="'+fn+'">'+label+'</button>'; }
+function guide(){
+  var el=document.getElementById('guide'); if(!el) return;
+  var p=curPage(), b=B();
+  if(MODE!=='pro' || NOB || !b || ['dash','units','items','charge','collect'].indexOf(p)<0){ el.className='hide'; el.innerHTML=''; return; }
+  var m=M(), pm=prevMonth();
+  var anyRows=Object.keys(b.months).some(function(k){ var x=b.months[k]; return x&&x.rows&&x.rows.length; });
+  var miss=[]; b.items.forEach(function(it,i){ if(it.mode!=='each' && !(+m.totals[i])) miss.push(it.n||'이름 없는 항목'); });
+  var hasVar=b.items.some(function(it){ return it.mode!=='each'; });
+  var stale=false;
+  if(m.rows.length && !m.confirmed){ var nr=calcRows(b,m);
+    stale = nr.length!==m.rows.length || nr.some(function(r,i){ return r.total!==m.rows[i].total || r.ho!==m.rows[i].ho; }); }
+  var unpaidN=0, unpaidAmt=0, billed=0;
+  if(m.confirmed) m.rows.forEach(function(r,i){ if(r.vacant) return; billed+=r.total; if(!(m.paid&&m.paid[i])){ unpaidN++; unpaidAmt+=r.total; } });
+  var steps=[{k:'units', t:'세대 넣기', pg:'units', ok:b.units.length>0}];
+  if(!MGR) steps.push({k:'items', t:'항목 확인', pg:'items', ok:b.items.length>0 && (!!b.itemsOk || anyRows)});
+  steps.push({k:'calc', t:'총액 넣고 계산', pg:'charge', ok:m.rows.length>0 && !stale});
+  steps.push({k:'fix', t:MGR?'본사 확정':'부과 확정', pg:'charge', ok:!!m.confirmed});
+  steps.push({k:'pay', t:'수납 확인', pg:'collect', ok:!!m.confirmed && !unpaidN});
+  var ci=-1; for(var i=0;i<steps.length;i++){ if(!steps[i].ok){ ci=i; break; } }
+  var cur=ci<0?null:steps[ci], T='', D='', A='', tone='';
+  if(!cur){
+    tone='g'; T='✓ '+ymL(S.ym)+'분 일이 모두 끝났어요';
+    D='부과 '+won(billed)+'원 · 전 세대 수납 완료';
+    if(!MGR){ var tn=0; try{ tn=taxTargets().length; }catch(e){} if(tn) A=gBtn('🧾 세금계산서 명세 '+tn+'건 보기',"go('tax')"); }
+  } else if(cur.k==='units'){
+    T='먼저 세대(호실)를 넣어 주세요';
+    D='엑셀 표를 복사해 붙여넣으면 한 번에 들어갑니다. 열 순서는 호실 · 면적 · 임차인 · 연락처예요.';
+    A = p==='units' ? gBtn('📋 엑셀에서 붙여넣기','pasteUnits()',1)+gBtn('호실 자동 만들기','autoUnits()') : gBtn('세대 넣으러 가기 →',"go('units')",1);
+  } else if(cur.k==='items'){
+    T='관리비 항목이 맞는지 한 번만 확인해 주세요';
+    D='지금 항목 : '+(b.items.length ? b.items.map(function(it){ return esc(it.n||'이름 없음')+' ('+MODEL[it.mode]+')'; }).join(' · ') : '없음')+'<br>한 번 정해 두면 매달 그대로 씁니다.';
+    A = (p==='items'?'':gBtn('항목 보러 가기 →',"go('items')"))+(b.items.length?gBtn('✓ 이대로 쓸게요','itemsOk()',1):'');
+  } else if(cur.k==='calc'){
+    var canCopy=false;
+    if(pm) b.items.forEach(function(it,i){ if(it.mode!=='each' && +((pm.m.totals||{})[i]||0) && !(+m.totals[i])) canCopy=true; });
+    var zeroU=0;
+    b.items.forEach(function(it,ii){ if(it.mode!=='use') return; var a=m.usage[ii]||[];
+      if(!a.some(function(x){ return +x>0; })) return;
+      b.units.forEach(function(u,ui){ if(!u.vacant && !(+a[ui])) zeroU++; }); });
+    if(stale){ T='숫자가 바뀌었어요. 다시 계산해 주세요'; D='계산한 뒤에 총액·사용량이나 세대가 바뀌어서 부과 내역이 지금 값과 달라요.'; }
+    else if(!hasVar){ T=ymL(S.ym)+'분을 계산하세요'; D='모두 정액 항목이라 넣을 숫자가 없어요. 계산하기만 누르면 됩니다.'; }
+    else if(miss.length){ T=ymL(S.ym)+'분 고지서 총액을 넣어 주세요'; D='아직 안 넣은 항목 <b>'+miss.length+'개</b> : '+miss.map(esc).join(', ')+(canCopy?'<br>'+mShort(pm.ym)+'과 같은 항목은 한 번에 가져올 수 있어요.':''); }
+    else { T='총액을 모두 넣었어요. 계산하기를 누르세요'; D=(m.cp&&m.cp.length?'<b>'+m.cp.length+'개 항목</b>은 '+(pm?mShort(pm.ym):'지난달')+' 값 그대로예요. 고지서와 맞는지 한 번 확인해 주세요.':'세대별 금액이 바로 나옵니다.'); }
+    if(zeroU) D+='<br><span style="color:var(--r)">사용량이 빈 세대 '+zeroU+'곳은 그 항목이 0원으로 계산돼요.</span>';
+    if(p==='charge') A=(canCopy?gBtn('↩ '+mShort(pm.ym)+' 값 가져오기','copyPrev()',miss.length>0):'')+gBtn(stale?'▶ 다시 계산하기':'▶ 계산하기','calcNow()',!miss.length||!canCopy);
+    else A=gBtn('관리비 부과로 가기 →',"go('charge')",1);
+  } else if(cur.k==='fix'){
+    var tot=m.rows.reduce(function(a,r){ return a+(r.total||0); },0), occN=m.rows.filter(function(r){ return !r.vacant; }).length, bigN=0;
+    try{ dvHead(); bigN=dvCount(m.rows); }catch(e){}
+    var base='합계 <b>'+won(tot)+'원</b> · '+occN+'세대'+(bigN?' · <span style="color:var(--r)">'+mShort(__dv.ym)+'보다 크게 달라진 세대 '+bigN+'곳</span>':'');
+    if(MGR){
+      if(m.req){ T='본사 확인을 기다리는 중이에요'; D=base+'<br>요청 : '+esc(m.req.by||'')+' '+esc(m.req.at||'')+' · 본사가 확정하면 수납을 시작할 수 있어요.'; A=p==='charge'?'':gBtn('부과 내역 보기 →',"go('charge')"); tone='y'; }
+      else { T='계산이 끝났어요. 본사에 확정을 요청하세요'; D=base; A=(p==='charge'?'':gBtn('부과 내역 보기 →',"go('charge')"))+gBtn('📤 본사에 확정 요청','reqConfirm()',1); }
+    } else {
+      T=(m.req?'관리소장이 확정을 요청했어요. ':'계산이 끝났어요. ')+'금액을 확인하고 확정하세요';
+      D=base+(m.req?'<br>요청 : '+esc(m.req.by||'')+' '+esc(m.req.at||''):'')+'<br>확정하면 수납 관리와 세금계산서 명세가 만들어집니다.';
+      A=(p==='charge'?'':gBtn('부과 내역 보기 →',"go('charge')"))+gBtn('✓ 부과 확정','confirmCharge()',1);
+    }
+  } else {
+    T='미납 '+unpaidN+'세대 · '+won(unpaidAmt)+'원이 남았어요';
+    D='통장 입금 내역을 붙여넣으면 입금한 세대를 자동으로 찾아 드려요.';
+    A=gBtn('🏦 입금 내역으로 자동 확인','bankMatch()',1)+(p==='collect'?'':gBtn('수납 관리로 가기 →',"go('collect')"));
+  }
+  var off=guideOff(), n=0;
+  var chips=steps.map(function(s,i){ n++;
+    var c=s.ok?'ok':(i===ci?'on':'');
+    return (i?'<i></i>':'')+'<button class="gs '+c+'" onclick="go(\''+s.pg+'\')">'+(s.ok?'✓':n)+' '+s.t+'</button>'; }).join('');
+  el.className='gd'+(tone?' '+tone:'')+(off?' off':'');
+  el.innerHTML='<div class="gd-h"><b title="'+PRO_BUILD+'">다음 할 일</b><span class="gd-w">'+esc(b.name)+' · '+ymL(S.ym)+'분</span><div class="gd-s">'+chips+'</div>'+
+    '<button class="gd-x" onclick="guideToggle()">'+(off?'펴기 ▾':'접기 ▴')+'</button></div>'+
+    (off?'<div class="gd-1">'+T+'</div>':'<div class="gd-b"><div class="gd-m"><div class="gd-t">'+T+'</div><div class="gd-d">'+D+'</div></div>'+(A?'<div class="gd-a">'+A+'</div>':'')+'</div>');
+}
+/* 화면을 다시 그릴 때마다 안내도 같이 고친다 */
+['rDash','rCharge','rCollect','rUnits','rItems','setUse'].forEach(function(nm){
+  var f=window[nm]; if(typeof f!=='function') return;
+  window[nm]=function(){ var r=f.apply(this,arguments); try{ guide(); }catch(e){} return r; };
+});
+
+/* ---------- ④ 입금 자동 대조 ---------- */
+var __bk=null;
+function bankMatch(){
+  var m=M();
+  if(!m.confirmed){ toast('부과를 확정한 뒤에 쓸 수 있어요'); return; }
+  bkWide(false);
+  modal('입금 내역으로 자동 확인',
+    '<div class="note i" style="margin-bottom:12px">인터넷뱅킹에서 <b>거래내역을 엑셀로 받아, 표를 통째로 복사</b>해서 붙여넣으세요 (Ctrl+V).<br>'+
+    '열 순서는 상관없어요. <b>제목 줄(거래일 · 입금액 …)까지 같이</b> 복사하면 더 정확합니다.<br>'+
+    '<b>이름(또는 호실)과 금액</b>이 맞는 세대를 찾아 드려요. 붙여넣은 내용은 저장하지 않고, 수납 표시만 남깁니다.</div>'+
+    '<textarea id="bk-in" rows="10" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:12.5px" placeholder="거래일&#9;적요&#9;보낸분&#9;출금액&#9;입금액&#9;잔액&#10;2026-11-05&#9;타행이체&#9;홍길동&#9;0&#9;150,000&#9;3,250,000"></textarea>',
+    '<button class="btn o" onclick="closeM()">취소</button><button class="btn" onclick="bankRun()">대조하기</button>');
+  setTimeout(function(){ var e=document.getElementById('bk-in'); if(e) e.focus(); },100);
+}
+function bkNum(c){
+  var x=(c==null?'':''+c).replace(/[,\s원₩\\+]/g,'');
+  if(!/^-?\d+(\.0+)?$/.test(x)) return NaN;
+  return parseFloat(x);
+}
+function bkIsDate(c){
+  var x=(c||'').trim();
+  if(/^\d{2,4}[.\-\/]\s?\d{1,2}[.\-\/]\s?\d{1,2}/.test(x)) return true;
+  if(/^\d{1,2}[.\-\/]\d{1,2}$/.test(x)) return true;
+  if(/^\d{1,2}:\d{2}/.test(x)) return true;
+  if(/^(19|20)\d{2}(0[1-9]|1[0-2])([0-2]\d|3[01])(\d{4,6})?$/.test(x)) return true;
+  return false;
+}
+function bkNorm(s){ return (s==null?'':''+s).toLowerCase().replace(/주식회사|유한회사|\(주\)|㈜|\(유\)/g,'').replace(/[\s\-_.,()\[\]\/·:]/g,''); }
+/* 붙여넣은 글 → 입금 목록 [{amt, cands[], tokens[], text}] */
+function bkParse(text){
+  var lines=text.split(/\r?\n/).filter(function(l){ return l.trim(); });
+  var tab=text.indexOf('\t')>=0;
+  var rows=lines.map(function(l){ return (tab ? l.split('\t') : l.trim().split(/\s{2,}|\s*\|\s*/)).map(function(c){ return c.trim(); }); });
+  var hi=-1, col=null;
+  for(var i=0;i<Math.min(rows.length,15);i++){
+    var r=rows[i], inC=-1, outC=-1, amtC=-1, money=0;
+    r.forEach(function(c,k){ var x=c.replace(/\s/g,''), nv=bkNum(c);
+      if(!isNaN(nv) && Math.abs(nv)>=1000 && !bkIsDate(c)) money++;
+      if(/입금|맡기신|받은금액|받으신/.test(x) && !/입금자|입금인|입금처|입금은행|입금계좌/.test(x)){ if(inC<0) inC=k; }
+      else if(/출금|찾으신|지급액|보낸금액|보내신/.test(x) && !/출금계좌|출금은행/.test(x)){ if(outC<0) outC=k; }
+      else if(/^(거래)?금액/.test(x)){ if(amtC<0) amtC=k; } });
+    if(!money && (inC>=0 || amtC>=0)){ hi=i; col={inC:inC, outC:outC, amtC:amtC}; break; }
+  }
+  var deps=[];
+  rows.forEach(function(r,ri){
+    if(ri<=hi) return;
+    if(r.some(function(c){ return /^출금$|^지급$/.test(c.replace(/\s/g,'')); })) return;
+    var cands=[], texts=[];
+    r.forEach(function(c,k){ if(!c) return; if(bkIsDate(c)) return;
+      var nv=bkNum(c);
+      if(!isNaN(nv)){ if(nv>0 && nv<1e9) cands.push({k:k,v:nv}); return; }
+      texts.push(c); });
+    var amt=0, cv=[];
+    if(col && col.inC>=0){ amt=bkNum(r[col.inC]); if(!(amt>0)) return; cv=[amt]; }
+    else if(col && col.amtC>=0){ amt=bkNum(r[col.amtC]); if(!(amt>0)) return; cv=[amt]; }
+    else { cv=cands.map(function(x){ return x.v; }); if(!cv.length) return; amt=cv[0]; }
+    var tokens=texts.map(bkNorm).filter(function(t){ return t.length>=1; });
+    if(!tokens.length && !cv.length) return;
+    deps.push({amt:amt, cands:cv, tokens:tokens, text:texts.join(' ')});
+  });
+  return {deps:deps, header:hi>=0};
+}
+/* 입금 글과 세대가 얼마나 맞는지 (0 = 안 맞음, 클수록 확실) */
+function bkScore(tokens, u){
+  var best=0;
+  [u.name,u.corp].forEach(function(nm){ var k=bkNorm(nm); if(k.length<2) return;
+    tokens.forEach(function(t){
+      if(t===k) best=Math.max(best,4);
+      else if(t.indexOf(k)>=0) best=Math.max(best,3);
+      else if(t.length>=3 && k.indexOf(t)===0) best=Math.max(best,2); }); });
+  var hk=bkNorm(u.ho).replace(/호$/,'');
+  if(hk){
+    if(/^\d+$/.test(hk)){
+      var re1=new RegExp('(^|[^0-9])'+hk+'호'), re2=new RegExp('^'+hk+'([^0-9호동]|$)');
+      tokens.forEach(function(t){ if(re1.test(t)) best=Math.max(best,3); else if(re2.test(t)) best=Math.max(best,2); });
+    } else if(hk.length>=3){
+      tokens.forEach(function(t){ if(t.indexOf(hk)>=0) best=Math.max(best,3); });
+    }
+  }
+  return best;
+}
+function bkMatch(deps, b, m){
+  var U=[]; m.rows.forEach(function(r,i){ if(r.vacant) return; U.push({i:i, r:r, u:b.units[i]||{}, paid:!!(m.paid&&m.paid[i])}); });
+  var open=U.filter(function(x){ return !x.paid; });
+  deps.forEach(function(d,di){ d.id=di; d.sc={}; U.forEach(function(x){ var s=bkScore(d.tokens,x.u); if(s) d.sc[x.i]=s; }); });
+  var res={sure:[], maybe:[], left:[], already:[]}, usedD={}, usedU={};
+  /* 1) 이름(호실)과 금액이 모두 맞음 */
+  var pairs=[];
+  deps.forEach(function(d){ open.forEach(function(x){ var s=d.sc[x.i]; if(s && d.cands.indexOf(x.r.total)>=0) pairs.push({d:d,x:x,s:s}); }); });
+  pairs.sort(function(a,c){ return c.s-a.s || a.d.id-c.d.id || a.x.i-c.x.i; });
+  pairs.forEach(function(q){ if(usedD[q.d.id]||usedU[q.x.i]) return; usedD[q.d.id]=1; usedU[q.x.i]=1;
+    res.sure.push({x:q.x, ds:[q.d], amt:q.x.r.total, why:'이름·금액 일치', on:true}); });
+  /* 2) 이름만 맞음 (금액 다름 · 나눠 입금) */
+  var grp={}, order=[];
+  deps.forEach(function(d){ if(usedD[d.id]) return;
+    var bx=null, bs=0, any=false;
+    U.forEach(function(x){ var s=d.sc[x.i]; if(!s) return; any=true; if(x.paid||usedU[x.i]) return; if(s>bs){ bs=s; bx=x; } });
+    if(bx){ if(!grp[bx.i]){ grp[bx.i]={x:bx, ds:[]}; order.push(bx.i); } grp[bx.i].ds.push(d); usedD[d.id]=1; }
+    else if(any){ res.already.push(d); usedD[d.id]=1; } });
+  order.forEach(function(k){ var g=grp[k], sum=g.ds.reduce(function(a,d){ return a+d.amt; },0), tot=g.x.r.total;
+    usedU[g.x.i]=1;
+    if(g.ds.length>=2 && sum===tot) res.sure.push({x:g.x, ds:g.ds, amt:sum, why:g.ds.length+'번 나눠 입금', on:true});
+    else res.maybe.push({x:g.x, ds:g.ds, amt:sum, why:'금액 다름 '+(sum>tot?'＋':'－')+won(Math.abs(sum-tot)), on:false}); });
+  /* 3) 금액만 맞음 — 그 금액의 세대도 입금도 하나뿐일 때만 */
+  var restU=open.filter(function(x){ return !usedU[x.i]; }), restD=deps.filter(function(d){ return !usedD[d.id]; });
+  restU.forEach(function(x){
+    var same=restU.filter(function(y){ return y.r.total===x.r.total; }).length;
+    var ds=restD.filter(function(d){ return !usedD[d.id] && d.cands.indexOf(x.r.total)>=0; });
+    if(same===1 && ds.length===1){ usedD[ds[0].id]=1; usedU[x.i]=1;
+      res.maybe.push({x:x, ds:[ds[0]], amt:x.r.total, why:'금액만 일치', on:false}); } });
+  res.left=deps.filter(function(d){ return !usedD[d.id]; });
+  res.sure.sort(function(a,c){ return a.x.i-c.x.i; }); res.maybe.sort(function(a,c){ return a.x.i-c.x.i; });
+  res.openN=open.length;
+  return res;
+}
+function bkWide(on){ var x=document.querySelector('#modal .mbox'); if(x) x.style.maxWidth=on?'780px':''; }
+function bkCut(s,n){ s=s||''; return s.length>n ? s.slice(0,n)+'…' : s; }
+function bankRun(){
+  var e=document.getElementById('bk-in'), t=e?e.value:'';
+  if(!t.trim()){ toast('입금 내역을 붙여넣어 주세요'); return; }
+  var b=B(), m=M(), P=bkParse(t);
+  if(!P.deps.length){ toast('입금 내역을 읽지 못했어요. 표를 다시 복사해 주세요'); return; }
+  if(!m.paid || m.paid.length!==b.units.length) m.paid=b.units.map(function(_,i){ return !!(m.paid&&m.paid[i]); });
+  var R=bkMatch(P.deps, b, m); __bk={res:R, list:R.sure.concat(R.maybe)};
+  var row=function(q,k){
+    return '<tr><td style="text-align:center"><input type="checkbox" class="bk-c" data-k="'+k+'" '+(q.on?'checked':'')+' onchange="bkCount()" style="width:auto"></td>'+
+      '<td><b>'+esc(q.x.r.ho)+'</b></td><td>'+esc(q.x.u.name||q.x.u.corp||'-')+'</td>'+
+      '<td class="num">'+won(q.x.r.total)+'</td><td class="num"'+(q.amt!==q.x.r.total?' style="color:var(--r)"':'')+'>'+won(q.amt)+'</td>'+
+      '<td title="'+esc(q.ds.map(function(d){ return d.text; }).join(' / '))+'" style="color:var(--ink2)">'+esc(bkCut(q.ds[0].text,18))+(q.ds.length>1?' 외 '+(q.ds.length-1)+'건':'')+'</td>'+
+      '<td><span class="tag '+(q.on?'t-ok':'t-w')+'">'+esc(q.why)+'</span></td></tr>'; };
+  var matched={}; __bk.list.forEach(function(q){ matched[q.x.i]=1; });
+  var still=[]; m.rows.forEach(function(r,i){ if(r.vacant || m.paid[i] || matched[i]) return; still.push(esc(r.ho)+' '+esc((b.units[i]||{}).name||'')+' '+won(r.total)+'원'); });
+  var h='<div class="note '+(R.sure.length?'g':'y')+'" style="margin-bottom:12px">입금 <b>'+P.deps.length+'건</b>을 읽었어요 (미납 '+R.openN+'세대와 대조). '+
+    '확실 <b>'+R.sure.length+'세대</b>'+(R.maybe.length?' · 확인 필요 <b>'+R.maybe.length+'세대</b>':'')+(R.left.length?' · 주인을 못 찾은 입금 '+R.left.length+'건':'')+
+    (P.header?'':'<br>제목 줄이 없어서 금액 칸을 짐작했어요. 입금액을 한 번 더 봐 주세요.')+'</div>';
+  if(__bk.list.length){
+    h+='<div class="tw" style="max-height:38vh;border:1px solid var(--line2);border-radius:8px"><table><thead><tr><th></th><th>호실</th><th>임차인</th><th class="num">청구액</th><th class="num">입금액</th><th>입금 내용</th><th>판정</th></tr></thead><tbody>'+
+      __bk.list.map(row).join('')+'</tbody></table></div>'+
+      '<div style="font-size:11.5px;color:var(--ink3);margin:6px 2px 0">초록색은 이름(호실)과 금액이 모두 맞아 미리 체크했어요. 노란색은 직접 보고 맞으면 체크하세요.</div>';
+  } else h+='<div class="empty" style="padding:22px">미납 세대와 맞는 입금을 찾지 못했어요.</div>';
+  if(still.length) h+='<div class="note r" style="margin-top:12px"><b>아직 입금이 안 보이는 세대 '+still.length+'곳</b><br>'+still.join(' · ')+'</div>';
+  var lst=function(a){ return a.map(function(d){ return esc(bkCut(d.text,30)||'(내용 없음)')+' <b>'+won(d.amt)+'원</b>'; }).join('<br>'); };
+  if(R.left.length) h+='<details style="margin-top:10px;font-size:12px"><summary style="cursor:pointer;font-weight:700;color:var(--ink2)">주인을 못 찾은 입금 '+R.left.length+'건 보기</summary><div style="padding:8px 4px;line-height:1.8;color:var(--ink2)">'+lst(R.left)+'</div></details>';
+  if(R.already.length) h+='<details style="margin-top:6px;font-size:12px"><summary style="cursor:pointer;font-weight:700;color:var(--ink2)">이미 수납 처리된 세대의 입금 '+R.already.length+'건 보기</summary><div style="padding:8px 4px;line-height:1.8;color:var(--ink2)">'+lst(R.already)+'</div></details>';
+  bkWide(true);
+  modal('입금 대조 결과', h,
+    '<button class="btn o" onclick="bankMatch()">← 다시 붙여넣기</button><button class="btn g" id="bk-go" onclick="bankApply()">수납 처리</button>');
+  bkCount();
+}
+function bkCount(){
+  var n=document.querySelectorAll('.bk-c:checked').length, g=document.getElementById('bk-go');
+  if(g){ g.textContent=n?('선택한 '+n+'세대 수납 처리'):'선택한 세대 없음'; g.disabled=!n; }
+}
+function bankApply(){
+  if(!__bk) return;
+  var b=B(), m=M(), n=0;
+  if(!m.paid || m.paid.length!==b.units.length) m.paid=b.units.map(function(_,i){ return !!(m.paid&&m.paid[i]); });
+  document.querySelectorAll('.bk-c:checked').forEach(function(c){ var q=__bk.list[+c.dataset.k]; if(q && !m.paid[q.x.i]){ m.paid[q.x.i]=true; n++; } });
+  __bk=null; bkWide(false); save(); closeM(); if(curPage()==='collect') rCollect(); else render(curPage());
+  toast(n+'세대를 수납 처리했어요');
+}
+
 load();
 S.ym = S.ym || thisYm();
 save();
