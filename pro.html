@@ -205,6 +205,317 @@ td input.num{text-align:right}
 #emb iframe{width:100%;border:0;flex:1;min-height:calc(100vh - 56px);background:#F7F6F1}
 @media(max-width:860px){ .modes-m{display:flex;gap:6px} .modes-m button{padding:6px 10px;border-radius:8px;background:#EEF1F5;color:var(--ink2);font-size:12px;font-weight:700} .modes-m button.on{background:var(--navy);color:#fff} #emb iframe{min-height:calc(100vh - 56px)} }
 .hide{display:none!important}
+/* ==========================================================
+   모두의관리 · pro.html 시각 업그레이드 패치 (CSS Only)
+   (제미나이 작성 · 11/16 적용) 기존 style 맨 끝에 덧붙임
+   ========================================================== */
+
+:root {
+  --bg: #F1F5F9;
+  --line: #CBD5E1;
+  --line2: #E2E8F0;
+  --rad: 14px;
+}
+
+/* 1. 최상단 바 & 왼쪽 사이드바 입체화 */
+#facBar {
+  background: linear-gradient(90deg, #0F172A 0%, #1E3A8A 100%) !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.15);
+  padding: 8px 16px !important;
+}
+
+.side {
+  background: linear-gradient(180deg, #091128 0%, #0F1B3D 55%, #13224C 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.08);
+}
+
+.logo {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.bsel select {
+  background: rgba(24, 39, 82, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: border-color 0.2s, background 0.2s;
+}
+.bsel select:hover, .bsel select:focus {
+  border-color: #60A5FA;
+  background: #1E3163;
+  outline: none;
+}
+
+.nav button {
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 3px;
+  transition: all 0.18s ease;
+}
+.nav button:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #FFFFFF;
+  transform: translateX(2px);
+}
+.nav button.on {
+  background: linear-gradient(135deg, var(--navy) 0%, #2563EB 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.modes button {
+  border-radius: 9px;
+  transition: all 0.18s ease;
+}
+.modes button.on {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* 2. 상단 헤더 (유리 블러 효과) */
+.top {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+  height: 60px;
+}
+.top h1 {
+  font-size: 17px;
+  color: var(--ink);
+}
+#ymsel {
+  border-radius: 10px !important;
+  padding: 8px 12px !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  cursor: pointer;
+}
+
+/* 3. 4대 요약 지표 타일 (.stat) 컬러 포인트 & 입체감 */
+.stat {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: var(--rad);
+  padding: 16px 18px;
+  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -6px rgba(15, 23, 42, 0.09);
+}
+.stat::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--navy), #3B82F6);
+}
+.stat:nth-child(2)::before { background: linear-gradient(90deg, #0D9488, var(--g)); }
+.stat:nth-child(3)::before { background: linear-gradient(90deg, #4F46E5, #818CF8); }
+.stat:nth-child(4)::before { background: linear-gradient(90deg, var(--r), #F97316); }
+
+.stat .l { font-size: 12.5px; font-weight: 700; color: var(--ink2); }
+.stat .v { font-size: 25px; margin: 8px 0 4px; color: var(--ink); }
+.stat .s { font-size: 12px; font-weight: 600; }
+
+/* 4. '다음 할 일' 안내 바 (.gd) 워크플로우 강조 */
+.gd {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+  border: 1px solid #CBD5E1;
+  border-left: 5px solid var(--navy);
+  border-radius: var(--rad);
+  box-shadow: 0 8px 22px -6px rgba(30, 58, 138, 0.08);
+}
+.gd-h {
+  background: rgba(241, 245, 249, 0.55);
+  padding: 11px 16px;
+}
+.gd-t { font-size: 15.5px; color: var(--ink); }
+.gd-d { font-size: 13px; }
+.gs {
+  font-size: 11.5px;
+  padding: 4px 11px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+.gs.ok {
+  background: var(--gl);
+  border-color: rgba(16, 137, 62, 0.2);
+}
+.gs.on {
+  background: linear-gradient(135deg, var(--navy) 0%, #2563EB 100%);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.16);
+}
+
+/* 5. 카드 (.card) & 버튼 (.btn) 고급화 */
+.card {
+  border: 1px solid rgba(203, 213, 225, 0.75);
+  border-radius: var(--rad);
+  box-shadow: 0 6px 20px -4px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  overflow: hidden;
+}
+.ch {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAFCFF 100%);
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--line2);
+}
+.ch h3 { font-size: 15px; }
+.ch p { font-size: 12px; }
+.cb { padding: 18px; }
+
+.btn {
+  border-radius: 9px;
+  padding: 9px 16px;
+  background: linear-gradient(135deg, var(--navy) 0%, #1D4ED8 100%);
+  box-shadow: 0 3px 10px -2px rgba(30, 58, 138, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px -3px rgba(30, 58, 138, 0.4);
+}
+.btn:active:not(:disabled) { transform: translateY(0); }
+
+.btn.o {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.btn.o:hover:not(:disabled) {
+  background: #F8FAFC;
+  border-color: #94A3B8;
+}
+.btn.g {
+  background: linear-gradient(135deg, var(--g) 0%, #059669 100%);
+  box-shadow: 0 3px 10px -2px rgba(16, 137, 62, 0.3);
+}
+.btn.r {
+  background: linear-gradient(135deg, var(--r) 0%, #B91C1C 100%);
+  box-shadow: 0 3px 10px -2px rgba(220, 38, 38, 0.3);
+}
+.btn.y {
+  background: linear-gradient(135deg, var(--y) 0%, #B45309 100%);
+  box-shadow: 0 3px 10px -2px rgba(217, 119, 6, 0.3);
+}
+.btn.sm {
+  padding: 7px 12px;
+  font-size: 12.5px;
+  border-radius: 8px;
+}
+
+/* 6. 표 (table) 가독성 & 입력칸(.fld) 포커스 링 */
+th {
+  font-size: 12px;
+  padding: 11px 12px;
+  background: #F8FAFC;
+  color: #334155;
+  border-bottom: 2px solid var(--line2);
+}
+td {
+  font-size: 13px;
+  padding: 10px 12px;
+}
+tbody tr { transition: background-color 0.12s ease; }
+tbody tr:hover { background: #F1F5F9; }
+
+td input, td select {
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: rgba(248, 250, 252, 0.7);
+  border: 1px solid rgba(203, 213, 225, 0.6);
+}
+td input:focus, td select:focus,
+.fld input:focus, .fld select:focus, .fld textarea:focus {
+  border-color: var(--navy);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+}
+.fld label { font-size: 12.5px; }
+.fld input, .fld select, .fld textarea {
+  border-radius: 9px;
+  padding: 10px 12px;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
+}
+
+/* 7. 상태 배지 (.tag) & 안내 상자 (.note) & 모달 (.modal) */
+.tag {
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.note {
+  border-radius: 12px;
+  padding: 13px 15px;
+  font-size: 12.5px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.note.i { border-left: 4px solid var(--navy); }
+.note.y { border-left: 4px solid var(--y); }
+.note.g { border-left: 4px solid var(--g); }
+.note.r { border-left: 4px solid var(--r); }
+
+.bill {
+  border-radius: 14px;
+  box-shadow: 0 10px 28px -6px rgba(15, 23, 42, 0.1);
+}
+.bill-pay {
+  background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+  border: 1px solid #C7D2FE;
+  border-radius: 10px;
+}
+
+.modal {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.mbox {
+  border-radius: 18px;
+  box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* 8. 휴대폰(390px 포함 모바일) 반응형 최적화 — 글자 축소 방지 */
+@media (max-width: 860px) {
+  .content { padding: 14px 12px 92px; }
+  .mnav {
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
+  }
+  .mnav button {
+    font-size: 11.5px;
+    padding: 10px 14px;
+  }
+  .mnav button.on {
+    color: var(--navy);
+    background: var(--navyl);
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .g4 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat { padding: 14px; }
+  .stat .v { font-size: 20px; }
+  .ch { padding: 13px 14px; }
+  .cb { padding: 14px; }
+  .frow { flex-direction: column; gap: 0; }
+  .gd-b { padding: 12px; }
+}
+
+/* (11/16) 보정 : 인쇄할 때는 고지서 그림자 빼기 */
+@media print{ #printArea .bill{box-shadow:none} }
+
 </style>
 </head>
 <body>
