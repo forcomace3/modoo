@@ -1660,6 +1660,44 @@
   }
   function dDayTxt(iso){var t=new Date(todayISO()+"T00:00:00"),d=new Date(String(iso).slice(0,10)+"T00:00:00");var n=Math.round((d-t)/86400000);return n>0?("D-"+n):(n===0?"오늘":"");}
   function hasResign(x){return (x.attachments||[]).some(function(a){return String(a.name||"").indexOf("사직")>=0;});}
+  // (11/16) 직원 관리 → 직원 카드를 펼치면 급여와 함께 연차 사용 현황도 보여 줌
+  function empLeaveHtml(x){
+    var o=leaveData&&leaveData.emp?leaveData.emp[String(x.id)]:null;if(!o)return "";
+    var dmap={};try{(docs||[]).forEach(function(d){dmap[String(d.id)]=d;});}catch(e){}
+    var it=(o.items||[]).filter(function(i){return String(i.status||"")!=="반려";}).slice().sort(function(a,b){var x1=String(((a.dates||[]).slice().sort())[0]||""),x2=String(((b.dates||[]).slice().sort())[0]||"");return x1<x2?1:-1;});
+    var id=esc(x.id),left=Number(o.left)||0,pend=Number(o.pending)||0;
+    var h='<div style="margin-top:10px;border-top:1px dashed #E4E1D6;padding-top:9px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:13px;color:#1C2A27">🌴 '+esc(leaveData.year||"")+'년 연차'
+      +'<span style="display:flex;gap:5px">'+(x.status!=="퇴사"?'<button class="mini" data-lvadd="'+id+'" style="margin:0;width:auto;font-size:11.5px;padding:5px 10px;white-space:nowrap;border-radius:8px">＋ 연차 등록</button>':'')+'<button class="mini" data-lvtbl="'+id+'" style="margin:0;width:auto;font-size:11.5px;padding:5px 10px;white-space:nowrap;border-radius:8px">📋 표로 보기</button></span></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:7px;text-align:center">'
+      +[["발생",o.grant,""],["사용",o.used,""],["결재 중",pend,pend?"#8A6A12":""],["남음",left,left-pend<0?"#9A3327":"#2E7D4F"]].map(function(c){return '<div style="background:#F7F8FB;border:1px solid #E2E8F0;border-radius:10px;padding:6px 2px"><div style="font-size:10.5px;color:#8A8A92">'+c[0]+'</div><div style="font-size:15px;font-weight:800;'+(c[2]?'color:'+c[2]:'')+'">'+lvFmt(c[1])+'<small style="font-size:10.5px;font-weight:600">일</small></div></div>';}).join("")+'</div>';
+    var rows=it.map(function(i){
+      var d=dmap[String(i.id)]||{},rs=String((d.leave||{}).reason||""),kind=String(i.kind||"연차");
+      if(/종이 근태계/.test(String(d.title||"")+rs)&&/구분 없음/.test(rs))kind="반차";
+      var why=rs.replace(/\s*·?\s*종이 근태계 이관.*$/,"").trim();
+      var st=String(i.status||""),done=st==="결재 완료";
+      return '<div class="lv-li"><div class="d">'+(i.dates||[]).slice().sort().map(lvDay).join(", ")+'<span class="k">'+esc(kind)+' · '+lvFmt(i.days)+'일'+(why?' · '+esc(why):'')+'</span></div><span class="lv-st '+(done?'ok':'w')+'">'+(done?'사용':'결재 중')+'</span></div>';
+    });
+    if(Number(o.used0))rows.push('<div class="lv-li"><div class="d">앱 쓰기 전에 쓴 연차<span class="k">본사 기록</span></div><span class="lv-st ok">'+lvFmt(o.used0)+'일</span></div>');
+    if(!rows.length)h+='<div style="font-size:12px;color:#9A9A90;margin-top:7px">올해 쓴 연차가 없습니다.</div>';
+    else{
+      h+='<div style="margin-top:6px">'+rows.slice(0,5).join("")+'</div>';
+      if(rows.length>5)h+='<div class="hide" data-lvmorebox="'+id+'">'+rows.slice(5).join("")+'</div><button class="mini" data-lvmore="'+id+'" style="width:100%;margin:6px 0 0;font-size:12px;padding:7px">더 보기 ('+(rows.length-5)+'건)</button>';
+    }
+    if(o.grantAuto)h+='<div style="font-size:11px;color:#9A9A90;margin-top:6px">'+(o.joinDate?'발생 일수는 입사일 기준 자동 계산입니다.':'입사일이 없어 발생 일수를 기본 15일로 보여 줍니다. 입사일을 넣으면 정확해집니다.')+'</div>';
+    return h+'</div>';
+  }
+  function bindEmpLeave(body){
+    body.querySelectorAll("[data-lvadd]").forEach(function(b){b.addEventListener("click",function(){var id=b.getAttribute("data-lvadd");openLeaveForm();var w=$("lvWho");if(w&&w.querySelector('option[value="'+id+'"]')){w.value=id;w.dispatchEvent(new Event("change"));}});});
+    body.querySelectorAll("[data-lvtbl]").forEach(function(b){b.addEventListener("click",function(){lvHistSt.p=b.getAttribute("data-lvtbl");lvHistSt.m="";lvHistSt.v="list";openLvHistSheet();});});
+    body.querySelectorAll("[data-lvmore]").forEach(function(b){b.addEventListener("click",function(){var bx=body.querySelector('[data-lvmorebox="'+b.getAttribute("data-lvmore")+'"]');if(bx)bx.classList.remove("hide");b.remove();});});
+  }
+  function lvAfterSave(){
+    try{
+      if(view==="emp"){var open=[].map.call(document.querySelectorAll(".empitem.open"),function(e){return e.getAttribute("data-eid");});renderEmp();open.forEach(function(id){var e=document.querySelector('.empitem[data-eid="'+id+'"]');if(e)e.classList.add("open");});}
+      else if(view==="payroll")renderPayroll();
+    }catch(e){}
+  }
   function empCard(x){
     var isNew=empIsNew(x), isLeft=x.status==="퇴사", isJoining=x.status==="입사예정", isPlan=!isLeft&&!isJoining&&!!x.leavePlan;
     var badge=isLeft?'<span class="ebadge left">퇴사</span>':(isJoining?'<span class="ebadge new">입사 예정'+(x.joinDate&&dDayTxt(x.joinDate)?(" "+dDayTxt(x.joinDate)):"")+'</span>':(isNew?'<span class="ebadge new">NEW</span>':""));
@@ -1685,6 +1723,7 @@
       +'<div class="sd"><span>연차수당</span><b>'+won(x.annual)+'</b></div>'
       +'<div class="sd"><span>퇴직충당금</span><b>'+won(x.sev)+'</b></div>'
       +'<div class="sd tt"><span>월 총계</span><b>'+won(x.total)+'</b></div>'
+      +(function(){try{return empLeaveHtml(x);}catch(e){return "";}})()
       +((x.attachments||[]).length?('<div class="emeta" style="margin-top:7px">📎 '+(x.attachments||[]).map(function(a,i){return '<span class="pvatt" data-eatt="'+esc(x.id)+'|'+i+'">'+esc(a.name)+'</span>';}).join(" ")+'</div>'):"")
       +(x.memo?'<div class="emeta" style="margin-top:6px">'+esc(x.memo)+'</div>':"")
       +'<div class="eactions"><button data-eedit="'+esc(x.id)+'">✏️ 수정</button>'+act1+'<button class="warn" data-edel="'+esc(x.id)+'">삭제</button></div>'
@@ -1774,6 +1813,7 @@
       +'<div class="oworks"><div class="owh">근무 편성 <span style="font-weight:400;color:#9A9A90">· 근무형태 값 자동 반영</span></div>'+wlines+'</div>';
   }
   function bindEmpCards(body){
+    try{bindEmpLeave(body);}catch(e){}
     body.querySelectorAll("[data-etoggle]").forEach(function(el){el.addEventListener("click",function(){el.closest(".empitem").classList.toggle("open");});});
     body.querySelectorAll("[data-eedit]").forEach(function(b){b.addEventListener("click",function(){openEmpForm(b.getAttribute("data-eedit"));});});
     body.querySelectorAll("[data-edel]").forEach(function(b){b.addEventListener("click",function(){delEmp(b.getAttribute("data-edel"));});});
@@ -2843,9 +2883,9 @@
       '<p style="font-size:12.5px;color:#6A6A72;line-height:1.6;margin:6px 0 10px">매달 부장님께 받은 급여대장 엑셀을 올리면 그대로 보관합니다. 4대보험은 앱이 2026년 요율로 따로 계산해서 대조하고, 차이가 나면 <b>부장님 값(실지급)</b>을 그대로 씁니다.</p>'+
       '<button class="btn primary" id="prUpBtn" style="width:100%">⬆ 급여대장 엑셀 올리기 (여러 달 한 번에 가능)</button></div>'+
       '<div class="card">'+prOptBar("prOptA")+'<p style="font-size:12px;color:#8A8A92;line-height:1.55;margin:8px 0 0">켜면 결산 → 월말 결산에 그 달(귀속월) 급여가 "인건비" 한 줄로 더해집니다. 개인별 금액은 결산에 나오지 않습니다.</p></div>'+
-      (cards||'<div class="empty">아직 올린 급여대장이 없습니다.<br>위 버튼으로 엑셀을 올려 주세요.</div>')+'<div id="lvAdmin"></div>';
+      (cards||'<div class="empty">아직 올린 급여대장이 없습니다.<br>위 버튼으로 엑셀을 올려 주세요.</div>')+'<div id="lvAdmin"></div><div id="lvHist"></div>';
     $("prUpBtn").addEventListener("click",function(){$("prXlsInput").click();});
-    prWireOpt($("prOptA"));try{renderLeaveAdmin($("lvAdmin"));}catch(e){}
+    prWireOpt($("prOptA"));try{renderLeaveAdmin($("lvAdmin"));}catch(e){}try{lvHistFill($("lvHist"));}catch(e){}
     el.querySelectorAll("[data-prm]").forEach(function(c){c.addEventListener("click",function(){var m=c.getAttribute("data-prm"),mo=prMonth(m);if(!mo||mo.status==="estimate")openPayrollEstimate(m);else openPayrollMonth(m);});});
   }
   function openPayrollMonth(m){
@@ -3046,7 +3086,7 @@
     return h;
   }
   function lvCardFill(el){
-    if(!el)return;try{el.innerHTML=lvCardHtml(lvMine());var b=el.querySelector("#lvNew2");if(b)b.addEventListener("click",function(){openLeaveForm();});}catch(e){el.innerHTML="";}
+    if(!el)return;try{el.innerHTML=lvCardHtml(lvMine());var b=el.querySelector("#lvNew2");if(b)b.addEventListener("click",function(){openLeaveForm();});if(isMgr()&&leaveData&&leaveData.emp){var hb=document.createElement("button");hb.className="btn ghost";hb.id="lvHistBtn";hb.style.cssText="width:100%;margin-top:10px";hb.textContent="📋 직원 연차 사용 내역 (표)";hb.addEventListener("click",openLvHistSheet);el.appendChild(hb);}}catch(e){el.innerHTML="";}
   }
   function lvBoxHtml(o,yr){
     if(!o)return '<div style="font-size:12.5px;color:#8A8A92">연차 현황은 본사에서 정리 중입니다.</div>';
@@ -3095,13 +3135,106 @@
       var payload={action:"docAdd",record:{doctype:"연차신청서",date:todayISO(),title:title,body:body,leave:{kind:kind,dates:dates,reason:why}},attachments:[]};
       if(forEmp)payload.forEmp=forEmp;else payload.approver=$("lvAppr").value;
       try{await cloudPost(payload);
-        lvClose();toast(forEmp?(L&&L.name?L.name+"님 ":"")+"연차를 등록했습니다":"연차 신청서를 올렸습니다");try{await cloudPull();}catch(e){}
+        lvClose();toast(forEmp?(L&&L.name?L.name+"님 ":"")+"연차를 등록했습니다":"연차 신청서를 올렸습니다");try{await cloudPull();}catch(e){}lvAfterSave();
         if(isStaff())renderHome();else if(view==="docs")renderDocs();else if(isMgr())renderNotices();else if(view==="payroll")renderPayroll();}
       catch(e){er.textContent="실패: "+e.message;er.classList.remove("hide");b.disabled=false;b.textContent=lbl;}
     });
     if(canProxy)setWho();else draw();
   }
   // ---------- 본사 관리자 : 연차 현황 (급여 화면 아래) ----------
+  // (11/16) 연차 사용 내역 표 : 날짜별 내역 · 직원별 월별 표 · 엑셀 받기 (본사 관리자=전체, 관리소장=우리 현장)
+  var lvHistSt={v:"list",m:"",p:""};
+  function lvHistRows(){
+    if(!leaveData||!leaveData.emp)return [];
+    var dmap={};try{(docs||[]).forEach(function(d){dmap[String(d.id)]=d;});}catch(e){}
+    var rows=[];
+    Object.keys(leaveData.emp).forEach(function(k){var o=leaveData.emp[k];(o.items||[]).forEach(function(x){
+      var st=String(x.status||"");if(st==="반려")return;
+      var d=dmap[String(x.id)]||{},lv=d.leave||{},rs=String(lv.reason||"");
+      var paper=/종이 근태계/.test(String(d.title||"")+rs),kind=String(x.kind||"연차");
+      if(paper&&/구분 없음/.test(rs))kind="반차";
+      var src=paper?"종이 근태계":(String(d.line||"").indexOf("대리 등록")>=0?"대리 등록":"앱 신청");
+      var why=rs.replace(/\s*·?\s*종이 근태계 이관.*$/,"").trim();
+      var per=kind.indexOf("반차")>=0?0.5:1;
+      (x.dates||[]).forEach(function(dt){rows.push({date:String(dt),id:o.id,name:o.name,role:o.role||"",out:o.status==="퇴사",kind:kind,days:per,done:st==="결재 완료",why:why,src:src});});
+    });});
+    rows.sort(function(a,b){return a.date===b.date?(a.name<b.name?-1:1):(a.date<b.date?-1:1);});
+    return rows;
+  }
+  function lvHistEmps(rows){
+    var seen={};rows.forEach(function(r){seen[r.id]=1;});
+    return Object.keys(leaveData.emp).map(function(k){return leaveData.emp[k];})
+      .filter(function(o){return o.status!=="퇴사"||seen[o.id]||Number(o.used0);})
+      .sort(function(a,b){return String(a.name)<String(b.name)?-1:1;});
+  }
+  function lvHistHtml(){
+    if(!leaveData||!leaveData.emp)return '<div class="hm-empty">연차 자료가 아직 없습니다.</div>';
+    var S=lvHistSt,rows=lvHistRows(),emps=lvHistEmps(rows),yr=esc(leaveData.year||"");
+    var h='<div class="segbar" style="margin:8px 0 10px"><button data-v="list" class="'+(S.v==="list"?"on":"")+'">날짜별 내역</button><button data-v="mat" class="'+(S.v==="mat"?"on":"")+'">직원별 · 월별</button></div>';
+    if(S.v==="list"){
+      var f=rows.filter(function(r){return (!S.m||Number(r.date.slice(5,7))===Number(S.m))&&(!S.p||r.id===S.p);});
+      var tot=0,pend=0;f.forEach(function(r){if(r.done)tot+=r.days;else pend+=r.days;});
+      var mo='<option value="">전체 달</option>';for(var m=1;m<=12;m++)mo+='<option value="'+m+'"'+(String(S.m)===String(m)?" selected":"")+'>'+m+'월</option>';
+      var po='<option value="">전체 직원</option>'+emps.map(function(o){return '<option value="'+esc(o.id)+'"'+(S.p===o.id?" selected":"")+'>'+esc(o.name)+(o.status==="퇴사"?" (퇴사)":"")+'</option>';}).join("");
+      h+='<div style="display:flex;gap:6px;margin-bottom:8px"><select id="lvhM" style="flex:1;padding:8px;border:1px solid #CBD5E1;border-radius:9px;font-family:inherit;font-size:13px">'+mo+'</select><select id="lvhP" style="flex:1;padding:8px;border:1px solid #CBD5E1;border-radius:9px;font-family:inherit;font-size:13px">'+po+'</select></div>';
+      h+='<div style="font-size:12.5px;color:#475569;margin-bottom:6px">'+f.length+'건 · 사용 <b style="color:#1C2A27">'+lvFmt(tot)+'일</b>'+(pend?' · 결재 중 '+lvFmt(pend)+'일':'')+'</div>';
+      if(!f.length)h+='<div class="hm-empty">조건에 맞는 연차 사용 기록이 없습니다.</div>';
+      else h+='<div style="overflow:auto;max-height:520px"><table class="grid"><thead><tr><th>날짜</th><th>이름</th><th>종류</th><th>일수</th><th>사유 · 출처</th></tr></thead><tbody>'+
+        f.map(function(r){return '<tr><td style="white-space:nowrap">'+esc(lvDay(r.date))+'</td><td class="l" style="white-space:nowrap">'+esc(r.name)+'<br><small style="color:#8A8A92">'+esc(r.role)+(r.out?' · 퇴사':'')+'</small></td><td style="white-space:nowrap">'+esc(r.kind)+(r.done?'':'<br><span class="lv-st w">결재 중</span>')+'</td><td class="r">'+lvFmt(r.days)+'</td><td class="l" style="font-size:11.5px">'+(r.why?esc(r.why)+'<br>':'')+'<small style="color:#8A8A92">'+esc(r.src)+'</small></td></tr>';}).join("")+
+        '<tr class="grand"><td colspan="3">합계</td><td class="r">'+lvFmt(tot+pend)+'</td><td></td></tr></tbody></table></div>';
+    } else {
+      var hasU0=emps.some(function(o){return Number(o.used0);});
+      var M={},colT=[0,0,0,0,0,0,0,0,0,0,0,0,0];
+      rows.forEach(function(r){if(!r.done)return;var k=r.id,mi=Number(r.date.slice(5,7))-1;M[k]=M[k]||[0,0,0,0,0,0,0,0,0,0,0,0];M[k][mi]+=r.days;});
+      h+='<div style="font-size:12px;color:#6A6A72;margin-bottom:6px">'+yr+'년 결재 완료된 연차만 셉니다 (반차 0.5일). 이름을 누르면 그 직원 내역을 봅니다.</div>';
+      h+='<div style="overflow:auto;max-height:560px"><table class="grid" style="font-size:11.5px"><thead><tr><th style="position:sticky;left:0;background:#F0EFE8">이름</th>';
+      for(var c=1;c<=12;c++)h+='<th style="white-space:nowrap;min-width:30px">'+c+'월</th>';
+      h+=(hasU0?'<th>이전<br>기록</th>':'')+'<th>사용</th><th>발생</th><th>남음</th></tr></thead><tbody>';
+      var gU=0;
+      emps.forEach(function(o){var a=M[o.id]||[0,0,0,0,0,0,0,0,0,0,0,0];
+        h+='<tr><td class="l" style="position:sticky;left:0;background:#fff;white-space:nowrap"><a href="#" data-p="'+esc(o.id)+'" style="color:#212D64;font-weight:700;text-decoration:none">'+esc(o.name)+'</a>'+(o.status==="퇴사"?' <small style="color:#8A8A92">퇴사</small>':'')+'</td>';
+        a.forEach(function(v,i){colT[i]+=v;h+='<td class="r" style="'+(v?'background:#EEF2FF;font-weight:700':'color:#CBD5E1')+'">'+(v?lvFmt(v):'·')+'</td>';});
+        colT[12]+=Number(o.used0)||0;gU+=Number(o.used)||0;
+        h+=(hasU0?'<td class="r">'+(Number(o.used0)?lvFmt(o.used0):'')+'</td>':'')+'<td class="r"><b>'+lvFmt(o.used)+'</b></td><td class="r">'+lvFmt(o.grant)+'</td><td class="r"><b style="color:'+(o.left<0?'#9A3327':'#1C2A27')+'">'+lvFmt(o.left)+'</b></td></tr>';});
+      h+='<tr class="grand"><td class="l" style="position:sticky;left:0">합계</td>';
+      for(var c2=0;c2<12;c2++)h+='<td class="r">'+(colT[c2]?lvFmt(colT[c2]):'')+'</td>';
+      h+=(hasU0?'<td class="r">'+lvFmt(colT[12])+'</td>':'')+'<td class="r">'+lvFmt(gU)+'</td><td></td><td></td></tr></tbody></table></div>';
+    }
+    h+='<button class="btn ghost" id="lvhX" style="width:100%;margin-top:10px">⬇ 엑셀로 받기</button>';
+    return h;
+  }
+  function lvHistWire(box){
+    box.querySelectorAll(".segbar button").forEach(function(b){b.addEventListener("click",function(){lvHistSt.v=b.getAttribute("data-v");lvHistDraw(box);});});
+    var m=box.querySelector("#lvhM"),p=box.querySelector("#lvhP");
+    if(m)m.addEventListener("change",function(){lvHistSt.m=m.value;lvHistDraw(box);});
+    if(p)p.addEventListener("change",function(){lvHistSt.p=p.value;lvHistDraw(box);});
+    box.querySelectorAll("a[data-p]").forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();lvHistSt.p=a.getAttribute("data-p");lvHistSt.m="";lvHistSt.v="list";lvHistDraw(box);});});
+    var x=box.querySelector("#lvhX");if(x)x.addEventListener("click",lvHistExcel);
+  }
+  function lvHistDraw(box){var bd=box.querySelector(".lvh-body");if(!bd)return;bd.innerHTML=lvHistHtml();lvHistWire(box);}
+  function lvHistFill(el){
+    if(!el)return;if(!leaveData||!leaveData.emp){el.innerHTML="";return;}
+    el.innerHTML='<div class="card" style="margin-top:12px"><div style="font-weight:800;font-size:15px">📋 '+esc(leaveData.year||"")+'년 연차 사용 내역</div><div class="lvh-body"></div></div>';
+    lvHistDraw(el);
+  }
+  function openLvHistSheet(){
+    var o=openSheet('<h3>📋 '+esc((leaveData&&leaveData.year)||"")+'년 직원 연차 사용 내역</h3><div class="lvh-body"></div><button class="btn ghost" id="lvhC" style="width:100%;margin-top:8px">닫기</button>');
+    var sh=o.querySelector(".sheet");lvHistDraw(sh);o.querySelector("#lvhC").addEventListener("click",closeSheet);
+  }
+  async function lvHistExcel(){
+    toast("엑셀 만드는 중…");var ok=await loadXLSX();if(!ok||!window.XLSX){toast("엑셀 도구를 불러오지 못했습니다.");return;}
+    var rows=lvHistRows(),emps=lvHistEmps(rows),yr=String(leaveData.year||"");
+    var A=[["날짜","요일","이름","직책","종류","일수","상태","사유","출처"]];
+    rows.forEach(function(r){var d=new Date(r.date+"T00:00:00");A.push([r.date,isNaN(d)?"":"일월화수목금토"[d.getDay()],r.name,r.role+(r.out?" (퇴사)":""),r.kind,r.days,r.done?"사용":"결재 중",r.why,r.src]);});
+    var B=[["이름","직책","1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월","이전 기록","사용","발생","남음"]];
+    emps.forEach(function(o){var a=[0,0,0,0,0,0,0,0,0,0,0,0];rows.forEach(function(r){if(r.done&&r.id===o.id)a[Number(r.date.slice(5,7))-1]+=r.days;});
+      B.push([o.name,(o.role||"")+(o.status==="퇴사"?" (퇴사)":"")].concat(a.map(function(v){return v||"";})).concat([Number(o.used0)||"",Number(o.used)||0,Number(o.grant)||0,Number(o.left)||0]));});
+    var wb=XLSX.utils.book_new(),s1=XLSX.utils.aoa_to_sheet(A),s2=XLSX.utils.aoa_to_sheet(B);
+    s1["!cols"]=[{wch:11},{wch:4},{wch:8},{wch:12},{wch:9},{wch:5},{wch:7},{wch:24},{wch:10}];
+    s2["!cols"]=[{wch:8},{wch:12}].concat(new Array(16).fill({wch:6}));
+    XLSX.utils.book_append_sheet(wb,s1,"날짜별 내역");XLSX.utils.book_append_sheet(wb,s2,"직원별 월별");
+    XLSX.writeFile(wb,"연차사용내역_"+yr+"_"+todayISO()+".xlsx");
+  }
   function renderLeaveAdmin(el){
     if(!el)return;if(!leaveData||!leaveData.emp){el.innerHTML='';return;}
     var list=Object.keys(leaveData.emp).map(function(k){return leaveData.emp[k];}).filter(function(o){return o.status!=="퇴사";}).sort(function(a,b){return String(a.site+a.name)<String(b.site+b.name)?-1:1;});
