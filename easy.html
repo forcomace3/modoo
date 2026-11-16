@@ -3948,7 +3948,7 @@ function rtLoad(id){
 function taxRefresh(id){ try{ if(CUR==='rtax') rtLoad(id); }catch(e){} }
 
 /* ----- 판 번호 · 새 판이 올라와 있으면 스스로 새로 받기 (폰이 옛 화면을 붙들고 있는 일 방지) ----- */
-var APP_BUILD='1113-05';
+var APP_BUILD='1116-01';
 function rrnFmt(el){ var v=el.value.replace(/[^0-9]/g,'').slice(0,13); el.value = v.length>6 ? v.slice(0,6)+'-'+v.slice(6) : v; }
 /* 하단 Admin 링크 : 포컴 운영자 화면(회원 현황). 운영 모드에서는 관리자 비밀번호가 있어야 들어갈 수 있음 */
 function openAdmin(){ var base=(typeof FAC_SITE==='string'&&FAC_SITE)?FAC_SITE:location.href.replace(/[?#].*$/,'').replace(/[^\/]*$/,''); location.href=base+'owners.html'; }
@@ -4270,5 +4270,40 @@ if(S.bldg.count) document.getElementById('i-count').value=S.bldg.count;
 markPicked('btype','#s-btype');
 markPicked('meter','#s-meter');
 </script>
+<style id="design-1116">
+/* ===== (11/16) 디자인 정돈 : 청록 색과 큰 글씨는 그대로, 입체감·부드러움만 더함 · HTML/JS 는 그대로 ===== */
+/* 단추 : 은은한 그라데이션 + 그림자 */
+.btn{background:linear-gradient(135deg,var(--brand) 0%,#14958A 100%);box-shadow:0 6px 16px -6px rgba(15,118,110,.45),inset 0 1px 0 rgba(255,255,255,.16);transition:transform .12s ease,filter .15s ease}
+.btn:active{transform:translateY(1px);filter:brightness(.96)}
+.btn.gray{background:#EEF1F5;box-shadow:none}
+.btn.gray.slim{background:#F3F4F6;box-shadow:none}
+.btn.outline{background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.btn.help{background:linear-gradient(135deg,var(--help) 0%,#14958A 100%)}
+.btn.warn{background:linear-gradient(135deg,var(--warn) 0%,#D69E2E 100%);box-shadow:0 6px 16px -6px rgba(183,121,31,.45)}
+.btn.danger{background:linear-gradient(135deg,var(--danger) 0%,#E25C5C 100%);box-shadow:0 6px 16px -6px rgba(209,67,67,.45)}
+.badge{background:linear-gradient(135deg,var(--brand) 0%,#14958A 100%)}
+
+/* 카드 · 묶음 : 옅은 테두리 + 그림자 */
+.card{border:1.5px solid #E2E8F0;box-shadow:0 6px 18px -8px rgba(15,23,42,.12)}
+.grp{border:1.5px solid #DCE3EC;background:#F8FAFC;box-shadow:0 8px 22px -12px rgba(15,23,42,.14)}
+.box.g{background:linear-gradient(135deg,#E6F4F2 0%,#D7EFEB 100%);border:1px solid #BFE3DC}
+
+/* 입력칸 : 누르면 청록 테두리 */
+.inp{border-color:#D5DBE1;background:#fff;transition:border-color .15s ease,box-shadow .15s ease}
+.inp:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px rgba(15,118,110,.14)}
+
+/* 아래 메뉴 : 반투명 + 선택된 칸 위에 청록 막대 */
+.nav{background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid #E5E7EB;box-shadow:0 -6px 18px -8px rgba(15,23,42,.12)}
+.nav button{position:relative}
+.nav button.on::before{content:"";position:absolute;top:0;left:26%;right:26%;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,var(--brand),#2DD4BF)}
+
+/* 아래에서 올라오는 창 · 알림 */
+.dim{-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.sheet{box-shadow:0 -16px 40px rgba(15,23,42,.22)}
+.toast{box-shadow:0 10px 28px rgba(15,23,42,.28)}
+
+/* 맨 위 줄 : 짙은 회색에서 청록으로 은은하게 */
+#facBar{background:linear-gradient(90deg,#111827 0%,#134E4A 100%)!important;box-shadow:0 2px 10px rgba(15,23,42,.18)}
+</style>
 </body>
 </html>

@@ -156,4 +156,14 @@ function answer(agree){
   }).catch(function(){ alert('인터넷 연결을 확인해 주세요.'); });
 }
 </script>
+<style id="design-1116">
+/* ===== (11/16) 디자인 정돈 (작은 화면 공통) : 각 화면의 색은 그대로, 그림자·광택·입력칸만 다듬음 ===== */
+.card,.sec,.stat,.namebox{box-shadow:0 6px 20px -8px rgba(15,23,42,.10),0 2px 6px -2px rgba(15,23,42,.04)}
+.btn,.up,.dl{background-image:linear-gradient(135deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 60%);box-shadow:0 4px 12px -4px rgba(15,23,42,.22);transition:transform .12s ease,filter .15s ease}
+.btn:active,.up:active,.dl:active{transform:translateY(1px);filter:brightness(.96)}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 3px rgba(15,118,110,.15)}
+.adbar{background:linear-gradient(90deg,#0F172A 0%,#1E3A8A 100%);box-shadow:0 2px 10px rgba(15,23,42,.15)}
+.adbar a.cur{border-bottom-color:#93C5FD}
+.sheet{box-shadow:0 -12px 40px rgba(15,23,42,.22)}
+</style>
 </body></html>

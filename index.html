@@ -3185,5 +3185,61 @@
   })();
 })();
 </script>
+<style id="design-1116">
+/* ===== (11/16) 디자인 정돈 : 시설 종합 관리(pro)와 같은 느낌 · 색은 남색 그대로 · HTML/JS 는 그대로 ===== */
+body{background:#E2E8F0}
+.app{background:#F1F5F9}
+.hdr{background:rgba(241,245,249,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid #E2E8F0;box-shadow:0 2px 12px rgba(15,23,42,.04)}
+
+/* 카드 : 테두리를 옅게, 그림자로 입체감 */
+.card,.hm-card,.item,.empitem,.pr-card,.siteinfo,.scan,.statusbar,.empsum .esc{border:1px solid rgba(203,213,225,.8);box-shadow:0 6px 20px -8px rgba(15,23,42,.08),0 2px 6px -2px rgba(15,23,42,.04)}
+.card,.hm-card{border-radius:18px}
+.item,.pr-card,.empitem,.siteinfo,.scan{border-radius:16px}
+.hm-row,.rperson{border-bottom-color:#EEF2F7}
+
+/* 단추 */
+.btn{transition:transform .12s ease,filter .15s ease,box-shadow .15s ease}
+.btn.primary{background:linear-gradient(135deg,#212D64 0%,#2B47B0 100%);box-shadow:0 6px 14px -4px rgba(33,45,100,.38),inset 0 1px 0 rgba(255,255,255,.16)}
+.btn.primary:active,.btn:active{transform:translateY(1px);filter:brightness(.96)}
+.btn.ghost{background:#E9EEF5;color:#1E293B}
+.fbtn{background:#F8FAFC;border-color:#CBD5E1;border-radius:9px;transition:filter .15s ease}
+.fbtn.up,.fbtn.send{background:linear-gradient(135deg,#212D64 0%,#2B47B0 100%);border-color:transparent;color:#fff;box-shadow:0 3px 8px -2px rgba(33,45,100,.32)}
+.mini{border-color:#CBD5E1;box-shadow:0 1px 2px rgba(15,23,42,.05);transition:background .15s ease}
+.mini:active{background:#F1F5F9}
+.apbtn{border-radius:9px}
+.addfile{border-color:#94A3B8;border-radius:10px}
+
+/* 입력칸 : 또렷한 테두리 + 누르면 파란 테두리 */
+.field input,.field select,.field textarea{border-color:#CBD5E1;background:#fff;border-radius:11px;transition:border-color .15s ease,box-shadow .15s ease}
+.field input:focus,.field select:focus,.field textarea:focus,.mfilter select:focus{outline:none;border-color:#2B47B0;box-shadow:0 0 0 3px rgba(43,71,176,.14)}
+.mfilter select{border-color:#CBD5E1}
+.segbar{background:#E2E8F0}
+.segbar button.on{box-shadow:0 2px 6px rgba(15,23,42,.10)}
+
+/* 아래 메뉴 : 반투명 + 선택된 칸 위에 남색 막대 */
+.nav{background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid #E2E8F0;box-shadow:0 -4px 16px rgba(15,23,42,.06)}
+.nav button{position:relative}
+.nav button.on::before{content:"";position:absolute;top:0;left:24%;right:24%;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,#212D64,#3B82F6)}
+
+/* 아래에서 올라오는 창 */
+.overlay{background:rgba(15,23,42,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.sheet{border-radius:22px 22px 0 0;box-shadow:0 -12px 40px rgba(15,23,42,.22)}
+
+/* 강조 상자 · 사진 칸 */
+.hm-big{background:linear-gradient(135deg,#EEF2FF 0%,#E0E7FF 100%);border-color:#C7D2FE}
+.slot{border-color:#94A3B8;background:#F8FAFC}
+.toast{background:#0F172A;box-shadow:0 8px 24px rgba(15,23,42,.25)}
+
+/* 맨 위 관리자 줄 */
+.adbar{background:linear-gradient(90deg,#0F172A 0%,#1E3A8A 100%);box-shadow:0 2px 10px rgba(15,23,42,.15)}
+.adbar a.cur{border-bottom-color:#93C5FD}
+
+/* 요약 칸(소장 한눈에 · 직원 수) : 위쪽 색 띠 */
+#mgrSum .ms-t,.empsum .esc{position:relative;overflow:hidden;background:#fff;border-color:rgba(203,213,225,.8);box-shadow:0 4px 14px -6px rgba(15,23,42,.10)}
+#mgrSum .ms-t::before,.empsum .esc::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#212D64,#3B82F6)}
+#mgrSum .ms-t:nth-child(2)::before,.empsum .esc:nth-child(2)::before{background:linear-gradient(90deg,#0D9488,#10B981)}
+#mgrSum .ms-t:nth-child(3)::before,.empsum .esc:nth-child(3)::before{background:linear-gradient(90deg,#4F46E5,#818CF8)}
+#mgrSum .ms-t:nth-child(4)::before{background:linear-gradient(90deg,#DC2626,#F97316)}
+</style>
 </body>
 </html>
