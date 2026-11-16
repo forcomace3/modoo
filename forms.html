@@ -37,6 +37,9 @@ h1{font-size:19px;margin:6px 0 4px;}
 <script>
 (function(){
   var API="https://mhidojbzbneajdxivfvc.supabase.co/functions/v1/api", K=null, T=null, cnt={}, tt=null;
+  /* (11/16) 올리려면 회사가 보낸 링크의 초대값(inv) 또는 로그인 기록이 있어야 함 */
+  var INV="", TK=""; try{INV=new URLSearchParams(location.search).get("inv")||"";}catch(e){}
+  try{var ss=JSON.parse(localStorage.getItem("fc_sess")||"null");if(ss&&ss.tk)TK=ss.tk;}catch(e){}
   var inp=document.getElementById("f"), tst=document.getElementById("toast");
   function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
   function toast(m){tst.textContent=m;tst.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){tst.classList.remove("on");},2200);}
@@ -66,7 +69,7 @@ h1{font-size:19px;margin:6px 0 4px;}
       var r=new FileReader();
       r.onload=function(){
         var b64=String(r.result).split(",")[1];
-        fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"hireUpload",name:nm,key:key,title:title,fname:file.name,ftype:file.type,b64:b64})})
+        fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"hireUpload",inv:INV,tk:TK,name:nm,key:key,title:title,fname:file.name,ftype:file.type,b64:b64})})
           .then(function(x){return x.json();}).then(function(res){
             if(res&&res.ok){done++;cnt[key]=(cnt[key]||0)+1;document.getElementById("st_"+key).textContent="✓ "+cnt[key]+"건 제출됨";toast("제출 완료 ("+done+"/"+fs.length+")");}
             else{toast((res&&res.error)||"실패했습니다. 다시 시도해 주세요.");}
