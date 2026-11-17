@@ -3179,7 +3179,7 @@
       h+='<div style="display:flex;gap:6px;margin-bottom:8px"><select id="lvhM" style="flex:1;padding:8px;border:1px solid #CBD5E1;border-radius:9px;font-family:inherit;font-size:13px">'+mo+'</select><select id="lvhP" style="flex:1;padding:8px;border:1px solid #CBD5E1;border-radius:9px;font-family:inherit;font-size:13px">'+po+'</select></div>';
       h+='<div style="font-size:12.5px;color:#475569;margin-bottom:6px">'+f.length+'건 · 사용 <b style="color:#1C2A27">'+lvFmt(tot)+'일</b>'+(pend?' · 결재 중 '+lvFmt(pend)+'일':'')+'</div>';
       if(!f.length)h+='<div class="hm-empty">조건에 맞는 연차 사용 기록이 없습니다.</div>';
-      else h+='<div style="overflow:auto;max-height:520px"><table class="grid"><thead><tr><th>날짜</th><th>이름</th><th>종류</th><th>일수</th><th>사유 · 출처</th></tr></thead><tbody>'+
+      else h+='<div class="lvh-scroll" style="overflow:auto;max-height:520px"><table class="grid"><thead><tr><th>날짜</th><th>이름</th><th>종류</th><th>일수</th><th>사유 · 출처</th></tr></thead><tbody>'+
         f.map(function(r){return '<tr><td style="white-space:nowrap">'+esc(lvDay(r.date))+'</td><td class="l" style="white-space:nowrap">'+esc(r.name)+'<br><small style="color:#8A8A92">'+esc(r.role)+(r.out?' · 퇴사':'')+'</small></td><td style="white-space:nowrap">'+esc(r.kind)+(r.done?'':'<br><span class="lv-st w">결재 중</span>')+'</td><td class="r">'+lvFmt(r.days)+'</td><td class="l" style="font-size:11.5px">'+(r.why?esc(r.why)+'<br>':'')+'<small style="color:#8A8A92">'+esc(r.src)+'</small></td></tr>';}).join("")+
         '<tr class="grand"><td colspan="3">합계</td><td class="r">'+lvFmt(tot+pend)+'</td><td></td></tr></tbody></table></div>';
     } else {
@@ -3187,7 +3187,7 @@
       var M={},colT=[0,0,0,0,0,0,0,0,0,0,0,0,0];
       rows.forEach(function(r){if(!r.done)return;var k=r.id,mi=Number(r.date.slice(5,7))-1;M[k]=M[k]||[0,0,0,0,0,0,0,0,0,0,0,0];M[k][mi]+=r.days;});
       h+='<div style="font-size:12px;color:#6A6A72;margin-bottom:6px">'+yr+'년 결재 완료된 연차만 셉니다 (반차 0.5일). 이름을 누르면 그 직원 내역을 봅니다.</div>';
-      h+='<div style="overflow:auto;max-height:560px"><table class="grid" style="font-size:11.5px"><thead><tr><th style="position:sticky;left:0;background:#F0EFE8">이름</th>';
+      h+='<div class="lvh-scroll" style="overflow:auto;max-height:560px"><table class="grid" style="font-size:11.5px"><thead><tr><th style="position:sticky;left:0;background:#F0EFE8">이름</th>';
       for(var c=1;c<=12;c++)h+='<th style="white-space:nowrap;min-width:30px">'+c+'월</th>';
       h+=(hasU0?'<th>이전<br>기록</th>':'')+'<th>사용</th><th>발생</th><th>남음</th></tr></thead><tbody>';
       var gU=0;
@@ -3218,8 +3218,9 @@
     lvHistDraw(el);
   }
   function openLvHistSheet(){
-    var o=openSheet('<h3>📋 '+esc((leaveData&&leaveData.year)||"")+'년 직원 연차 사용 내역</h3><div class="lvh-body"></div><button class="btn ghost" id="lvhC" style="width:100%;margin-top:8px">닫기</button>');
-    var sh=o.querySelector(".sheet");lvHistDraw(sh);o.querySelector("#lvhC").addEventListener("click",closeSheet);
+    var o=openSheet('<div class="lvh-top"><h3 style="margin:0">📋 '+esc((leaveData&&leaveData.year)||"")+'년 직원 연차 사용 내역</h3><button id="lvhX2" aria-label="닫기">✕</button></div><div class="lvh-body"></div><div class="lvh-foot"><button class="btn ghost" id="lvhC" style="width:100%">닫기</button></div>');
+    var sh=o.querySelector(".sheet");sh.classList.add("lvh-sheet");lvHistDraw(sh);
+    o.querySelector("#lvhC").addEventListener("click",closeSheet);o.querySelector("#lvhX2").addEventListener("click",closeSheet);
   }
   async function lvHistExcel(){
     toast("엑셀 만드는 중…");var ok=await loadXLSX();if(!ok||!window.XLSX){toast("엑셀 도구를 불러오지 못했습니다.");return;}
@@ -3373,6 +3374,19 @@ body{background:#E2E8F0}
 #mgrSum .ms-t:nth-child(2)::before,.empsum .esc:nth-child(2)::before{background:linear-gradient(90deg,#0D9488,#10B981)}
 #mgrSum .ms-t:nth-child(3)::before,.empsum .esc:nth-child(3)::before{background:linear-gradient(90deg,#4F46E5,#818CF8)}
 #mgrSum .ms-t:nth-child(4)::before{background:linear-gradient(90deg,#DC2626,#F97316)}
+</style>
+<style id="lvh-1116">
+/* (11/16) 연차 내역 창 : 위 ✕ 닫기 · 단추는 늘 보이고 표만 스크롤 · PC 에서는 가운데 창 */
+.sheet{max-height:86vh;max-height:86dvh}
+.lvh-sheet{display:flex;flex-direction:column;overflow:hidden!important}
+.lvh-top{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 0 4px;flex:0 0 auto}
+.lvh-top button{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1px solid #E2E8F0;background:#F1F5F9;font-size:15px;cursor:pointer;color:#334155}
+.lvh-sheet .lvh-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.lvh-sheet .lvh-body>*{flex:0 0 auto}
+.lvh-sheet .lvh-body>.lvh-scroll{flex:1 1 auto;min-height:140px;max-height:none!important}
+.lvh-sheet #lvhX{margin-top:8px!important}
+.lvh-foot{flex:0 0 auto;margin-top:8px}
+@media (min-width:700px){.overlay{align-items:center}.sheet{border-radius:20px!important;max-height:84vh;max-height:calc(100dvh - 48px)}}
 </style>
 </body>
 </html>
