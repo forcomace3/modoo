@@ -880,8 +880,9 @@ function facFlush(done, force){
   if(!FAC || __facPending == null){ if(done) done(); return; }
   if(__facBusy){ setTimeout(function(){ facFlush(done, force); }, 400); return; }
   var raw = __facPending; __facPending = null; __facBusy = true;
-  fetch(FAC.url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, keepalive: raw.length < 60000,
-    body: JSON.stringify({ action:'facSave', tk: FAC.tk, rev: __facRev, state: raw, force: !!force }) })
+  var __b=JSON.stringify({ action:'facSave', tk: FAC.tk, rev: __facRev, state: raw, force: !!force }), __ka=false; try{ __ka=new Blob([__b]).size < 60000; }catch(e){}
+  fetch(FAC.url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, keepalive: __ka,
+    body: __b })
   .then(function(r){ return r.json(); })
   .then(function(j){
     __facBusy = false;
@@ -2475,7 +2476,7 @@ function openDet(ii){
 }
 function detDraw(){
   var b=B(), m=M(), ii=__det.ii, it=b.items[ii], lock=!!m.confirmed, L=__det.L;
-  var others=b.items.map(function(x,j){ return {n:x.n,j:j}; }).filter(function(x){ return x.j!==ii; });
+  var others=b.items.map(function(x,j){ return {n:(x.grp?x.grp+' · ':'')+x.n,j:j}; }).filter(function(x){ return x.j!==ii; });
   var dis=lock?' disabled':'';
   var rows=L.map(function(x,k){
     if(x.ref!=null&&x.ref!==''){ var v=-itemGen(b,m,+x.ref,1);
@@ -2496,7 +2497,7 @@ function detDraw(){
     '<div class="note i" style="margin-bottom:10px;font-size:12px">줄마다 <b>내역 · 발생금액</b>을 넣습니다. 여러 달에 <b>나눠 내는</b> 공사·보험료는 개월 수와 회차를 넣으면 이번 달 몫을 계산합니다 (10원 단위, 마지막 회차에서 끝전 정리). '+
     '공동전기처럼 <b>다른 항목 금액을 빼서</b> 남는 돈을 나누는 경우 "다른 항목 빼기" 줄을 쓰세요.</div>'+
     '<div class="tw"><table><thead><tr><th style="min-width:150px">내역</th><th class="num" style="width:110px">발생금액</th><th style="width:62px">분할<br>개월</th><th style="width:56px">회차</th><th class="num" style="width:110px">이번 달 부과</th><th style="min-width:120px">비고</th><th style="width:40px"></th></tr></thead><tbody>'+rows+
-    '<tr style="background:#F8FAFC;font-weight:800"><td>합계</td><td class="num">'+won(gsum)+'</td><td></td><td></td><td class="num">'+won(sum)+'</td><td colspan="2" style="font-size:11.5px;color:var(--ink3)">← 이 금액을 '+esc(MODEL[it.mode]||'')+'으로 나눕니다</td></tr></tbody></table></div>'+
+    '<tr style="background:#F8FAFC;font-weight:800"><td>합계</td><td class="num">'+won(gsum)+'</td><td></td><td></td><td class="num">'+won(sum)+'</td><td colspan="2" style="font-size:11.5px;color:var(--ink3)">← 이 금액을 \''+esc(MODEL[it.mode]||'')+'\' 방식으로 나눕니다</td></tr></tbody></table></div>'+
     (lock?'<div class="note y" style="margin-top:10px">확정한 달이라 볼 수만 있습니다.</div>':
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn o sm" onclick="detAdd()">＋ 줄 추가</button>'+
     (others.length?'<button class="btn o sm" onclick="detAddRef()">− 다른 항목 금액 빼기</button>':'')+
@@ -2517,7 +2518,8 @@ function detAdd(){ __det.L.push({n:'',gen:0,note:''}); detDraw(); }
 function detAddRef(){ var b=B(), j=b.items.findIndex(function(x,i){ return i!==__det.ii; }); __det.L.push({ref:j,note:''}); detDraw(); }
 function detDel(k){ __det.L.splice(k,1); detDraw(); }
 function detPrev(){ var p=prevMonth(), ii=__det.ii; if(!p||!p.m.det||!p.m.det[ii]) return;
-  var n=0; __det.L=p.m.det[ii].map(function(x){ var y=JSON.parse(JSON.stringify(x)); if(+y.mon>1){ y.no=(+y.no||1)+1; y.fix=false; } return y; })
+  var n=0; __det.L=p.m.det[ii].map(function(x){ var y=JSON.parse(JSON.stringify(x)); if(+y.mon>1){ y.no=(+y.no||1)+1;
+      if(y.fix){ if(y.no>=+y.mon) y.chg=(+y.gen||0)-(+x.chg||0)*(+y.mon-1); }   /* 직접 정한 월 금액은 그대로, 마지막 회차에서 끝전 정리 */ } return y; })
     .filter(function(y){ return !(+y.mon>1 && y.no>+y.mon); });
   toast('지난달 내역을 가져왔어요. 금액이 바뀐 줄은 고쳐 주세요'); detDraw(); }
 function detSave(){ var b=B(), m=M(), ii=__det.ii;
@@ -2858,6 +2860,14 @@ async function specXlsx(){
 /* 새로 바꾼 화면도 '다음 할 일' 안내를 같이 고친다 */
 ['rUnits','rItems'].forEach(function(nm){ var f=window[nm]; if(typeof f!=='function') return;
   window[nm]=function(){ var r=f.apply(this,arguments); try{ guide(); }catch(e){} return r; }; });
+
+/* 세대별 고지서 : 묶음 이름(전기료·세대)과 동·호, 명세서 계좌를 같이 보여 줌 */
+var _billData0=billData;
+billData=function(ui){ var d=_billData0(ui); try{ var b=B(), m=M(), r=m.rows[ui]||{cells:[]}, u=b.units[ui]||{};
+  d.lines=[]; b.items.forEach(function(it,ii){ var v=+(r.cells[ii]||0); if(v) d.lines.push({n:(it.grp?it.grp+' · ':'')+(it.n||'항목'), v:v, tax:!!it.tax}); });
+  if(u.dong) d.ho=uLab(u);
+  if(!d.bank){ var a=spGet(b).acc; if(a.length) d.bank=a.map(function(x){ return (x.bank?x.bank+' ':'')+x.no; }).join(' / '); }
+  }catch(e){} return d; };
 
 load();
 S.ym = S.ym || thisYm();

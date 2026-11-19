@@ -1047,8 +1047,9 @@ function facFlush(done, force){
   if(!FAC || __facPending == null){ if(done) done(); return; }
   if(__facBusy){ setTimeout(function(){ facFlush(done, force); }, 400); return; }
   var raw = __facPending; __facPending = null; __facBusy = true;
-  fetch(FAC.url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, keepalive: raw.length < 60000,
-    body: JSON.stringify({ action:'facSave', tk: FAC.tk, owner: FAC.owner || undefined, rev: __facRev, state: raw, force: !!force }) })
+  var __b=JSON.stringify({ action:'facSave', tk: FAC.tk, owner: FAC.owner || undefined, rev: __facRev, state: raw, force: !!force }), __ka=false; try{ __ka=new Blob([__b]).size < 60000; }catch(e){}
+  fetch(FAC.url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, keepalive: __ka,
+    body: __b })
   .then(function(r){ return r.json(); })
   .then(function(j){
     __facBusy = false;
