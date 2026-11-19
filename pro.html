@@ -516,6 +516,54 @@ td input:focus, td select:focus,
 /* (11/16) 보정 : 인쇄할 때는 고지서 그림자 빼기 */
 @media print{ #printArea .bill{box-shadow:none} }
 
+/* (11/19) 부과명세서 */
+.spd{font-family:'Malgun Gothic','Apple SD Gothic Neo',-apple-system,sans-serif;color:#111}
+.spd-pg{background:#fff;border:1px solid var(--line2,#E2E8F0);border-radius:10px;padding:26px 28px;margin:14px auto;max-width:820px}
+.spd-cover{text-align:left}
+.spd-ym{font-size:20px;font-weight:800;margin-bottom:14px}
+.spd-ttl{text-align:center;margin:6px 0 22px}
+.spd-ttl span{display:inline-block;background:#D9D9D9;border:2px solid #333;padding:10px 46px;font-size:26px;font-weight:800;letter-spacing:2px}
+.spd-cv{margin:0 0 18px 18%;font-size:15px;font-weight:700;line-height:1.9}
+.spd-acc{font-weight:500;padding-left:22px;font-size:14px}
+.spd-late{margin:8px 0 14px}.spd-late b{font-size:12px}
+.spd-late table{border-collapse:collapse;width:100%;font-size:12px;margin-top:4px}
+.spd-late th,.spd-late td{border:1px solid #333;padding:4px 2px;text-align:center}
+.spd-late th{background:#F2F2F2;white-space:nowrap;padding:4px 6px}
+.spd-notes{font-size:12.5px;line-height:1.8;margin:10px 0 18px}
+.spd-foot{border:3px double #333;text-align:center;font-size:19px;font-weight:800;padding:10px;margin:14px 0 22px}
+.spd-off{text-align:center;font-size:24px;font-weight:800;margin-top:6px}
+.spd-addr{text-align:center;font-size:14px;font-weight:700;margin-top:6px}
+.spd-tel{text-align:center;font-size:15px;font-weight:800;margin-top:14px}
+.spd-h1{text-align:center;font-size:22px;font-weight:800;letter-spacing:6px;margin-bottom:10px}
+.spd-cap{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:4px}
+.spd-t{border-collapse:collapse;width:100%;font-size:12.5px;margin-bottom:10px}
+.spd-t th,.spd-t td{border:1px solid #444;padding:5px 7px}
+.spd-t th{background:#EDEDED;font-weight:700;text-align:center}
+.spd-t td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.spd-t td.c{text-align:center}.spd-t td.l{text-align:left}.spd-t td.sm{font-size:11.5px}
+.spd-t tr.spd-sub td,.spd-t tr.spd-tot td{background:#D9D9D9;font-weight:800}
+.spd-t td.spd-g{writing-mode:horizontal-tb;font-weight:700}
+.spd-grid td{font-size:12px}
+.spd-pin{width:110px;text-align:right;background:#FFF9DB;border:1px solid #E6D9A0;border-radius:6px;padding:3px 6px}
+.spd-hint{font-size:11.5px;color:#64748B;margin-top:4px}
+.spd-blk{margin-bottom:22px}
+.spd-bh{display:flex;align-items:center;gap:10px;margin:6px 0 6px}
+.spd-bn{font-size:19px;font-weight:800;white-space:nowrap}
+.spd-dash{flex:1;border-bottom:2px dashed #999;height:0}
+.spd-box{border:2px solid #222;padding:4px 14px;font-size:17px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.spd-sh{font-size:14px;font-weight:800;margin:12px 0 4px;display:flex;justify-content:space-between;border-bottom:1px solid #CBD5E1;padding-bottom:3px}
+.spd-sh span{font-variant-numeric:tabular-nums}
+.spd-lb{font-size:12.5px;font-weight:700;margin:6px 0 3px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.spd-f{font-weight:500}.spd-u{margin-left:auto;font-weight:500;font-size:11.5px}
+@media screen{ .spd-pg{overflow-x:auto} }
+@media (max-width:640px){ .spd-pg{padding:16px 12px} .spd-cv{margin-left:0} .spd-t{font-size:11px} .spd-t th,.spd-t td{padding:4px 4px} .spd-ttl span{font-size:20px;padding:8px 20px} }
+@media print{
+  #printArea .spd-pg{border:0;border-radius:0;margin:0;padding:0;max-width:none;page-break-after:always;break-after:page}
+  #printArea .spd-pg:last-child{page-break-after:auto;break-after:auto}
+  #printArea .spd-t tr{break-inside:avoid} #printArea .spd-part{break-inside:avoid;page-break-inside:avoid} #printArea .spd-bh,#printArea .spd-sh{break-after:avoid;page-break-after:avoid}
+  #printArea .spd-ttl span,#printArea .spd-t th,#printArea .spd-t tr.spd-sub td,#printArea .spd-t tr.spd-tot td,#printArea .spd-late th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #printArea .no-print{display:none}
+}
 </style>
 </head>
 <body>
@@ -556,6 +604,7 @@ td input:focus, td select:focus,
     <button data-p="dash" class="on"><span class="ic">◈</span> 현황</button>
     <div class="lbl">매달 하는 일</div>
     <button data-p="charge"><span class="ic">▤</span> 관리비 부과</button>
+    <button data-p="spec"><span class="ic">📑</span> 부과명세서</button>
     <button data-p="collect"><span class="ic">◐</span> 수납 관리</button>
     <button data-p="tax"><span class="ic">🧾</span> 세금계산서</button>
     <button data-p="report"><span class="ic">◎</span> 관리비 공개</button>
@@ -614,6 +663,18 @@ td input:focus, td select:focus,
         <button class="btn o sm" onclick="exportCharge()">↓ 엑셀(CSV)</button>
         <button class="btn g sm" id="c-fix" onclick="confirmCharge()" disabled>✓ 부과 확정</button></div>
       <div class="tw" id="c-tbl"><div class="empty">아직 계산하지 않았습니다</div></div>
+    </div>
+  </section>
+
+  <!-- ========== 부과명세서 (11/19) ========== -->
+  <section class="page" id="p-spec">
+    <div class="card">
+      <div class="ch"><h3>부과명세서</h3><p id="sp-info"></p><div class="sp"></div>
+        <button class="btn o sm" onclick="go('charge')">▤ 관리비 부과</button>
+        <button class="btn o sm" onclick="go('bldg')">표지·설정</button>
+        <button class="btn o sm" onclick="specXlsx()">⬇ 엑셀</button>
+        <button class="btn sm" onclick="specPrint()">🖨 인쇄 · PDF</button></div>
+      <div class="cb" style="background:#F1F5F9"><div id="sp-doc"></div></div>
     </div>
   </section>
 
@@ -2298,6 +2359,506 @@ function chargeExtra2(){
   var cm=window.closeM; window.closeM=function(){ var r=cm.apply(this,arguments); wideM(0); if(PBX.run) PBX.run.stop=true; return r; };
 })();
 
+/* =========================================================
+   (11/19) 아파트식 관리비 부과명세서
+   - 나누는 방법 추가 : 라인별 사용량(승강기 전기) · 세대별 금액 직접 입력 · 주차 대수별(조견표)
+   - 항목마다 "발생내역"(여러 줄 · 분할 회차 · 다른 항목 금액 빼기) → 그 합계가 이번 달 총액
+   - 면적 배분 방식 : 면적 비율(기존) / ㎡당 단가(아파트식)
+   - 부과명세서 화면 : 표지 · 부과총괄표 · 항목별 발생내역/부과내역 → 인쇄(PDF) · 엑셀
+   ========================================================= */
+MODEL.line='라인별 사용량 (승강기 전기)'; MODEL.direct='세대별 금액 직접 입력'; MODEL.park='주차 대수별 (조견표)';
+TITLES.spec=['매달','부과명세서'];
+var SPEC_LATE=[2,2,5,5,10,10,10,10,15,15,15,15];
+var SPEC_NOTES=['관리비를 무통장 입금할 때는 반드시 동·호수를 적어 주세요. (이름만으로는 호수 확인이 안 되어 미납 처리될 수 있습니다.)',
+  '비상계단이나 복도 등 공용부분에 자전거·화분 등 물건을 두지 마세요.',
+  '이사(전출) 세대는 하루 전에 관리사무소에 연락하시고 중간관리비를 정산해 주세요.'];
+function spGet(b){ b=b||B(); var s=b.spec||{};
+  return { areaRule:s.areaRule||'ratio', totArea:s.totArea||'', acc:(s.acc&&s.acc.length)?s.acc:(b.bank?[{bank:'',no:b.bank}]:[]),
+    holder:s.holder||'', office:s.office||((b.name||'')+' 관리사무소'), addr:s.addr!=null?s.addr:(b.addr||''), tel:s.tel||'', fax:s.fax||'',
+    late:(s.late&&s.late.length===12)?s.late:SPEC_LATE, notes:s.notes||SPEC_NOTES, foot:s.foot!=null?s.foot:'범죄신고는 112,    실종·민원신고는 182',
+    dueOff:s.dueOff!=null?+s.dueOff:1 }; }
+function spSet(k,v){ if(MGR){ toast('설정은 본사만 바꿀 수 있어요'); return; } var b=B(); if(!b.spec) b.spec={}; b.spec[k]=v; save(); }
+function r10(x){ x=+x||0; return (x<0?-1:1)*Math.round(Math.abs(x)/10)*10; }
+function r2(x){ x=+x||0; return (x<0?-1:1)*Math.round(Math.abs(x)*100+1e-7)/100; }
+function uLab(u){ if(!u) return ''; var h=String(u.ho||''); return (u.dong&&h.indexOf('동')<0? u.dong+'동 ':'')+h; }
+function occArea(b){ return occupied(b).reduce(function(a,u){ return a+(+u.area||0); },0); }
+function areaTot(b){ var t=parseFloat((b.spec||{}).totArea); return t>0? t : occArea(b); }
+function parkRowFor(it,u){ var P=(it.park&&it.park.rows)||[], a=+u.area||0, best=null, bd=1e9;
+  P.forEach(function(r){ var d=Math.abs((+r.area||0)-a); if(d<bd){ bd=d; best=r; } }); return best; }
+function parkFee(it,u){ var c=Math.floor(+u.cars||0); if(c<=0) return 0; var r=parkRowFor(it,u); if(!r) return 0; var p=r.p||[]; return +p[Math.min(c,5)-1]||0; }
+function detOf(m,ii){ return (m&&m.det&&m.det[ii]&&m.det[ii].length)?m.det[ii]:null; }
+function instAmt(gen,mon,no){ mon=+mon||1; no=+no||1; var base=r10(gen/mon); return no>=mon ? gen-base*(mon-1) : base; }
+function lineChg(b,m,L,dep){ if(L.ref!=null&&L.ref!==''){ return -itemGen(b,m,+L.ref,(dep||0)+1); }
+  if(L.fix) return +L.chg||0; if(+L.mon>1) return instAmt(+L.gen||0,L.mon,L.no); return +L.gen||0; }
+function itemGen(b,m,ii,dep){
+  dep=dep||0; if(dep>4||!m) return 0; var it=b.items[ii]; if(!it) return 0;
+  var D=detOf(m,ii); if(D&&it.mode!=='each'&&it.mode!=='direct'&&it.mode!=='park') return D.reduce(function(a,L){ return a+lineChg(b,m,L,dep); },0);
+  if(it.mode==='each') return (+it.val||0)*occupied(b).length;
+  if(it.mode==='direct'){ var a=(m.direct&&m.direct[ii])||[]; return b.units.reduce(function(s,u,ui){ return s+(u.vacant?0:(+a[ui]||0)); },0); }
+  if(it.mode==='park') return b.units.reduce(function(s,u){ return s+(u.vacant?0:parkFee(it,u)); },0);
+  return +((m.totals||{})[ii]||0);
+}
+function specSync(b,m){ if(!m||m.confirmed) return; if(!m.totals) m.totals={};
+  b.items.forEach(function(it,ii){ if(it.mode==='each') return; if(detOf(m,ii)||it.mode==='direct'||it.mode==='park') m.totals[ii]=itemGen(b,m,ii,0); }); }
+function lineCalc(b,m,ii){
+  var tot=+((m.totals||{})[ii]||0), use=(m.lineUse&&m.lineUse[ii])||{}, order=[], G={};
+  b.units.forEach(function(u,ui){ if(u.vacant) return; var k=String(u.line||'').trim()||'(라인 없음)'; if(!G[k]){ G[k]={lab:k,cnt:0,uis:[]}; order.push(k); } G[k].cnt++; G[k].uis.push(ui); });
+  var su=order.reduce(function(a,k){ return a+(+use[k]||0); },0), occ=order.reduce(function(a,k){ return a+G[k].cnt; },0), per={};
+  var L=order.map(function(k){ var g=G[k], u=+use[k]||0, gen=su? r10(tot*u/su) : (occ? r10(tot*g.cnt/occ):0), pu=g.cnt? r10(gen/g.cnt):0;
+    g.uis.forEach(function(ui){ per[ui]=pu; }); return {lab:k,cnt:g.cnt,use:u,gen:gen,per:pu,chg:pu*g.cnt}; });
+  return {lines:L, per:per, sumUse:su, tot:tot};
+}
+/* 계산 : 기존 방법 + 새 방법 */
+calcRows=function(b, m){
+  try{ specSync(b,m); }catch(e){}
+  var occ = occupied(b), totalArea = occ.reduce(function(a,u){ return a+(+u.area||0); },0);
+  var rule=spGet(b).areaRule, TA=areaTot(b), LC={};
+  b.items.forEach(function(it,ii){ if(it.mode==='line') LC[ii]=lineCalc(b,m,ii); });
+  return b.units.map(function(u, ui){
+    var cells=[];
+    if(u.vacant) return {ho:u.ho, cells:b.items.map(function(){return 0;}), supply:0, vat:0, total:0, vacant:true};
+    b.items.forEach(function(it, ii){
+      var v=0, tot=+((m.totals||{})[ii]||0);
+      if(it.mode==='each') v = +it.val||0;
+      else if(it.mode==='total') v = occ.length ? tot/occ.length : 0;
+      else if(it.mode==='area'){ if(rule==='unit'){ var up=TA? r2(tot/TA):0; v=(+u.area||0)*up; } else v = totalArea ? tot*(+u.area||0)/totalArea : 0; }
+      else if(it.mode==='use'){
+        var arr=(m.usage||{})[ii]||[], sum=arr.reduce(function(a,x){ return a+(+x||0); },0);
+        v = sum ? tot*(+arr[ui]||0)/sum : (occ.length?tot/occ.length:0);
+      }
+      else if(it.mode==='line') v = (LC[ii]&&LC[ii].per[ui])||0;
+      else if(it.mode==='direct') v = +(((m.direct||{})[ii]||[])[ui]||0);
+      else if(it.mode==='park') v = parkFee(it,u);
+      v = (it.mode==='direct'||it.mode==='park') ? Math.round(v) : r10(v);
+      cells.push(v);
+    });
+    var taxSupply = b.items.reduce(function(a,it,ii){ return a + (it.tax?cells[ii]:0); },0);
+    var freeSupply = b.items.reduce(function(a,it,ii){ return a + (it.tax?0:cells[ii]); },0);
+    var v2 = Math.round(taxSupply*0.1/10)*10;
+    return {ho:u.ho, cells:cells, taxSupply:taxSupply, freeSupply:freeSupply, vat:v2, total:taxSupply+freeSupply+v2, vacant:false};
+  });
+};
+
+/* ---------- 부과 화면 : 항목 칸에 단추 붙이기 ---------- */
+var _rCharge0=rCharge;
+rCharge=function(){ try{ specSync(B(),M()); }catch(e){} _rCharge0(); try{ specCharge(); }catch(e){ console.error(e); } };
+function specCharge(){
+  var b=B(), m=M(), lock=!!m.confirmed;
+  var pg=document.getElementById('p-charge');
+  if(pg && !document.getElementById('spec-cta')){ var d=document.createElement('div'); d.id='spec-cta'; d.className='note i'; d.style.cssText='margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap';
+    d.innerHTML='<span style="flex:1;min-width:200px">📑 <b>부과명세서</b> — 표지 · 부과총괄표 · 항목별 발생내역과 면적별 부과내역을 한 번에 봅니다. 인쇄(PDF)·엑셀도 됩니다.</span><button class="btn sm" onclick="go(\'spec\')">부과명세서 보기 →</button>';
+    pg.insertBefore(d, pg.firstChild); }
+  b.items.forEach(function(it,ii){
+    if(it.mode==='each') return;
+    var inp=document.getElementById('ti-'+ii); if(!inp) return; var fld=inp.parentNode;
+    var old=fld.querySelector('.spx'); if(old) old.remove();
+    var D=detOf(m,ii), auto=(it.mode==='direct'||it.mode==='park'||!!D);
+    if(auto){ inp.readOnly=true; inp.value=won(itemGen(b,m,ii,0)); inp.style.background='#F1F5F9'; inp.title='아래 단추로 넣은 내용의 합계입니다'; }
+    var bx=document.createElement('div'); bx.className='spx'; bx.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
+    var h='';
+    if(it.mode==='direct') h+='<button class="btn o sm" onclick="openDirect('+ii+')">✏️ 세대별 금액</button>';
+    if(it.mode==='park') h+='<button class="btn o sm" onclick="go(\'units\')">🚗 차량 대수</button><button class="btn o sm" onclick="openPark('+ii+')">조견표</button>';
+    if(it.mode==='line') h+='<button class="btn o sm" onclick="openLine('+ii+')">🛗 라인별 사용량</button>';
+    if(it.mode!=='direct'&&it.mode!=='park') h+='<button class="btn o sm" onclick="openDet('+ii+')">📝 발생내역'+(D?' ('+D.length+'줄)':'')+'</button>';
+    bx.innerHTML=h; fld.appendChild(bx);
+  });
+}
+
+/* ---------- 발생내역 (여러 줄 · 분할 · 다른 항목 빼기) ---------- */
+var __det=null;
+function openDet(ii){
+  var b=B(), m=M(), it=b.items[ii]; if(!it) return;
+  __det={ii:ii, L:JSON.parse(JSON.stringify(detOf(m,ii)||[]))};
+  if(!__det.L.length && +((m.totals||{})[ii]||0)) __det.L.push({n:it.n, gen:+m.totals[ii], note:''});
+  if(!__det.L.length) __det.L.push({n:it.n, gen:0, note:''});
+  detDraw(); try{ bkWide(true); }catch(e){}
+}
+function detDraw(){
+  var b=B(), m=M(), ii=__det.ii, it=b.items[ii], lock=!!m.confirmed, L=__det.L;
+  var others=b.items.map(function(x,j){ return {n:x.n,j:j}; }).filter(function(x){ return x.j!==ii; });
+  var dis=lock?' disabled':'';
+  var rows=L.map(function(x,k){
+    if(x.ref!=null&&x.ref!==''){ var v=-itemGen(b,m,+x.ref,1);
+      return '<tr><td colspan="2"><select'+dis+' onchange="detSet('+k+',\'ref\',this.value)">'+others.map(function(o){ return '<option value="'+o.j+'"'+(+x.ref===o.j?' selected':'')+'>− '+esc(o.n||'이름 없음')+' 금액 빼기</option>'; }).join('')+'</select></td>'+
+        '<td colspan="2" style="color:var(--ink3);font-size:11.5px">그 항목의 이번 달 총액을 자동으로 뺍니다</td><td class="num"><b>'+won(v)+'</b></td>'+
+        '<td><input'+dis+' value="'+esc(x.note||'')+'" oninput="detSet('+k+',\'note\',this.value)"></td><td>'+(lock?'':'<button class="btn o sm" onclick="detDel('+k+')">×</button>')+'</td></tr>'; }
+    var ch=lineChg(b,m,x,0), inst=+x.mon>1;
+    return '<tr><td><input'+dis+' value="'+esc(x.n||'')+'" placeholder="내역" oninput="detSet('+k+',\'n\',this.value)"></td>'+
+      '<td><input'+dis+' class="num" type="tel" value="'+(x.gen||x.gen===0?x.gen:'')+'" oninput="detSet('+k+',\'gen\',this.value)"></td>'+
+      '<td><input'+dis+' class="num" type="tel" value="'+(x.mon||'')+'" placeholder="-" title="나눠 낼 개월 수 (안 나누면 비움)" oninput="detSet('+k+',\'mon\',this.value)"></td>'+
+      '<td><input'+dis+' class="num" type="tel" value="'+(inst?(x.no||1):'')+'" placeholder="-" title="이번이 몇 회차" oninput="detSet('+k+',\'no\',this.value)"'+(inst?'':' disabled')+'></td>'+
+      '<td><input'+dis+' class="num" type="tel" value="'+ch+'" oninput="detSet('+k+',\'chg\',this.value)" style="'+(x.fix?'background:var(--yl)':'')+'" title="자동 계산값. 고치면 그 값을 씁니다"></td>'+
+      '<td><input'+dis+' value="'+esc(x.note||'')+'" oninput="detSet('+k+',\'note\',this.value)"></td><td>'+(lock?'':'<button class="btn o sm" onclick="detDel('+k+')">×</button>')+'</td></tr>';
+  }).join('');
+  var sum=L.reduce(function(a,x){ return a+lineChg(b,m,x,0); },0), gsum=L.reduce(function(a,x){ return a+((x.ref!=null&&x.ref!=='')?lineChg(b,m,x,0):(+x.gen||0)); },0);
+  var p=prevMonth(), canPrev=!lock && p && p.m.det && p.m.det[ii] && p.m.det[ii].length;
+  modal('📝 '+(it.n||'항목')+' · 발생내역 ('+ymL(S.ym)+')',
+    '<div class="note i" style="margin-bottom:10px;font-size:12px">줄마다 <b>내역 · 발생금액</b>을 넣습니다. 여러 달에 <b>나눠 내는</b> 공사·보험료는 개월 수와 회차를 넣으면 이번 달 몫을 계산합니다 (10원 단위, 마지막 회차에서 끝전 정리). '+
+    '공동전기처럼 <b>다른 항목 금액을 빼서</b> 남는 돈을 나누는 경우 "다른 항목 빼기" 줄을 쓰세요.</div>'+
+    '<div class="tw"><table><thead><tr><th style="min-width:150px">내역</th><th class="num" style="width:110px">발생금액</th><th style="width:62px">분할<br>개월</th><th style="width:56px">회차</th><th class="num" style="width:110px">이번 달 부과</th><th style="min-width:120px">비고</th><th style="width:40px"></th></tr></thead><tbody>'+rows+
+    '<tr style="background:#F8FAFC;font-weight:800"><td>합계</td><td class="num">'+won(gsum)+'</td><td></td><td></td><td class="num">'+won(sum)+'</td><td colspan="2" style="font-size:11.5px;color:var(--ink3)">← 이 금액을 '+esc(MODEL[it.mode]||'')+'으로 나눕니다</td></tr></tbody></table></div>'+
+    (lock?'<div class="note y" style="margin-top:10px">확정한 달이라 볼 수만 있습니다.</div>':
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn o sm" onclick="detAdd()">＋ 줄 추가</button>'+
+    (others.length?'<button class="btn o sm" onclick="detAddRef()">− 다른 항목 금액 빼기</button>':'')+
+    (canPrev?'<button class="btn o sm" onclick="detPrev()">↩ '+mShort(p.ym)+' 내역 이어오기 (회차 +1)</button>':'')+'</div>'),
+    '<button class="btn o" onclick="closeM()">'+(lock?'닫기':'취소')+'</button>'+(lock?'':'<button class="btn" onclick="detSave()">저장</button>'));
+  try{ bkWide(true); }catch(e){}
+}
+function detSet(k,f,v){ var x=__det.L[k]; if(!x) return;
+  if(f==='gen'||f==='mon'||f==='no'){ x[f]=nOf(v); if(f==='mon'&&x.mon>1&&!x.no) x.no=1; x.fix=false; }
+  else if(f==='chg'){ x.chg=nOf(v); x.fix=true; }
+  else if(f==='ref'){ x.ref=+v; }
+  else { x[f]=v; return; }
+  var a=document.activeElement, tr=a&&a.closest?a.closest('tr'):null, rows=[].slice.call(document.querySelectorAll('#m-b tbody tr')), ri=tr?rows.indexOf(tr):-1, ci=tr?[].slice.call(tr.querySelectorAll('input,select')).indexOf(a):-1;
+  detDraw();
+  if(ri>=0&&ci>=0){ var r2_=document.querySelectorAll('#m-b tbody tr')[ri], tg=r2_&&r2_.querySelectorAll('input,select')[ci]; if(tg){ tg.focus(); try{ var n=tg.value.length; tg.setSelectionRange(n,n); }catch(e){} } }
+}
+function detAdd(){ __det.L.push({n:'',gen:0,note:''}); detDraw(); }
+function detAddRef(){ var b=B(), j=b.items.findIndex(function(x,i){ return i!==__det.ii; }); __det.L.push({ref:j,note:''}); detDraw(); }
+function detDel(k){ __det.L.splice(k,1); detDraw(); }
+function detPrev(){ var p=prevMonth(), ii=__det.ii; if(!p||!p.m.det||!p.m.det[ii]) return;
+  var n=0; __det.L=p.m.det[ii].map(function(x){ var y=JSON.parse(JSON.stringify(x)); if(+y.mon>1){ y.no=(+y.no||1)+1; y.fix=false; } return y; })
+    .filter(function(y){ return !(+y.mon>1 && y.no>+y.mon); });
+  toast('지난달 내역을 가져왔어요. 금액이 바뀐 줄은 고쳐 주세요'); detDraw(); }
+function detSave(){ var b=B(), m=M(), ii=__det.ii;
+  if(m.confirmed){ toast('확정한 달은 고칠 수 없어요'); return; }
+  var L=__det.L.filter(function(x){ return (x.ref!=null&&x.ref!=='') || (x.n||'').trim() || +x.gen || +x.chg; });
+  L.forEach(function(x){ if(x.ref==null||x.ref===''){ delete x.ref; x.chg=lineChg(b,m,x,0); } });
+  if(!m.det) m.det={}; if(L.length) m.det[ii]=L; else delete m.det[ii];
+  specSync(b,m); save(); closeM(); rCharge(); toast((b.items[ii].n||'항목')+' 발생내역을 저장했습니다 · 총액 '+won(itemGen(b,m,ii,0))+'원'); }
+
+/* ---------- 세대별 금액 직접 입력 ---------- */
+function openDirect(ii){
+  var b=B(), m=M(), it=b.items[ii], lock=!!m.confirmed, a=(m.direct&&m.direct[ii])||[];
+  if(!b.units.length){ toast('세대를 먼저 넣어 주세요'); return; }
+  var p=prevMonth(), canPrev=!lock&&p&&p.m.direct&&p.m.direct[ii];
+  modal('✏️ '+(it.n||'항목')+' · 세대별 금액 ('+ymL(S.ym)+')',
+    '<div class="note i" style="margin-bottom:10px;font-size:12px">세대마다 이번 달 금액을 넣습니다 (할인은 − 로). 엑셀에서 <b>호실 · 금액</b> 두 칸을 복사해 아래 상자에 붙여넣어도 됩니다.</div>'+
+    (lock?'':'<textarea id="dz" rows="3" placeholder="101동 203호&#9;60000   (또는 203호&#9;60000)"></textarea><div style="display:flex;gap:6px;margin:6px 0 10px;flex-wrap:wrap"><button class="btn o sm" onclick="directPaste('+ii+')">붙여넣은 내용 넣기</button>'+(canPrev?'<button class="btn o sm" onclick="directPrev('+ii+')">↩ '+mShort(p.ym)+' 값 가져오기</button>':'')+'<button class="btn o sm" onclick="directClear('+ii+')">모두 비우기</button></div>')+
+    '<div class="tw" style="max-height:46vh"><table><thead><tr><th>동·호</th><th>이름</th><th class="num" style="width:130px">금액</th></tr></thead><tbody>'+
+    b.units.map(function(u,ui){ return '<tr'+(u.vacant?' style="opacity:.45"':'')+'><td><b>'+esc(uLab(u))+'</b></td><td>'+esc(u.name||'')+(u.vacant?' <span class="tag t-x">공실</span>':'')+'</td>'+
+      '<td><input class="num" type="tel"'+(lock||u.vacant?' disabled':'')+' value="'+(a[ui]?a[ui]:'')+'" oninput="directSet('+ii+','+ui+',this.value)"></td></tr>'; }).join('')+'</tbody></table></div>'+
+    '<div style="margin-top:10px;font-weight:800">합계 <span id="dz-sum">'+won(itemGen(b,m,ii,0))+'</span>원 · <span id="dz-cnt"></span></div>',
+    '<button class="btn" onclick="closeM();rCharge()">완료</button>');
+  directCnt(ii);
+}
+function directSet(ii,ui,v){ var m=M(); if(m.confirmed) return; if(!m.direct) m.direct={}; if(!m.direct[ii]) m.direct[ii]=[]; m.direct[ii][ui]=nOf(v); specSync(B(),m); save();
+  var e=document.getElementById('dz-sum'); if(e) e.textContent=won(itemGen(B(),m,ii,0)); directCnt(ii); }
+function directCnt(ii){ var m=M(), a=(m.direct&&m.direct[ii])||[], n=a.filter(function(x){ return +x; }).length, e=document.getElementById('dz-cnt'); if(e) e.textContent=n+'세대'; }
+function hoFind(b,t){ t=String(t||'').replace(/\s/g,''); if(!t) return -1;
+  var i=b.units.findIndex(function(u){ return uLab(u).replace(/\s/g,'')===t; }); if(i>=0) return i;
+  i=b.units.findIndex(function(u){ return String(u.ho||'').replace(/\s/g,'')===t; }); if(i>=0) return i;
+  var t2=t.replace(/호$/,''); return b.units.findIndex(function(u){ var h=String(u.ho||'').replace(/\s/g,'').replace(/호$/,''); var d=String(u.dong||'').replace(/동$/,'');
+    return h===t2 || (d && (d+'-'+h===t2 || d+'동'+h===t2 || d+h===t2)); }); }
+function directPaste(ii){ var t=(document.getElementById('dz')||{}).value||''; var b=B(), m=M(), n=0, miss=[];
+  if(!m.direct) m.direct={}; if(!m.direct[ii]) m.direct[ii]=[];
+  t.split(/\r?\n/).forEach(function(l){ var c=l.split('\t'); if(c.length<2) c=l.trim().split(/\s{2,}|,/); if(c.length<2) return; var ui=hoFind(b,c[0]); var v=nOf(c[c.length-1]);
+    if(ui<0){ if(c[0].trim()) miss.push(c[0].trim()); return; } m.direct[ii][ui]=v; n++; });
+  specSync(b,m); save(); openDirect(ii); toast(n+'세대 넣었습니다'+(miss.length?' · 못 찾은 호실 '+miss.length+'개 ('+miss.slice(0,3).join(', ')+')':'')); }
+function directPrev(ii){ var p=prevMonth(), b=B(), m=M(); if(!p||!p.m.direct||!p.m.direct[ii]) return; var pm=prevUnitMap(p);
+  if(!m.direct) m.direct={}; m.direct[ii]=b.units.map(function(u,ui){ var pi=pm(ui); return pi==null?0:(+p.m.direct[ii][pi]||0); }); specSync(b,m); save(); openDirect(ii); }
+function directClear(ii){ if(!confirm('이 항목의 세대별 금액을 모두 지울까요?')) return; var m=M(); if(m.direct) delete m.direct[ii]; specSync(B(),m); save(); openDirect(ii); }
+
+/* ---------- 라인별 사용량 (승강기 전기) ---------- */
+function openLine(ii){
+  var b=B(), m=M(), it=b.items[ii], lock=!!m.confirmed, LC=lineCalc(b,m,ii), use=(m.lineUse&&m.lineUse[ii])||{};
+  var noLine=LC.lines.length===1&&LC.lines[0].lab==='(라인 없음)';
+  modal('🛗 '+(it.n||'항목')+' · 라인별 사용량 ('+ymL(S.ym)+')',
+    (noLine?'<div class="note y" style="margin-bottom:10px">세대 관리에 <b>라인</b>이 비어 있어요. 세대 관리 표의 "라인" 칸에 예) <b>101동 1~2</b> 처럼 넣으면 라인별로 나눕니다.</div>':'')+
+    '<div class="note i" style="margin-bottom:10px;font-size:12px">총액 <b>'+won(LC.tot)+'원</b>을 라인별 사용량 비율로 나눈 뒤, 그 라인 세대 수로 다시 나눕니다 (10원 단위). 총액은 부과 화면의 칸 또는 발생내역에서 넣습니다.</div>'+
+    '<div class="tw"><table><thead><tr><th>라인</th><th class="num">세대수</th><th class="num" style="width:120px">사용량</th><th class="num">발생금액</th><th class="num">세대당</th><th class="num">부과금액</th><th class="num">차액</th></tr></thead><tbody>'+
+    LC.lines.map(function(x){ return '<tr><td><b>'+esc(x.lab)+'</b></td><td class="num">'+x.cnt+'</td><td><input class="num" type="tel"'+(lock?' disabled':'')+' value="'+(use[x.lab]||'')+'" onchange="lineSet('+ii+',this.dataset.k,this.value)" data-k="'+esc(x.lab)+'"></td>'+
+      '<td class="num">'+won(x.gen)+'</td><td class="num">'+won(x.per)+'</td><td class="num">'+won(x.chg)+'</td><td class="num">'+won(x.chg-x.gen)+'</td></tr>'; }).join('')+
+    '<tr style="font-weight:800;background:#F8FAFC"><td>합계</td><td class="num">'+LC.lines.reduce(function(a,x){return a+x.cnt;},0)+'</td><td class="num">'+won(LC.sumUse)+'</td><td class="num">'+won(LC.lines.reduce(function(a,x){return a+x.gen;},0))+'</td><td></td><td class="num">'+won(LC.lines.reduce(function(a,x){return a+x.chg;},0))+'</td><td class="num">'+won(LC.lines.reduce(function(a,x){return a+x.chg-x.gen;},0))+'</td></tr></tbody></table></div>',
+    '<button class="btn" onclick="closeM();rCharge()">완료</button>');
+}
+function lineSet(ii,k,v){ var m=M(); if(m.confirmed) return; if(!m.lineUse) m.lineUse={}; if(!m.lineUse[ii]) m.lineUse[ii]={}; m.lineUse[ii][k]=nOf(v); save(); openLine(ii); }
+
+/* ---------- 주차 조견표 ---------- */
+function openPark(ii){
+  var b=B(), it=b.items[ii]; if(!it) return;
+  var areas=[]; b.units.forEach(function(u){ var a=+u.area||0; if(a && areas.indexOf(a)<0) areas.push(a); }); areas.sort(function(x,y){return x-y;});
+  if(!it.park) it.park={rows:[]};
+  var R=it.park.rows; areas.forEach(function(a){ if(!R.some(function(r){ return Math.abs((+r.area||0)-a)<0.0005; })) R.push({area:a,p:[0,0,0,0,0]}); });
+  R.sort(function(x,y){ return (+x.area||0)-(+y.area||0); });
+  var dis=MGR?' disabled':'';
+  modal('🚗 '+(it.n||'주차비')+' · 주차 조견표',
+    '<div class="note i" style="margin-bottom:10px;font-size:12px">세대 면적과 <b>차량 대수</b>(세대 관리 표의 "차량" 칸)에 따라 이번 달 주차비가 자동으로 정해집니다. 1대는 보통 0원(무료)입니다. 5대 이상은 5대 요금을 씁니다.</div>'+
+    '<div class="tw"><table><thead><tr><th>면적(㎡)</th><th class="num">1대</th><th class="num">2대</th><th class="num">3대</th><th class="num">4대</th><th class="num">5대</th></tr></thead><tbody>'+
+    R.map(function(r,k){ return '<tr><td><b>'+(+r.area).toFixed(3)+'</b></td>'+[0,1,2,3,4].map(function(c){ return '<td><input class="num" type="tel"'+dis+' value="'+((r.p||[])[c]||'')+'" oninput="parkSet('+ii+','+k+','+c+',this.value)"></td>'; }).join('')+'</tr>'; }).join('')+
+    '</tbody></table></div>', '<button class="btn" onclick="closeM();render(curPage())">완료</button>');
+  try{ bkWide(true); }catch(e){}
+}
+function parkSet(ii,k,c,v){ if(MGR) return; var it=B().items[ii]; if(!it.park.rows[k].p) it.park.rows[k].p=[0,0,0,0,0]; it.park.rows[k].p[c]=nOf(v); save(); }
+
+/* ---------- 부과 항목 : 총괄표 묶음 · 새 방법 ---------- */
+rItems=function(){
+  var b=B();
+  document.getElementById('i-tbl').innerHTML='<table><thead><tr><th style="width:170px">항목 이름</th>'+
+    '<th style="width:190px">나누는 방법</th><th style="width:130px">세대당 금액</th><th style="width:130px">총괄표 묶음 <span title="같은 이름끼리 부과총괄표에서 한 덩어리(소계)로 묶습니다" style="cursor:help">ⓘ</span></th><th style="width:60px">과세</th><th style="width:50px"></th></tr></thead><tbody>'+
+    b.items.map(function(it,i){
+      return '<tr><td><input value="'+esc(it.n)+'" oninput="setI('+i+',\'n\',this.value)"></td>'+
+        '<td><select onchange="setI('+i+',\'mode\',this.value)">'+
+          Object.keys(MODEL).map(function(k){ return '<option value="'+k+'"'+(it.mode===k?' selected':'')+'>'+MODEL[k]+'</option>'; }).join('')+
+        '</select></td>'+
+        '<td>'+(it.mode==='each'
+          ? '<input class="num" value="'+(it.val||0)+'" oninput="setI('+i+',\'val\',this.value)">'
+          : it.mode==='park' ? '<button class="btn o sm" onclick="openPark('+i+')">조견표 넣기</button>'
+          : '<span style="color:var(--ink3);font-size:11.5px">'+(({direct:'매달 세대별 입력',line:'매달 총액 + 라인 사용량'})[it.mode]||'매달 총액 입력')+'</span>')+'</td>'+
+        '<td><input value="'+esc(it.grp||'')+'" placeholder="예) 전기료" oninput="setI('+i+',\'grp\',this.value.trim())"></td>'+
+        '<td style="text-align:center"><input type="checkbox" '+(it.tax?'checked':'')+' onchange="setI('+i+',\'tax\',this.checked)" style="width:auto"></td>'+
+        '<td><button class="btn o sm" onclick="delI('+i+')">×</button></td></tr>';
+    }).join('')+'</tbody></table>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn o sm" onclick="aptPreset()">🏢 아파트 기본 항목으로 채우기</button></div>';
+  var pg=document.getElementById('p-items');
+  if(pg && !document.getElementById('spec-ihelp')){ var c=document.createElement('div'); c.className='card'; c.id='spec-ihelp';
+    c.innerHTML='<div class="ch"><h3>아파트식 부과 (부과명세서)</h3></div><div class="cb" style="font-size:12.5px;line-height:2;color:var(--ink2)">'+
+      '<div><b style="color:var(--ink)">라인별 사용량</b> — 승강기 전기처럼 총액을 라인(동·호기)별 사용량으로 나눈 뒤 그 라인 세대 수로 나눕니다. 세대 관리의 "라인" 칸을 씁니다.</div>'+
+      '<div><b style="color:var(--ink)">세대별 금액 직접 입력</b> — 세대 전기료·할인액·수도료·개별 부과처럼 세대마다 금액이 따로 정해진 항목. 엑셀에서 붙여넣을 수 있습니다.</div>'+
+      '<div><b style="color:var(--ink)">주차 대수별</b> — 면적·차량 대수 조견표로 자동 계산. 세대 관리의 "차량" 칸을 씁니다.</div>'+
+      '<div><b style="color:var(--ink)">총괄표 묶음</b> — 전기료(세대·할인·공동·승강기·TV)처럼 여러 항목을 부과총괄표에서 한 덩어리로 보여 줍니다.</div>'+
+      '<div><b style="color:var(--ink)">발생내역</b> — 관리비 부과 화면에서 항목마다 📝 단추로 여러 줄(관리용역비·제수당…)과 분할 회차를 넣으면 그 합계가 총액이 됩니다.</div>'+
+      '<div><b style="color:var(--ink)">㎡당 단가 방식</b> — 건물·사업자 화면의 "부과명세서 설정"에서 고릅니다 (단가 소수 둘째 자리 → 세대당 10원 단위).</div></div>';
+    pg.appendChild(c); }
+};
+function aptPreset(){
+  if(MGR) return; var b=B();
+  if(b.items.length && !confirm('지금 항목 '+b.items.length+'개를 지우고 아파트 기본 항목 21개로 바꿀까요?\n(이미 넣은 달의 금액은 항목 순서가 달라져 맞지 않게 됩니다)')) return;
+  var A=function(n,mode,grp){ return {n:n,mode:mode,val:0,tax:false,grp:grp||''}; };
+  b.items=[A('일반관리비','area'),A('청소비','area'),A('경비비','area'),A('소독비','area'),A('승강기유지비','area'),A('수선유지비','area'),A('위탁관리수수료','area'),
+    A('세대','direct','전기료'),A('할인액','direct','전기료'),A('공동','area','전기료'),A('승강기','line','전기료'),A('TV수신료','direct','전기료'),A('개별부과(전기)','direct','전기료'),
+    A('세대','direct','수도료'),A('할인액','direct','수도료'),
+    A('정화조오물수수료','area'),A('생활폐기물수수료','direct'),A('대표회의운영비','area'),A('건물보험료','area'),A('장기수선충당금','area'),A('주차비','park')];
+  if(!b.spec) b.spec={}; b.spec.areaRule='unit';
+  save(); rItems(); toast('아파트 기본 항목을 넣었습니다. 면적 배분은 ㎡당 단가 방식으로 바꿨어요');
+}
+
+/* ---------- 세대 관리 : 동 · 라인 · 차량 ---------- */
+rUnits=function(){
+  var b=B();
+  document.getElementById('u-info').innerHTML = b.units.length+'세대 · 공실 '+(b.units.length-occupied(b).length)+' · 면적 합계 '+occArea(b).toLocaleString('ko-KR',{maximumFractionDigits:3})+'㎡';
+  if(!b.units.length){ document.getElementById('u-tbl').innerHTML='<div class="empty">세대가 없습니다. 위 단추로 넣어주세요.</div>'; return; }
+  var I=function(i,k,v,w,cls,ph){ return '<td><input'+(cls?' class="'+cls+'"':'')+' value="'+esc(v==null?'':v)+'"'+(ph?' placeholder="'+ph+'"':'')+' style="'+(w?'min-width:'+w+'px':'')+'" oninput="setU('+i+',\''+k+'\',this.value)"></td>'; };
+  document.getElementById('u-tbl').innerHTML='<table><thead><tr>'+
+    '<th style="width:60px">동</th><th style="width:80px">호실</th><th style="width:80px">면적㎡</th><th style="width:90px">라인 <span title="승강기 전기를 라인별로 나눌 때 씀. 예) 101동 1~2" style="cursor:help">ⓘ</span></th><th style="width:56px">차량</th><th style="width:100px">입주자</th>'+
+    '<th style="width:120px">연락처</th><th style="width:120px">사업자번호</th><th style="width:110px">상호</th>'+
+    '<th style="width:140px">이메일</th><th style="width:56px">공실</th><th style="width:44px"></th></tr></thead><tbody>'+
+    b.units.map(function(u,i){
+      return '<tr'+(u.vacant?' style="background:#FAFAFA"':'')+'>'+I(i,'dong',u.dong,50,'','101')+I(i,'ho',u.ho,60)+I(i,'area',u.area||'',60,'num')+I(i,'line',u.line,80,'','1~2')+I(i,'cars',u.cars||'',40,'num','0')+
+        I(i,'name',u.name)+I(i,'tel',u.tel)+I(i,'regno',u.regno,0,'','000-00-00000')+I(i,'corp',u.corp)+I(i,'email',u.email)+
+        '<td style="text-align:center"><input type="checkbox" '+(u.vacant?'checked':'')+' onchange="setU('+i+',\'vacant\',this.checked)" style="width:auto"></td>'+
+        '<td><button class="btn o sm" onclick="delU('+i+')">×</button></td></tr>';
+    }).join('')+'</tbody></table>';
+};
+setU=function(i,k,v){ var b=B(); if(k==='area') v=parseFloat(v)||0; if(k==='cars') v=parseInt(v,10)||0; b.units[i][k]=v; save(); if(k==='vacant') rUnits(); };
+pasteUnits=function(){
+  modal('엑셀에서 붙여넣기',
+    '<div class="note i" style="margin-bottom:12px">엑셀에서 <b>표를 복사</b>해서 아래에 붙여넣으세요 (Ctrl+V).<br>'+
+    '열 순서 : <b>호실 · 면적 · 입주자 · 연락처 · 사업자번호 · 상호 · 이메일 · 동 · 라인 · 차량대수</b><br>'+
+    '앞쪽 몇 개만 있어도 됩니다 (아파트는 호실·면적 다음 칸을 비워 두고 동·라인·차량만 넣어도 됩니다). 첫 줄이 제목이면 알아서 건너뜁니다.</div>'+
+    '<textarea id="pz" rows="10" placeholder="203&#9;89.257&#9;&#9;&#9;&#9;&#9;&#9;101&#9;101동 1~2&#9;2"></textarea>'+
+    '<div class="note y" style="margin-top:10px">기존 세대는 <b>지워지고</b> 새로 들어갑니다.</div>',
+    '<button class="btn o" onclick="closeM()">취소</button><button class="btn" onclick="doPasteUnits()">넣기</button>');
+  setTimeout(function(){ document.getElementById('pz').focus(); },100);
+};
+doPasteUnits=function(){
+  var t=document.getElementById('pz').value.trim();
+  if(!t){ toast('내용이 비어 있습니다'); return; }
+  var rows=t.split(/\r?\n/).map(function(l){ return l.split('\t'); });
+  if(rows.length && /호실|호수|세대/.test(rows[0][0]||'')) rows.shift();
+  var b=B(); b.units = rows.filter(function(r){ return (r[0]||'').trim(); }).map(function(r){
+    return { ho:(r[0]||'').trim(), area:parseFloat(r[1])||0, name:(r[2]||'').trim(), tel:(r[3]||'').trim(),
+      regno:(r[4]||'').trim(), corp:(r[5]||'').trim(), email:(r[6]||'').trim(), dong:(r[7]||'').trim().replace(/동$/,''), line:(r[8]||'').trim(), cars:parseInt(r[9],10)||0, vacant:false };
+  });
+  save(); closeM(); rUnits(); rSel(); toast(b.units.length+'세대를 넣었습니다');
+};
+
+/* ---------- 건물·사업자 : 부과명세서 설정 ---------- */
+var _rBldg0=rBldg;
+rBldg=function(){ _rBldg0(); try{ specBldg(); }catch(e){ console.error(e); } };
+function specBldg(){
+  var b=B(), s=spGet(b), pg=document.getElementById('p-bldg'); if(!pg) return;
+  var c=document.getElementById('spec-bset');
+  if(!c){ c=document.createElement('div'); c.className='card'; c.id='spec-bset'; var last=pg.lastElementChild; pg.insertBefore(c, last); }
+  var dis=MGR?' disabled':'';
+  var acc=s.acc.slice(); while(acc.length<4) acc.push({bank:'',no:''});
+  c.innerHTML='<div class="ch"><h3>📑 부과명세서 설정</h3><p>표지에 나오는 내용과 면적 배분 방식</p></div><div class="cb">'+
+    '<div class="frow"><div class="fld"><label>면적으로 나누는 방법</label><select'+dis+' onchange="spSet(\'areaRule\',this.value);specBldg()">'+
+      '<option value="ratio"'+(s.areaRule==='ratio'?' selected':'')+'>면적 비율 (총액 × 내 면적 ÷ 전체 면적)</option>'+
+      '<option value="unit"'+(s.areaRule==='unit'?' selected':'')+'>㎡당 단가 (아파트식 : 단가 소수 둘째 자리 → 세대당 10원)</option></select></div>'+
+      '<div class="fld"><label>배분 총면적 ㎡ <span style="color:var(--ink3);font-weight:600">(비우면 세대 면적 합계 '+occArea(b).toLocaleString('ko-KR',{maximumFractionDigits:3})+')</span></label><input'+dis+' class="num" value="'+esc(s.totArea)+'" placeholder="자동" onchange="spSet(\'totArea\',this.value.trim())"></div></div>'+
+    '<div class="fld"><label>관리비 수납 계좌 (최대 4개)</label>'+acc.slice(0,4).map(function(a,k){ return '<div class="frow" style="margin-bottom:6px"><input'+dis+' placeholder="'+(k+1)+') 은행" value="'+esc(a.bank||'')+'" onchange="accSet('+k+',\'bank\',this.value)" style="max-width:160px"><input'+dis+' placeholder="계좌번호" value="'+esc(a.no||'')+'" onchange="accSet('+k+',\'no\',this.value)"></div>'; }).join('')+'</div>'+
+    '<div class="frow"><div class="fld"><label>예금주</label><input'+dis+' value="'+esc(s.holder)+'" onchange="spSet(\'holder\',this.value)"></div>'+
+      '<div class="fld"><label>납부기한</label><select'+dis+' onchange="spSet(\'dueOff\',+this.value)"><option value="1"'+(s.dueOff===1?' selected':'')+'>부과월 다음 달</option><option value="0"'+(s.dueOff===0?' selected':'')+'>부과월 같은 달</option><option value="2"'+(s.dueOff===2?' selected':'')+'>부과월 다다음 달</option></select><div class="hint">날짜는 위 "납부 마감일"('+(b.due||'-')+'일). 31이면 그달 말일</div></div></div>'+
+    '<div class="frow"><div class="fld"><label>관리사무소 이름</label><input'+dis+' value="'+esc(s.office)+'" onchange="spSet(\'office\',this.value)"></div>'+
+      '<div class="fld"><label>관리사무소 주소</label><input'+dis+' value="'+esc(s.addr)+'" onchange="spSet(\'addr\',this.value)"></div></div>'+
+    '<div class="frow"><div class="fld"><label>전화</label><input'+dis+' value="'+esc(s.tel)+'" onchange="spSet(\'tel\',this.value)"></div><div class="fld"><label>팩스</label><input'+dis+' value="'+esc(s.fax)+'" onchange="spSet(\'fax\',this.value)"></div></div>'+
+    '<div class="fld"><label>연체요율 (%) · 연체 1~12개월</label><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">'+s.late.map(function(v,k){ return '<div><div style="font-size:10.5px;color:var(--ink3);text-align:center">'+(k+1)+'개월</div><input'+dis+' class="num" value="'+v+'" onchange="lateSet('+k+',this.value)"></div>'; }).join('')+'</div></div>'+
+    '<div class="fld"><label>안내 문구 (한 줄에 하나)</label><textarea'+dis+' rows="4" onchange="spSet(\'notes\',this.value.split(/\\r?\\n/).map(function(x){return x.trim();}).filter(Boolean))">'+esc(s.notes.join('\n'))+'</textarea></div>'+
+    '<div class="fld"><label>강조 문구 (표지 아래 상자)</label><input'+dis+' value="'+esc(s.foot)+'" onchange="spSet(\'foot\',this.value)"></div>'+
+    '<button class="btn o sm" onclick="go(\'spec\')">📑 부과명세서 미리 보기</button></div>';
+}
+function accSet(k,f,v){ var b=B(); if(MGR) return; if(!b.spec) b.spec={}; var a=(spGet(b).acc||[]).slice(); while(a.length<4) a.push({bank:'',no:''}); a[k]=Object.assign({},a[k]); a[k][f]=v.trim(); b.spec.acc=a.filter(function(x){ return x.bank||x.no; }); save(); }
+function lateSet(k,v){ var b=B(); if(MGR) return; if(!b.spec) b.spec={}; var a=spGet(b).late.slice(); a[k]=parseFloat(v)||0; b.spec.late=a; save(); }
+
+/* =========================================================
+   부과명세서 화면
+   ========================================================= */
+var _render0=render;
+render=function(p){ _render0(p); if(p==='spec'){ try{ rSpec(); }catch(e){ console.error(e); document.getElementById('sp-doc').innerHTML='<div class="empty">명세서를 만드는 중 문제가 생겼어요: '+esc(e.message)+'</div>'; } } };
+function ymRange(ym){ var p=ym.split('-'), y=+p[0], mo=+p[1], last=new Date(y,mo,0).getDate(); return {y:y,m:mo,last:last}; }
+function dueDate(b,ym){ var s=spGet(b), r=ymRange(ym), y=r.y, mo=r.m+s.dueOff; while(mo>12){ mo-=12; y++; } var last=new Date(y,mo,0).getDate(), d=Math.min(+b.due||last,last); return {y:y,m:mo,d:d}; }
+function grpList(b){ var G=[], idx={}; b.items.forEach(function(it,ii){ var k=(it.grp||'').trim(); if(!k){ G.push({name:it.n,items:[ii],single:true}); return; }
+  if(idx[k]==null){ idx[k]=G.length; G.push({name:k,items:[],single:false}); } G[idx[k]].items.push(ii); }); return G; }
+function specData(){
+  var b=B(), m=M(), p=prevMonth();
+  var fresh=calcRows(b,m), rows=(m.confirmed&&m.rows&&m.rows.length)?m.rows:fresh;
+  var stale=!m.confirmed && m.rows && m.rows.length && JSON.stringify(m.rows.map(function(r){return r.cells;}))!==JSON.stringify(fresh.map(function(r){return r.cells;}));
+  var gen=b.items.map(function(it,ii){ return itemGen(b,m,ii,0); });
+  var chg=b.items.map(function(it,ii){ return rows.reduce(function(a,r){ return a+(r.cells[ii]||0); },0); });
+  var prv=b.items.map(function(it,ii){ if(p) return itemGen(b,p.m,ii,0); var v=(m.prevGen||{})[ii]; return v==null||v===''?null:+v; });
+  return {b:b,m:m,p:p,rows:rows,gen:gen,chg:chg,prv:prv,stale:stale,calc:!!(m.rows&&m.rows.length)};
+}
+function W(n){ return n==null?'':(n===0?'-':won(n)); }
+function rSpec(){
+  var D=specData(), b=D.b, m=D.m, el=document.getElementById('sp-doc');
+  var info='';
+  if(!b.units.length) info='<div class="note y">세대가 없습니다. <b>세대 관리</b>에서 먼저 넣어 주세요.</div>';
+  else if(D.stale) info='<div class="note y">부과 화면에서 계산한 뒤 금액이 바뀌었습니다. 아래는 <b>지금 값으로 다시 계산한 미리보기</b>입니다. <b>관리비 부과 → 계산하기</b>를 다시 눌러 주세요.</div>';
+  else if(!D.calc) info='<div class="note y">아직 <b>계산하기</b>를 누르지 않아 미리보기입니다.</div>';
+  else if(!m.confirmed) info='<div class="note i">계산됨 · 아직 확정 전입니다.</div>';
+  else info='<div class="note g">'+ymL(S.ym)+'분 확정됨'+(m.confirmedAt?' ('+esc(m.confirmedAt)+')':'')+'</div>';
+  document.getElementById('sp-info').innerHTML=esc(b.name)+' · '+ymL(S.ym)+'분';
+  el.innerHTML=info+specHtml(D,true);
+}
+function specHtml(D,screen){
+  var b=D.b, m=D.m, s=spGet(b), r=ymRange(S.ym), du=dueDate(b,S.ym), yy=String(r.y).slice(2), mm2=String(r.m).padStart(2,'0');
+  var h='';
+  /* --- 표지 --- */
+  h+='<div class="spd-pg spd-cover"><div class="spd-ym">'+r.y+'년 '+r.m+'월분</div><div class="spd-ttl"><span>관리비부과명세서</span></div>'+
+    '<div class="spd-cv"><div>◎ 산출기간 : '+yy+'. '+mm2+'. 01. ~ '+mm2+'. '+r.last+'.</div>'+
+    '<div>◎ 납부기한 : '+String(du.y).slice(2)+'년 '+du.m+'월 '+du.d+'일 (공휴일일 경우 다음 날까지)</div>'+
+    (s.acc.length?'<div>◎ 관리비 수납 계좌번호</div>'+s.acc.map(function(a,k){ return '<div class="spd-acc">'+(k+1)+') '+esc(a.bank||'')+' : '+esc(a.no||'')+'</div>'; }).join('')+(s.holder?'<div class="spd-acc">예 금 주 : '+esc(s.holder)+'</div>':''):'')+'</div>'+
+    '<div class="spd-late"><b>* 연체요율</b><table><tr><th>연체개월</th>'+s.late.map(function(v,k){ return '<td>'+(k+1)+'</td>'; }).join('')+'</tr><tr><th>연체요율(%)</th>'+s.late.map(function(v){ return '<td>'+v+'</td>'; }).join('')+'</tr></table></div>'+
+    '<div class="spd-notes">'+s.notes.map(function(t){ return '<div>※ '+esc(t)+'</div>'; }).join('')+'</div>'+
+    (s.foot?'<div class="spd-foot">'+esc(s.foot)+'</div>':'')+
+    '<div class="spd-off">'+esc(s.office)+'</div><div class="spd-addr">'+esc(s.addr)+'</div>'+
+    ((s.tel||s.fax)?'<div class="spd-tel">'+(s.tel?'전화: '+esc(s.tel):'')+(s.tel&&s.fax?',   ':'')+(s.fax?'팩스: '+esc(s.fax):'')+'</div>':'')+'</div>';
+  /* --- 부과총괄표 --- */
+  var G=grpList(b), no=0, T={p:0,g:0,c:0}, anyPrev=D.prv.some(function(v){ return v!=null; });
+  var body=G.map(function(g){ no++;
+    var line=function(ii,first,span,sub){ var pv=D.prv[ii], gv=D.gen[ii], cv=D.chg[ii];
+      var pc = (screen && !D.p) ? '<input class="num spd-pin" type="tel" value="'+(pv==null?'':pv)+'" placeholder="전월" onchange="prevGenSet('+ii+',this.value)">' : W(pv);
+      return '<tr>'+(first?'<td rowspan="'+span+'" class="c">'+no+'</td>':'')+(sub?(first?'<td rowspan="'+(span-1)+'" class="c spd-g">'+esc(g.name)+'</td>':'')+'<td class="c">'+esc(b.items[ii].n)+'</td>':'<td colspan="2" class="c">'+esc(b.items[ii].n)+'</td>')+
+        '<td class="n">'+pc+'</td><td class="n">'+W(gv)+'</td><td class="n">'+W(cv)+'</td><td class="n">'+(pv==null?'':W(gv-pv))+'</td></tr>'; };
+    var out='';
+    if(g.single){ var ii=g.items[0]; out=line(ii,true,1,false); T.p+=+D.prv[ii]||0; T.g+=D.gen[ii]; T.c+=D.chg[ii]; return out; }
+    var sp=0,sg=0,sc=0,hasP=false; g.items.forEach(function(ii,k){ out+=line(ii,k===0,g.items.length+1,true); if(D.prv[ii]!=null){ sp+=+D.prv[ii]; hasP=true; } sg+=D.gen[ii]; sc+=D.chg[ii]; });
+    out+='<tr class="spd-sub"><td colspan="2" class="c">소계</td><td class="n">'+(hasP?W(sp):'')+'</td><td class="n">'+W(sg)+'</td><td class="n">'+W(sc)+'</td><td class="n">'+(hasP?W(sg-sp):'')+'</td></tr>';
+    T.p+=sp; T.g+=sg; T.c+=sc; return out; }).join('');
+  h+='<div class="spd-pg"><div class="spd-h1">&lt; 부 과 총 괄 표 &gt;</div><div class="spd-cap"><span>부과기간: '+yy+'. '+mm2+'. 01 ~ '+mm2+'. '+r.last+'.</span><span>(단위: 원)</span></div>'+
+    '<table class="spd-t"><thead><tr><th colspan="3">항목</th><th>전월발생금액</th><th>당월발생금액</th><th>당월부과금액</th><th>전월대비</th></tr></thead><tbody>'+body+
+    '<tr class="spd-tot"><td colspan="3" class="c">합계</td><td class="n">'+(anyPrev?W(T.p):'')+'</td><td class="n">'+W(T.g)+'</td><td class="n">'+W(T.c)+'</td><td class="n">'+(anyPrev?W(T.g-T.p):'')+'</td></tr></tbody></table>'+
+    (screen&&!D.p?'<div class="spd-hint no-print">지난달 자료가 없어 전월발생금액은 직접 넣을 수 있습니다 (노란 칸).</div>':'')+'</div>';
+  /* --- 항목별 --- */
+  var blocks=G.map(function(g,gi){ var tot=g.items.reduce(function(a,ii){ return a+D.gen[ii]; },0);
+    var x='<div class="spd-blk"><div class="spd-bh"><span class="spd-bn">'+(gi+1)+'. '+esc(g.name)+'</span><span class="spd-dash"></span><span class="spd-box">₩ '+W(tot)+'</span></div>';
+    g.items.forEach(function(ii,k){ if(!g.single) x+='<div class="spd-sh">'+'가나다라마바사아자차'.charAt(k)+'. '+esc(b.items[ii].n)+' <span>₩ '+W(D.gen[ii])+'</span></div>'; x+=itemBlock(D,ii); });
+    return x+'</div>'; });
+  h+='<div class="spd-pg spd-flow">'+blocks.join('')+'</div>';
+  return '<div class="spd">'+h+'</div>';
+}
+function prevGenSet(ii,v){ var m=M(); if(!m.prevGen) m.prevGen={}; m.prevGen[ii]=v===''?'':nOf(v); save(); rSpec(); }
+function detTable(D,ii){
+  var b=D.b, m=D.m, it=b.items[ii], L=detOf(m,ii);
+  if(it.mode==='each') return '<table class="spd-t"><thead><tr><th>내역</th><th>세대당 금액</th><th>세대수</th><th>금액</th></tr></thead><tbody><tr><td class="c">'+esc(it.n)+'</td><td class="n">'+W(+it.val||0)+'</td><td class="c">'+occupied(b).length+'</td><td class="n">'+W(D.gen[ii])+'</td></tr></tbody></table>';
+  if(it.mode==='direct'||it.mode==='park') return '';
+  if(!L) return '<table class="spd-t"><thead><tr><th>내역</th><th>금액</th><th>비고</th></tr></thead><tbody><tr><td class="c">'+esc(it.n)+'</td><td class="n">'+W(D.gen[ii])+'</td><td></td></tr><tr class="spd-tot"><td class="c">합계</td><td class="n">'+W(D.gen[ii])+'</td><td></td></tr></tbody></table>';
+  var anyInst=L.some(function(x){ return +x.mon>1 || (x.ref==null && +x.gen!==lineChg(b,m,x,0)); });
+  var gs=0,cs=0;
+  var rows=L.map(function(x){ var isRef=x.ref!=null&&x.ref!=='', c=lineChg(b,m,x,0), g=isRef?c:(+x.gen||0); gs+=g; cs+=c;
+    var nm=isRef?('(−) '+((b.items[+x.ref]||{}).n||'')+((b.items[+x.ref]||{}).grp?' ('+b.items[+x.ref].grp+')':'')):(x.n||'');
+    var note=[(+x.mon>1?(x.no||1)+'회차/'+x.mon+'개월분할':''), x.note||''].filter(Boolean).join(' · ');
+    return '<tr><td class="l">'+esc(nm)+'</td><td class="n">'+W(g)+'</td>'+(anyInst?'<td class="n">'+W(c)+'</td>':'')+'<td class="l sm">'+esc(note)+'</td></tr>'; }).join('');
+  return '<table class="spd-t"><thead><tr><th>내역</th><th>'+(anyInst?'발생금액':'금액')+'</th>'+(anyInst?'<th>부과금액</th>':'')+'<th>비고</th></tr></thead><tbody>'+rows+
+    '<tr class="spd-tot"><td class="c">합계</td><td class="n">'+W(gs)+'</td>'+(anyInst?'<td class="n">'+W(cs)+'</td>':'')+'<td></td></tr></tbody></table>';
+}
+function unitGrid(list,full){ // [{lab, v}] → 4쌍씩 (60세대 넘으면 요약)
+  if(!list.length) return '<div class="spd-hint">부과된 세대가 없습니다.</div>';
+  if(list.length>60 && !full){ var vs=list.map(function(e){ return e.v; }), sm=vs.reduce(function(a,v){ return a+v; },0);
+    return '<table class="spd-t"><thead><tr><th>세대수</th><th>합계</th><th>최저</th><th>최고</th><th>평균</th></tr></thead><tbody><tr><td class="c">'+list.length+'</td><td class="n">'+W(sm)+'</td><td class="n">'+W(Math.min.apply(null,vs))+'</td><td class="n">'+W(Math.max.apply(null,vs))+'</td><td class="n">'+W(Math.round(sm/list.length))+'</td></tr></tbody></table>'+
+      '<div class="spd-hint">세대가 많아 요약만 보여 줍니다. 세대별 금액은 엑셀의 "세대별 부과" 시트에 있습니다.</div>'; }
+  var per=4, h='<table class="spd-t spd-grid"><thead><tr>'; for(var k=0;k<per;k++) h+='<th>동·호</th><th>금액</th>'; h+='</tr></thead><tbody>';
+  for(var i=0;i<list.length;i+=per){ h+='<tr>'; for(var k2=0;k2<per;k2++){ var e=list[i+k2]; h+=e?'<td class="c">'+esc(e.lab)+'</td><td class="n">'+W(e.v)+'</td>':'<td></td><td></td>'; } h+='</tr>'; }
+  return h+'</tbody></table>';
+}
+function itemBlock(D,ii){
+  var b=D.b, m=D.m, it=b.items[ii], rows=D.rows, gen=D.gen[ii], chg=D.chg[ii], x='';
+  var dt=detTable(D,ii); if(dt) x+='<div class="spd-part"><div class="spd-lb">가. 발생내역:</div>'+dt+'</div>';
+  var lb=dt?'나. 부과내역:':'가. 부과내역:';
+  if(it.mode==='area'){
+    var s=spGet(b), TA=s.areaRule==='unit'?areaTot(b):occArea(b), up=TA?(s.areaRule==='unit'?r2(gen/TA):gen/TA):0, G={}, ord=[];
+    b.units.forEach(function(u,ui){ if(u.vacant) return; var k=(+u.area||0).toFixed(3); if(!G[k]){ G[k]={a:+u.area||0,n:0,s:0,v:{}}; ord.push(k); } G[k].n++; var c=(rows[ui]||{cells:[]}).cells[ii]||0; G[k].s+=c; G[k].v[c]=1; });
+    ord.sort(function(p,q){ return G[p].a-G[q].a; });
+    x+='<div class="spd-part"><div class="spd-lb">'+lb+' <span class="spd-f">총금액 '+W(gen)+'  ÷  총면적 '+TA.toLocaleString('ko-KR',{minimumFractionDigits:2,maximumFractionDigits:3})+'  =  ㎡당 '+up.toFixed(2)+' 원</span><span class="spd-u">(단위: 원)</span></div>'+
+      '<table class="spd-t"><thead><tr><th>면적(㎡)</th><th>단가</th><th>세대당금액</th><th>세대수</th><th>부과금액</th><th>부과차액</th></tr></thead><tbody>'+
+      ord.map(function(k,j){ var g=G[k], vs=Object.keys(g.v).map(Number).sort(function(p,q){return p-q;}), per=vs.length===1?W(vs[0]):W(vs[0])+'~'+W(vs[vs.length-1]);
+        return '<tr><td class="c">'+g.a.toFixed(3)+'</td>'+(j===0?'<td class="c" rowspan="'+ord.length+'">'+up.toFixed(2)+'</td>':'')+'<td class="n">'+per+'</td><td class="c">'+g.n+'</td><td class="n">'+W(g.s)+'</td>'+(j===0?'<td class="c" rowspan="'+(ord.length+1)+'">'+W(chg-gen)+'</td>':'')+'</tr>'; }).join('')+
+      '<tr class="spd-tot"><td colspan="3" class="c">합계</td><td class="c">'+ord.reduce(function(a,k){ return a+G[k].n; },0)+'</td><td class="n">'+W(chg)+'</td></tr></tbody></table></div>';
+  } else if(it.mode==='line'){
+    var LC=lineCalc(b,m,ii);
+    x+='<div class="spd-part"><div class="spd-lb">'+lb+' <span class="spd-f">총금액 '+W(LC.tot)+' 을 라인별 사용량으로 나눔</span></div><table class="spd-t"><thead><tr><th>라인</th><th>세대수</th><th>사용량</th><th>발생금액</th><th>세대당금액</th><th>부과금액</th><th>부과차액</th></tr></thead><tbody>'+
+      LC.lines.map(function(l){ return '<tr><td class="c">'+esc(l.lab)+'</td><td class="c">'+l.cnt+'</td><td class="n">'+W(l.use)+'</td><td class="n">'+W(l.gen)+'</td><td class="n">'+W(l.per)+'</td><td class="n">'+W(l.chg)+'</td><td class="n">'+W(l.chg-l.gen)+'</td></tr>'; }).join('')+
+      '<tr class="spd-tot"><td class="c">합계</td><td class="c">'+LC.lines.reduce(function(a,l){return a+l.cnt;},0)+'</td><td class="n">'+W(LC.sumUse)+'</td><td class="n">'+W(LC.lines.reduce(function(a,l){return a+l.gen;},0))+'</td><td class="c">-</td><td class="n">'+W(chg)+'</td><td class="n">'+W(chg-LC.lines.reduce(function(a,l){return a+l.gen;},0))+'</td></tr></tbody></table></div>';
+  } else if(it.mode==='total'||it.mode==='each'){
+    var n=occupied(b).length, vals={}; rows.forEach(function(r){ if(!r.vacant) vals[r.cells[ii]||0]=1; }); var vs2=Object.keys(vals).map(Number);
+    x+='<div class="spd-part"><div class="spd-lb">'+lb+' <span class="spd-f">'+(it.mode==='each'?'세대 정액':'총금액 '+W(gen)+' ÷ '+n+'세대')+'</span></div><table class="spd-t"><thead><tr><th>세대당금액</th><th>세대수</th><th>부과금액</th><th>부과차액</th></tr></thead><tbody><tr><td class="n">'+(vs2.length===1?W(vs2[0]):W(Math.min.apply(null,vs2))+'~'+W(Math.max.apply(null,vs2)))+'</td><td class="c">'+n+'</td><td class="n">'+W(chg)+'</td><td class="n">'+W(chg-gen)+'</td></tr></tbody></table></div>';
+  } else if(it.mode==='use'){
+    var ua=(m.usage||{})[ii]||[], su=ua.reduce(function(a,v){ return a+(+v||0); },0), L2=[];
+    b.units.forEach(function(u,ui){ if(u.vacant) return; var c=(rows[ui]||{cells:[]}).cells[ii]||0; if(c||+ua[ui]) L2.push({lab:uLab(u)+(+ua[ui]?' ('+(+ua[ui])+')':''),v:c}); });
+    x+='<div class="spd-part"><div class="spd-lb">'+lb+' <span class="spd-f">총금액 '+W(gen)+' ÷ 총사용량 '+W(su)+(su?' = 사용량당 '+(gen/su).toFixed(2)+' 원':'')+' · 부과차액 '+W(chg-gen)+'</span></div>'+unitGrid(L2)+'</div>';
+  } else if(it.mode==='direct'||it.mode==='park'){
+    if(it.mode==='park'){ var R=(it.park&&it.park.rows)||[]; if(R.length) x+='<div class="spd-part"><div class="spd-lb">가. 주차조견표:</div><table class="spd-t"><thead><tr><th>면적(㎡) \\ 대수</th><th>1대</th><th>2대</th><th>3대</th><th>4대</th><th>5대</th></tr></thead><tbody>'+R.map(function(r){ return '<tr><td class="c">'+(+r.area).toFixed(3)+'</td>'+[0,1,2,3,4].map(function(c){ return '<td class="n">'+W(+((r.p||[])[c]||0))+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></div>'; lb=R.length?'나. 부과내역:':lb; }
+    var L3=[]; b.units.forEach(function(u,ui){ if(u.vacant) return; var c=(rows[ui]||{cells:[]}).cells[ii]||0; if(c) L3.push({lab:uLab(u)+(it.mode==='park'&&u.cars?' ('+u.cars+'대)':''),v:c}); });
+    x+='<div class="spd-part"><div class="spd-lb">'+lb+' <span class="spd-f">'+L3.length+'세대 · 합계 '+W(chg)+'</span></div>'+unitGrid(L3)+'</div>';
+  }
+  return x;
+}
+function specPrint(){
+  var D=specData(), pa=document.getElementById('printArea'); if(!pa){ pa=document.createElement('div'); pa.id='printArea'; document.body.appendChild(pa); }
+  pa.innerHTML=specHtml(D,false); document.body.classList.add('printing');
+  setTimeout(function(){ try{ window.print(); }catch(e){ toast('이 기기에서는 인쇄를 열지 못했어요'); } },80);
+}
+function loadXLSXp(){ return new Promise(function(res){ if(window.XLSX) return res(true); var sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; sc.onload=function(){ res(true); }; sc.onerror=function(){ res(false); }; document.head.appendChild(sc); }); }
+async function specXlsx(){
+  toast('엑셀 만드는 중…'); var ok=await loadXLSXp(); if(!ok||!window.XLSX){ toast('엑셀 도구를 불러오지 못했어요 (인터넷 확인)'); return; }
+  var D=specData(), b=D.b, m=D.m, G=grpList(b), A=[[b.name+' '+ymL(S.ym)+'분 부과총괄표'],[],['번호','묶음','항목','전월발생금액','당월발생금액','당월부과금액','전월대비']], no=0, T=[0,0,0];
+  G.forEach(function(g){ no++; g.items.forEach(function(ii){ var pv=D.prv[ii]; A.push([no, g.single?'':g.name, b.items[ii].n, pv==null?'':pv, D.gen[ii], D.chg[ii], pv==null?'':D.gen[ii]-pv]); T[0]+=+pv||0; T[1]+=D.gen[ii]; T[2]+=D.chg[ii]; });
+    if(!g.single){ var sg=0,sc=0; g.items.forEach(function(ii){ sg+=D.gen[ii]; sc+=D.chg[ii]; }); A.push(['', g.name, '소계', '', sg, sc, '']); } });
+  A.push(['','','합계',T[0]||'',T[1],T[2],T[0]?T[1]-T[0]:'']);
+  var Bk=[[b.name+' '+ymL(S.ym)+'분 항목별 산출 근거'],[]];
+  G.forEach(function(g,gi){ Bk.push([(gi+1)+'. '+g.name, '', '', '', '', '₩', g.items.reduce(function(a,ii){ return a+D.gen[ii]; },0)]);
+    g.items.forEach(function(ii){ var it=b.items[ii], L=detOf(m,ii);
+      if(!g.single) Bk.push(['', '▸ '+it.n, MODEL[it.mode]||'']);
+      if(L){ Bk.push(['','내역','발생금액','부과금액','비고']); L.forEach(function(x){ var isRef=x.ref!=null&&x.ref!==''; var c=lineChg(b,m,x,0); Bk.push(['', isRef?'(−) '+((b.items[+x.ref]||{}).n||''):x.n, isRef?c:(+x.gen||0), c, [(+x.mon>1?(x.no||1)+'회차/'+x.mon+'개월분할':''),x.note||''].filter(Boolean).join(' · ')]); }); }
+      if(it.mode==='area'){ var s=spGet(b), TA=s.areaRule==='unit'?areaTot(b):occArea(b), up=TA?(s.areaRule==='unit'?r2(D.gen[ii]/TA):D.gen[ii]/TA):0, Gs={}, ord=[];
+        D.rows.forEach(function(r,ui){ var u=b.units[ui]; if(r.vacant) return; var k=(+u.area||0).toFixed(3); if(!Gs[k]){ Gs[k]={n:0,s:0,v:r.cells[ii]}; ord.push(k); } Gs[k].n++; Gs[k].s+=r.cells[ii]||0; });
+        Bk.push(['','면적(㎡)','단가','세대당금액','세대수','부과금액','부과차액']); ord.sort(function(p,q){ return p-q; }).forEach(function(k,j){ Bk.push(['',+k, +up.toFixed(2), Gs[k].v, Gs[k].n, Gs[k].s, j===0?D.chg[ii]-D.gen[ii]:'']); }); }
+      else if(it.mode==='line'){ var LC=lineCalc(b,m,ii); Bk.push(['','라인','세대수','사용량','발생금액','세대당금액','부과금액','부과차액']); LC.lines.forEach(function(l){ Bk.push(['',l.lab,l.cnt,l.use,l.gen,l.per,l.chg,l.chg-l.gen]); }); }
+      else { Bk.push(['','부과금액 합계','','','',D.chg[ii]]); }
+    }); Bk.push([]); });
+  var C=[['동','호실','입주자'].concat(b.items.map(function(it){ return (it.grp?it.grp+'-':'')+it.n; })).concat(['합계'])];
+  D.rows.forEach(function(r,ui){ var u=b.units[ui]||{}; if(r.vacant) return; C.push([u.dong||'',u.ho||'',u.name||''].concat(r.cells).concat([r.total])); });
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(A), '부과총괄표');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(Bk), '항목별 산출');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(C), '세대별 부과');
+  XLSX.writeFile(wb, (b.name||'건물')+'_부과명세서_'+S.ym+'.xlsx');
+}
+/* 새로 바꾼 화면도 '다음 할 일' 안내를 같이 고친다 */
+['rUnits','rItems'].forEach(function(nm){ var f=window[nm]; if(typeof f!=='function') return;
+  window[nm]=function(){ var r=f.apply(this,arguments); try{ guide(); }catch(e){} return r; }; });
+
 load();
 S.ym = S.ym || thisYm();
 save();
@@ -2305,9 +2866,9 @@ document.querySelectorAll('#nav-pro button').forEach(function(b){ b.onclick=func
 document.querySelectorAll('#nav-emp button').forEach(function(b){ b.onclick=function(){ goE(b.dataset.e); }; });
 document.getElementById('mnav-emp').innerHTML = ['home','capture','list','docs','emp','own'].map(function(v){ return '<button data-e="'+v+'"><span class="ic">'+({home:'🏠',capture:'📷',list:'📋',docs:'📄',emp:'👥',own:'🏘️'})[v]+'</span>'+EMP_T[v][1]+'</button>'; }).join('');
 document.querySelectorAll('#mnav-emp button').forEach(function(b){ b.onclick=function(){ goE(b.dataset.e); }; });
-document.getElementById('mnav').innerHTML = ['dash','charge','collect','tax','units','items']
+document.getElementById('mnav').innerHTML = ['dash','charge','spec','collect','tax','units','items']
   .map(function(p){ return '<button data-p="'+p+'" class="'+(p==='dash'?'on':'')+'"><span class="ic">'+
-    ({dash:'◈',charge:'▤',collect:'◐',tax:'🧾',units:'⌂',items:'▦'})[p]+'</span>'+TITLES[p][1]+'</button>'; }).join('');
+    ({dash:'◈',charge:'▤',spec:'📑',collect:'◐',tax:'🧾',units:'⌂',items:'▦'})[p]+'</span>'+TITLES[p][1]+'</button>'; }).join('');
 document.querySelectorAll('.mnav button').forEach(function(b){ b.onclick=function(){ go(b.dataset.p); }; });
 document.getElementById('ymsel').onchange=function(){ S.ym=this.value; save(); go(curPage()); };
 if(MGR){ MGR_HIDE.forEach(function(p){ document.querySelectorAll('#nav-pro [data-p="'+p+'"],#mnav [data-p="'+p+'"]').forEach(function(b){ b.classList.add('hide'); }); });
