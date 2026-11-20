@@ -2885,6 +2885,46 @@ if(MGR){ MGR_HIDE.forEach(function(p){ document.querySelectorAll('#nav-pro [data
   document.querySelectorAll('[onclick="newB()"]').forEach(function(b){ b.classList.add('hide'); }); }
 rSel(); go('dash');
 (function(){ try{ doorUI(); }catch(e){} var q=window.__Q; var m=q&&q.get('mode'); if(DOOR==='emp' && !(m==='emp'||m==='home'||m==='own')){ setMode('emp', 'home'); } else if(m==='emp'||m==='home'||m==='own'){ setMode('emp', m==='emp' ? (q.get('v')||'capture') : m); } })();
+/* (11/20) 본사 관리자 : 왼쪽 메뉴에 관리비·수납 + 직원·현장을 같이 (관리소장은 그대로 들어온 문 한쪽만) */
+(function(){
+  if(ROLE!=='admin' || sessRole()!=='admin') return;
+  var side=document.querySelector('aside.side'), np=document.getElementById('nav-pro'), ne=document.getElementById('nav-emp');
+  if(!side||!np||!ne) return;
+  /* 두 메뉴를 하나의 스크롤 칸 안에 : 관리비·수납 → 직원·현장 */
+  var box=document.createElement('div'); box.id='navAll'; side.insertBefore(box, np);
+  function sec(t,id){ var d=document.createElement('div'); d.className='nav-sec'; d.id=id; d.textContent=t; return d; }
+  box.appendChild(sec('🏢 관리비 · 수납','sec-pro')); box.appendChild(np);
+  box.appendChild(sec('👥 직원 · 현장','sec-emp')); box.appendChild(ne);
+  var st=document.createElement('style');
+  st.textContent='#navAll{flex:1;overflow-y:auto;padding-bottom:8px}#navAll>.nav{flex:none;overflow:visible;padding-top:0;padding-bottom:0}#navAll>.nav.hide{display:block!important}'+
+    '.nav-sec{margin:14px 12px 2px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.07);color:#E2E8F5;font-size:12px;font-weight:800;letter-spacing:.3px}'+
+    '#navAll>#sec-pro{margin-top:6px}'+
+    '.mnav button.mx{font-weight:800;color:var(--navy,#1E3A8A)}';
+  document.head.appendChild(st);
+  /* 문(DOOR)에 묶이지 않게 : 누른 메뉴 쪽으로 바로 전환 */
+  var _setMode=setMode;
+  setMode=function(m,v){ var d=DOOR; DOOR=(m==='emp')?'emp':'fac'; try{ _setMode(m,v); } finally{ DOOR=d; } navBoth(); };
+  var _goE=goE;
+  goE=function(v){ _goE(v); document.querySelectorAll('#nav-pro button').forEach(function(b){ b.classList.remove('on'); }); };
+  function navBoth(){
+    np.classList.remove('hide'); ne.classList.remove('hide');
+    if(MODE==='emp') document.querySelectorAll('#nav-pro button').forEach(function(b){ b.classList.remove('on'); });
+    else document.querySelectorAll('#nav-emp button').forEach(function(b){ b.classList.remove('on'); });
+    document.getElementById('bselbox').classList.toggle('hide', MODE!=='pro');
+  }
+  document.querySelectorAll('#nav-pro button').forEach(function(b){ b.onclick=function(){ if(MODE!=='pro') setMode('pro'); go(b.dataset.p); }; });
+  document.querySelectorAll('#nav-emp button').forEach(function(b){ b.onclick=function(){ if(MODE!=='emp') setMode('emp', b.dataset.e); else goE(b.dataset.e); }; });
+  /* 휴대폰 아래 메뉴 : 반대쪽으로 가는 단추 하나씩 */
+  var mp=document.getElementById('mnav'), me=document.getElementById('mnav-emp');
+  if(mp){ var x=document.createElement('button'); x.className='mx'; x.innerHTML='<span class="ic">👥</span>직원·현장'; x.onclick=function(){ setMode('emp','home'); }; mp.appendChild(x); }
+  if(me){ var y=document.createElement('button'); y.className='mx'; y.innerHTML='<span class="ic">🏢</span>관리비·수납'; y.onclick=function(){ setMode('pro'); go('dash'); }; me.insertBefore(y, me.firstChild); }
+  /* 제목 */
+  var t=document.getElementById('topTitle'); if(t) t.textContent='모두의관리 · 종합 관리';
+  var s2=document.getElementById('sideTitle'); if(s2) s2.textContent='종합 관리 · (주)포컴';
+  try{ document.title='모두의관리 · 종합 관리'; }catch(e){}
+  navBoth();
+})();
+
 </script>
 </body>
 </html>
