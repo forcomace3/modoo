@@ -1711,7 +1711,7 @@
     if(!isLeft&&x.leavePlan)meta.push('<span style="color:#B4453A;font-weight:700">퇴사 예정 '+fmtK(x.leavePlan)+"</span>");
     if(x.phone)meta.push('<a href="tel:'+esc(String(x.phone).replace(/[^\d]/g,""))+'">'+esc(x.phone)+"</a>");
     var certs=x.certs?'<div class="emeta">🎓 '+esc(x.certs)+'</div>':"";
-    var act1=isLeft?'<button data-erej="'+esc(x.id)+'">복직 처리</button>':'<button class="warn" data-eleave="'+esc(x.id)+'">퇴사 처리</button>';
+    var act1=isLeft?'<button data-erej="'+esc(x.id)+'">복직 처리</button>':((isPlan?'<button data-eplanx="'+esc(x.id)+'">↩ 퇴사 취소</button>':'')+'<button class="warn" data-eleave="'+esc(x.id)+'">퇴사 처리</button>');
     return '<div class="empitem" data-eid="'+esc(x.id)+'">'
       +'<div class="eline" data-etoggle="'+esc(x.id)+'"><span><span class="enm">'+esc(x.name)+'</span><span class="erole">'+esc(x.role||"")+'</span>'+badge+'</span><span class="esal num">'+won(x.total)+'원</span></div>'
       +'<div class="emeta">'+meta.join(" · ")+'</div>'+certs
@@ -1819,6 +1819,7 @@
     body.querySelectorAll("[data-edel]").forEach(function(b){b.addEventListener("click",function(){delEmp(b.getAttribute("data-edel"));});});
     body.querySelectorAll("[data-eleave]").forEach(function(b){b.addEventListener("click",function(){leaveEmp(b.getAttribute("data-eleave"));});});
     body.querySelectorAll("[data-erej]").forEach(function(b){b.addEventListener("click",function(){rejoinEmp(b.getAttribute("data-erej"));});});
+    body.querySelectorAll("[data-eplanx]").forEach(function(b){b.addEventListener("click",function(){cancelLeavePlan(b.getAttribute("data-eplanx"));});});
     body.querySelectorAll("[data-eatt]").forEach(function(el){el.addEventListener("click",function(){var pr=el.getAttribute("data-eatt").split("|");var x=employees.filter(function(e){return String(e.id)===pr[0];})[0];var a=x&&(x.attachments||[])[Number(pr[1])];if(a)openAttach(a);});});
   }
   async function seedEmployees(){
@@ -1898,6 +1899,17 @@
     $("e_leaveWrap").classList.remove("hide");
     if(!$("e_leave").value)$("e_leave").value=todayISO();
     toast("퇴사일을 확인하고, 사직서가 있으면 첨부한 뒤 저장하세요");
+  }
+  /* (11/24) 퇴사 취소 : 퇴사 예정일을 지우고, 받은 사직서는 "(철회)" 표시로 이름만 바꿔 기록으로 남김 */
+  async function cancelLeavePlan(id){
+    var x=employees.filter(function(e){return String(e.id)===String(id);})[0];if(!x)return;
+    var rs=(x.attachments||[]).filter(function(a){return /사직/.test(String(a.name||""));}).length;
+    if(!confirm(x.name+"님의 퇴사 예정("+fmtK(x.leavePlan)+")을 취소하고 계속 재직으로 둘까요?"+(rs?"\n\n받아 둔 사직서 "+rs+"건은 지우지 않고 \"(철회)\" 표시로 남겨 둡니다.":"")))return;
+    try{var rec={};for(var k in x)rec[k]=x[k];rec.status="재직";rec.leavePlan="";rec.leaveDate="";
+      var keep=(x.attachments||[]).map(function(a){var n=String(a.name||"");if(/사직/.test(n))n="(철회) "+n.replace(/사직서|사직/g,"퇴직신청");return {name:n,url:a.url,id:a.id,type:a.type||""};});
+      await cloudPost({action:"empUpdate",id:id,record:rec,keepAttachments:keep});
+      x.status="재직";x.leavePlan="";x.leaveDate="";x.attachments=keep;renderEmp();toast(x.name+"님 퇴사 예정을 취소했습니다 (계속 재직)");}
+    catch(e){toast("실패: "+e.message);}
   }
   async function rejoinEmp(id){
     var x=employees.filter(function(e){return String(e.id)===String(id);})[0];if(!x)return;
