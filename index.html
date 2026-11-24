@@ -1676,7 +1676,8 @@
       if(/종이 근태계/.test(String(d.title||"")+rs)&&/구분 없음/.test(rs))kind="반차";
       var why=rs.replace(/\s*·?\s*종이 근태계 이관.*$/,"").trim();
       var st=String(i.status||""),done=st==="결재 완료";
-      return '<div class="lv-li"><div class="d">'+(i.dates||[]).slice().sort().map(lvDay).join(", ")+'<span class="k">'+esc(kind)+' · '+lvFmt(i.days)+'일'+(why?' · '+esc(why):'')+'</span></div><span class="lv-st '+(done?'ok':'w')+'">'+(done?'사용':'결재 중')+'</span></div>';
+      var at=(d.attachments||[]).map(function(a,k){ return '<a href="#" data-lvatt="'+esc(i.id)+'|'+k+'" title="'+esc(a.name||'원본')+'" style="text-decoration:none;margin-right:6px">📎</a>'; }).join('');
+      return '<div class="lv-li"><div class="d">'+(i.dates||[]).slice().sort().map(lvDay).join(", ")+'<span class="k">'+esc(kind)+' · '+lvFmt(i.days)+'일'+(why?' · '+esc(why):'')+'</span></div>'+at+'<span class="lv-st '+(done?'ok':'w')+'">'+(done?'사용':'결재 중')+'</span></div>';
     });
     if(Number(o.used0))rows.push('<div class="lv-li"><div class="d">앱 쓰기 전에 쓴 연차<span class="k">본사 기록</span></div><span class="lv-st ok">'+lvFmt(o.used0)+'일</span></div>');
     if(!rows.length)h+='<div style="font-size:12px;color:#9A9A90;margin-top:7px">올해 쓴 연차가 없습니다.</div>';
@@ -3168,7 +3169,7 @@
       var src=paper?"종이 근태계":(String(d.line||"").indexOf("대리 등록")>=0?"대리 등록":"앱 신청");
       var why=rs.replace(/\s*·?\s*종이 근태계 이관.*$/,"").trim();
       var per=kind.indexOf("반차")>=0?0.5:1;
-      (x.dates||[]).forEach(function(dt){rows.push({date:String(dt),id:o.id,name:o.name,role:o.role||"",out:o.status==="퇴사",kind:kind,days:per,done:st==="결재 완료",why:why,src:src});});
+      (x.dates||[]).forEach(function(dt){rows.push({date:String(dt),id:o.id,name:o.name,role:o.role||"",out:o.status==="퇴사",kind:kind,days:per,done:st==="결재 완료",why:why,src:src,doc:String(x.id),atts:(d.attachments||[])});});
     });});
     rows.sort(function(a,b){return a.date===b.date?(a.name<b.name?-1:1):(a.date<b.date?-1:1);});
     return rows;
@@ -3189,11 +3190,11 @@
       var mo='<option value="">전체 달</option>';for(var m=1;m<=12;m++)mo+='<option value="'+m+'"'+(String(S.m)===String(m)?" selected":"")+'>'+m+'월</option>';
       var po='<option value="">전체 직원</option>'+emps.map(function(o){return '<option value="'+esc(o.id)+'"'+(S.p===o.id?" selected":"")+'>'+esc(o.name)+(o.status==="퇴사"?" (퇴사)":"")+'</option>';}).join("");
       h+='<div style="display:flex;gap:6px;margin-bottom:8px"><select id="lvhM" style="flex:1;padding:8px;border:1px solid #CBD5E1;border-radius:9px;font-family:inherit;font-size:13px">'+mo+'</select><select id="lvhP" style="flex:1;padding:8px;border:1px solid #CBD5E1;border-radius:9px;font-family:inherit;font-size:13px">'+po+'</select></div>';
-      h+='<div style="font-size:12.5px;color:#475569;margin-bottom:6px">'+f.length+'건 · 사용 <b style="color:#1C2A27">'+lvFmt(tot)+'일</b>'+(pend?' · 결재 중 '+lvFmt(pend)+'일':'')+'</div>';
+      h+='<div style="font-size:12.5px;color:#475569;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1">'+f.length+'건 · 사용 <b style="color:#1C2A27">'+lvFmt(tot)+'일</b>'+(pend?' · 결재 중 '+lvFmt(pend)+'일':'')+'</span>'+(lvCanAtt()?'<button class="mini" data-lvbulk="1" style="margin:0">📎 근태계 원본 한꺼번에 붙이기</button>':'')+'</div>';
       if(!f.length)h+='<div class="hm-empty">조건에 맞는 연차 사용 기록이 없습니다.</div>';
-      else h+='<div class="lvh-scroll" style="overflow:auto;max-height:520px"><table class="grid"><thead><tr><th>날짜</th><th>이름</th><th>종류</th><th>일수</th><th>사유 · 출처</th></tr></thead><tbody>'+
-        f.map(function(r){return '<tr><td style="white-space:nowrap">'+esc(lvDay(r.date))+'</td><td class="l" style="white-space:nowrap">'+esc(r.name)+'<br><small style="color:#8A8A92">'+esc(r.role)+(r.out?' · 퇴사':'')+'</small></td><td style="white-space:nowrap">'+esc(r.kind)+(r.done?'':'<br><span class="lv-st w">결재 중</span>')+'</td><td class="r">'+lvFmt(r.days)+'</td><td class="l" style="font-size:11.5px">'+(r.why?esc(r.why)+'<br>':'')+'<small style="color:#8A8A92">'+esc(r.src)+'</small></td></tr>';}).join("")+
-        '<tr class="grand"><td colspan="3">합계</td><td class="r">'+lvFmt(tot+pend)+'</td><td></td></tr></tbody></table></div>';
+      else h+='<div class="lvh-scroll" style="overflow:auto;max-height:520px"><table class="grid"><thead><tr><th>날짜</th><th>이름</th><th>종류</th><th>일수</th><th>사유 · 출처</th><th>원본</th></tr></thead><tbody>'+
+        f.map(function(r){return '<tr><td style="white-space:nowrap">'+esc(lvDay(r.date))+'</td><td class="l" style="white-space:nowrap">'+esc(r.name)+'<br><small style="color:#8A8A92">'+esc(r.role)+(r.out?' · 퇴사':'')+'</small></td><td style="white-space:nowrap">'+esc(r.kind)+(r.done?'':'<br><span class="lv-st w">결재 중</span>')+'</td><td class="r">'+lvFmt(r.days)+'</td><td class="l" style="font-size:11.5px">'+(r.why?esc(r.why)+'<br>':'')+'<small style="color:#8A8A92">'+esc(r.src)+'</small></td><td style="white-space:nowrap">'+lvAttCell(r)+'</td></tr>';}).join("")+
+        '<tr class="grand"><td colspan="3">합계</td><td class="r">'+lvFmt(tot+pend)+'</td><td></td><td style="font-size:11px">'+f.filter(function(r){return r.atts.length;}).length+'/'+f.length+'</td></tr></tbody></table></div>';
     } else {
       var hasU0=emps.some(function(o){return Number(o.used0);});
       var M={},colT=[0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -3248,6 +3249,60 @@
     XLSX.utils.book_append_sheet(wb,s1,"날짜별 내역");XLSX.utils.book_append_sheet(wb,s2,"직원별 월별");
     XLSX.writeFile(wb,"연차사용내역_"+yr+"_"+todayISO()+".xlsx");
   }
+
+  /* (11/24) 연차 기록에 원본(종이 근태계 PDF·사진) 붙이기 · 대조용 */
+  function lvCanAtt(){ return isAdmin()||isMgr(); }
+  function lvDocById(id){ try{ return (docs||[]).filter(function(d){return String(d.id)===String(id);})[0]||null; }catch(e){ return null; } }
+  function lvAttCell(r){
+    var h=(r.atts||[]).map(function(a,k){ return '<a href="#" data-lvatt="'+esc(r.doc)+'|'+k+'" title="'+esc(a.name||'원본')+'" style="text-decoration:none">📎</a>'; }).join(' ');
+    if(!h) h=lvCanAtt()?'<button class="mini" data-lvadd1="'+esc(r.doc)+'" title="원본 파일 붙이기" style="margin:0;padding:3px 8px">＋</button>':'<span style="color:#CBD5E1">-</span>';
+    return h; }
+  function lvAttOpen(spec){ var p=String(spec).split('|'), d=lvDocById(p[0]), a=d&&(d.attachments||[])[+p[1]]; if(a) openAttach(a); else toast('파일을 찾지 못했습니다. 새로고침해 주세요'); }
+  function lvFileB64(f){ return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){ res(String(r.result).split(',')[1]||''); }; r.onerror=function(){ rej(new Error('파일을 읽지 못했습니다')); }; r.readAsDataURL(f); }); }
+  async function lvAttachTo(docId, files){
+    var atts=[]; for(var i=0;i<files.length;i++){ var f=files[i]; if(f.size>9.5*1024*1024) throw new Error(f.name+' : 10MB 이하만 붙일 수 있습니다');
+      atts.push({name:f.name, type:f.type||(/\.pdf$/i.test(f.name)?'application/pdf':'application/octet-stream'), dataB64:await lvFileB64(f)}); }
+    var r=await cloudPost({action:'docAttach', id:docId, attachments:atts});
+    var d=lvDocById(docId); if(d) d.attachments=r.attachments||[]; return r; }
+  function lvHistRefresh(){ document.querySelectorAll('#lvHist, .lvh-sheet').forEach(function(el){ try{ lvHistDraw(el); }catch(e){} });
+    try{ if(typeof view!=='undefined'&&view==='emp') renderEmp(); }catch(e){} }
+  function lvPick(multi, cb){ var inp=document.createElement('input'); inp.type='file'; inp.accept='.pdf,image/*'; if(multi) inp.multiple=true; inp.style.display='none';
+    inp.addEventListener('change',function(){ var fs=[].slice.call(inp.files||[]); inp.remove(); if(fs.length) cb(fs); }); document.body.appendChild(inp); inp.click(); }
+  function lvPickOne(docId){ lvPick(false, async function(fs){ toast('올리는 중…'); try{ await lvAttachTo(docId, fs); toast('원본을 붙였습니다'); lvHistRefresh(); }catch(e){ toast('실패: '+e.message); } }); }
+  function lvParseName(n){ var m=String(n||'').replace(/\.[^.]+$/,'').match(/^(.+?)_((?:\d{4}-\d{2}-\d{2}_?)+)/); if(!m) return null;
+    return {name:m[1].replace(/\s/g,''), dates:m[2].split('_').filter(Boolean)}; }
+  function lvBulkPick(){ lvPick(true, lvBulkPlan); }
+  function lvBulkPlan(files){
+    var E=leaveData&&leaveData.emp?Object.keys(leaveData.emp).map(function(k){ return leaveData.emp[k]; }):[];
+    var plan=[], skip=[], miss=[];
+    files.forEach(function(f){
+      var p=lvParseName(f.name); if(!p){ miss.push({f:f,why:'파일 이름이 "이름_날짜_…" 형식이 아님'}); return; }
+      var em=E.filter(function(o){ return String(o.name||'').replace(/\s/g,'')===p.name; });
+      if(!em.length){ miss.push({f:f,why:'직원 명단에 없는 이름 ('+p.name+')'}); return; }
+      var keys=em.map(function(o){ return 'emp:'+o.id; });
+      var ds=(docs||[]).filter(function(d){ return d.doctype==='연차신청서' && d.leave && keys.indexOf(String(d.createdKey||''))>=0 && String(d.status||'')!=='반려' && (d.leave.dates||[]).some(function(x){ return p.dates.indexOf(String(x))>=0; }); });
+      if(!ds.length){ miss.push({f:f,why:p.name+' 님의 '+p.dates.map(function(x){ return Number(x.slice(5,7))+'/'+Number(x.slice(8,10)); }).join(', ')+' 연차 기록이 없음'}); return; }
+      ds.forEach(function(d){ if((d.attachments||[]).some(function(a){ return a.name===f.name; })) skip.push({f:f,d:d}); else plan.push({f:f,d:d}); });
+    });
+    var row=function(x){ return '<tr><td class="l" style="font-size:11.5px">'+esc(x.f.name)+'</td><td class="l" style="font-size:11.5px">'+esc((x.d.createdBy||'')+' · '+(x.d.leave.dates||[]).map(lvDay).join(', '))+'</td></tr>'; };
+    openSheet('<h3>📎 근태계 원본 붙이기</h3><p style="font-size:12.5px;color:#475569;margin:4px 0 8px">파일 이름(<b>이름_날짜_…</b>)으로 그 직원의 그 날짜 연차 기록을 찾아 붙입니다. 결재 상태는 바뀌지 않습니다.</p>'+
+      '<div style="font-size:13px;margin-bottom:6px">붙일 것 <b>'+plan.length+'건</b> · 이미 붙어 있음 '+skip.length+'건 · 못 찾음 <b style="color:'+(miss.length?'#9A3327':'inherit')+'">'+miss.length+'개</b></div>'+
+      (plan.length?'<div style="max-height:34vh;overflow:auto"><table class="grid"><thead><tr><th>파일</th><th>붙일 연차 기록</th></tr></thead><tbody>'+plan.map(row).join('')+'</tbody></table></div>':'')+
+      (miss.length?'<div style="margin-top:8px;font-size:12px;color:#9A3327"><b>못 찾은 파일</b><br>'+miss.map(function(x){ return esc(x.f.name)+' — '+esc(x.why); }).join('<br>')+'</div>':'')+
+      '<div id="lvbP" style="font-size:12.5px;margin-top:8px;color:#2F4E8A"></div>'+
+      '<div class="btns" style="margin-top:12px"><button class="btn ghost" id="lvbN">닫기</button>'+(plan.length?'<button class="btn primary" id="lvbG">'+plan.length+'건 붙이기</button>':'')+'</div>');
+    $('lvbN').addEventListener('click',closeSheet);
+    var g=$('lvbG'); if(g) g.addEventListener('click', async function(){ g.disabled=true; $('lvbN').disabled=true; var ok=0, bad=[];
+      for(var i=0;i<plan.length;i++){ $('lvbP').textContent='올리는 중… '+(i+1)+' / '+plan.length; try{ await lvAttachTo(plan[i].d.id,[plan[i].f]); ok++; }catch(e){ bad.push(plan[i].f.name+' : '+e.message); } }
+      $('lvbP').innerHTML='<b>'+ok+'건 붙였습니다.</b>'+(bad.length?'<br><span style="color:#9A3327">실패 '+bad.length+'건<br>'+bad.map(esc).join('<br>')+'</span>':'');
+      $('lvbN').disabled=false; g.remove(); lvHistRefresh(); });
+  }
+  document.addEventListener('click',function(e){
+    var t=e.target&&e.target.closest?e.target:null; if(!t) return;
+    var a=t.closest('[data-lvatt]'); if(a){ e.preventDefault(); lvAttOpen(a.getAttribute('data-lvatt')); return; }
+    var b=t.closest('[data-lvadd1]'); if(b){ e.preventDefault(); lvPickOne(b.getAttribute('data-lvadd1')); return; }
+    var c=t.closest('[data-lvbulk]'); if(c){ e.preventDefault(); lvBulkPick(); return; }
+  });
   function renderLeaveAdmin(el){
     if(!el)return;if(!leaveData||!leaveData.emp){el.innerHTML='';return;}
     var list=Object.keys(leaveData.emp).map(function(k){return leaveData.emp[k];}).filter(function(o){return o.status!=="퇴사";}).sort(function(a,b){return String(a.site+a.name)<String(b.site+b.name)?-1:1;});
